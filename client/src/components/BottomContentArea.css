@@ -1,0 +1,540 @@
+/* Bottom content area */
+.bottom-content-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* Take available space, share with grid wrapper */
+  max-height: calc(50vh - 11px); /* Remaining space after grid-wrapper takes (50vh - 40px) */
+  overflow: hidden;
+  position: relative;
+  background-color: white;
+  margin: 0; /* Remove any margin */
+  padding: 0; /* Remove any padding */
+}
+
+/* Tab folder area */
+.tab-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  margin-left: -64px; /* Extend to the left edge */
+  padding-left: 64px; /* Add padding to offset content */
+  box-sizing: border-box;
+  width: calc(100% + 64px); /* Make sure it takes full width */
+  background-color: white; /* Ensure white background */
+  z-index: 4; /* Below the nav icons */
+  padding-top: 2px; /* Add space for the pinstripe */
+}
+
+/* Create a pseudo-element for the blue pinstripe that goes all the way across */
+.tab-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #3E4C71; /* Blue pinstripe to match navigation */
+  z-index: 6;
+}
+
+.tab-navigation {
+  display: flex;
+  justify-content: space-between; /* Space between tabs and controls */
+  align-items: center; /* Center align items vertically */
+  background-color: white; /* White background */
+  padding: 10px 16px 0 16px; /* Add padding to top for spacing after pinstripe */
+  padding-bottom: 0;
+  border-bottom: 1px solid #ddd; /* Light border below tabs */
+}
+
+.tab-controls-left {
+  display: flex;
+  gap: 6px; /* Space between tabs */
+}
+
+.tab-controls-right {
+  display: flex;
+  gap: 8px; /* Space between transcription controls */
+  align-items: center;
+}
+
+.tab-btn {
+  padding: 10px 24px;
+  margin-right: 6px;
+  background-color: #e8e8e8; /* Light grey background */
+  border: 1px solid #ccc;
+  border-bottom: none;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  font-weight: 500;
+  font-size: 14px;
+  color: #555; /* Dark grey text */
+  transition: all 0.15s ease;
+}
+
+.tab-btn:hover:not(.active) {
+  background-color: #f0f0f0;
+}
+
+.tab-btn.active {
+  background-color: #3E4C71; /* Dark blue background when active */
+  color: white; /* White text when active */
+  border-color: #3E4C71;
+  padding-bottom: 11px;
+  margin-bottom: -1px;
+  font-weight: 600; /* Make text slightly bolder in active tab */
+}
+
+.tab-content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: white;
+  border-top: 1px solid #ccc;
+  padding: 20px;
+  line-height: 1.5;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Content sections */
+.content-section {
+  height: 100%;
+  overflow-y: auto;
+  width: 100%;
+  text-align: left;
+  align-self: flex-start;
+}
+
+/* Enhanced styling for dialogue tab with transcription functionality */
+.dialogue-tab-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0; /* Remove default padding to let EnhancedTranscription manage spacing */
+  overflow: hidden; /* Let the inner component handle scrolling */
+}
+
+.dialogue-section {
+  max-width: 800px;
+  margin: 0;
+  text-align: left;
+}
+
+.dialogue-title {
+  color: #3E4C71;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  margin-top: 0;
+}
+
+.dialogue-instructions {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  margin: 16px 0;
+  border-left: 4px solid #3E4C71;
+}
+
+.dialogue-instructions h4 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #3E4C71;
+  font-size: 16px;
+}
+
+.dialogue-instructions ol {
+  margin: 12px 0;
+  padding-left: 20px;
+}
+
+.dialogue-instructions li {
+  margin-bottom: 4px;
+}
+
+.guiding-question {
+  background-color: #e7f3ff;
+  padding: 16px;
+  border-radius: 6px;
+  margin: 16px 0;
+  border-left: 4px solid #2196F3;
+  font-size: 16px;
+}
+
+/* Transcription styling */
+.transcription p {
+  margin: 12px 0;
+  line-height: 1.6;
+}
+
+.transcription strong {
+  color: #3E4C71;
+  font-weight: 600;
+}
+
+/* Summary card styling */
+.summary-card {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+}
+
+.summary-title {
+  font-weight: 600;
+  color: #3E4C71;
+  font-size: 16px;
+}
+
+.ai-tag {
+  background-color: #4CAF50;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-content {
+  padding: 16px 20px;
+}
+
+.summary-content p {
+  margin: 12px 0;
+  line-height: 1.6;
+}
+
+.summary-content strong {
+  color: #3E4C71;
+  font-weight: 600;
+}
+
+.vote-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #ddd;
+}
+
+.vote-controls span {
+  font-weight: 500;
+  color: #555;
+}
+
+.vote-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #555;
+}
+
+.vote-btn:hover {
+  background-color: #f0f0f0;
+  border-color: #bbb;
+}
+
+/* Voice card styling */
+.voice-card {
+  background-color: #f8f9fa;
+  border-left: 4px solid #3E4C71;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+}
+
+.voice-speaker {
+  font-weight: 600;
+  color: #3E4C71;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.voice-quote {
+  line-height: 1.6;
+  font-style: italic;
+  color: #333;
+}
+
+/* Theme tags */
+.theme-tags {
+  margin-top: 24px;
+}
+
+.theme-tags h4 {
+  margin-bottom: 12px;
+  color: #3E4C71;
+  font-size: 16px;
+}
+
+.theme-tags > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.theme-tag {
+  background-color: #e7f3ff;
+  color: #2196F3;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #bbdefb;
+}
+
+/* Bottom control bar */
+.control-bar {
+  height: 51px; /* Reduced from 64px to 80% (51px) */
+  background-color: #e0e0e3; /* Light grey background for footer */
+  color: #3E4C71; /* Dark blue text color */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-top: none; /* Remove border */
+  flex-shrink: 0; /* Prevent shrinking */
+  margin: 0; /* Remove any margin */
+  position: relative; /* Ensure proper positioning */
+}
+
+.media-controls {
+  display: flex;
+}
+
+.control-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: 8px;
+}
+
+.control-button:hover {
+  background-color: rgba(224, 109, 55, 0.15);
+}
+
+.control-button.active {
+  background-color: #E06D37;
+  color: white;
+}
+
+/* Microphone button specific styling */
+#mic-btn {
+  transition: all 0.2s ease;
+}
+
+.timer-display {
+  display: flex;
+}
+
+.timer-cell {
+  margin: 0 15px;
+  text-align: center;
+}
+
+.timer-label {
+  font-size: 11px;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px; /* Reduced from 4px to 2px */
+}
+
+.timer-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3E4C71;
+}
+
+/* Spin animation for loading states */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tab-area {
+    margin-left: -51px; /* Adjust for smaller nav width */
+    padding-left: 51px;
+    width: calc(100% + 51px);
+  }
+  
+  .tab-navigation {
+    padding: 8px 12px 0 12px;
+  }
+  
+  .tab-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  
+  .tab-content {
+    padding: 16px;
+  }
+  
+  .control-bar {
+    padding: 0 16px;
+  }
+  
+  .timer-cell {
+    margin: 0 10px;
+  }
+  
+  .timer-label {
+    font-size: 10px;
+  }
+  
+  .timer-value {
+    font-size: 14px;
+  }
+}
+
+/* Transcription control buttons in tab navigation */
+.transcription-control-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 200px; /* Increased width to accommodate longer button text */
+  height: 36px; /* Fixed height for consistency */
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide any overflow */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.transcription-control-btn.primary {
+  background-color: #3E4C71; /* Match app's dark blue */
+  color: white;
+}
+
+.transcription-control-btn.primary:hover {
+  background-color: #334060; /* Darker shade for hover */
+  transform: translateY(-1px);
+}
+
+.transcription-control-btn.danger {
+  background-color: #E06D37; /* Match app's orange for stop button */
+  color: white;
+}
+
+.transcription-control-btn.danger:hover {
+  background-color: #CC5A2B; /* Darker orange for hover */
+  transform: translateY(-1px);
+}
+
+.transcription-control-btn.warning {
+  background-color: #f8f9fa; /* Light background for clear button */
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+.transcription-control-btn.warning:hover {
+  background-color: #e9ecef;
+  transform: translateY(-1px);
+}
+
+.transcription-status {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  width: 140px; /* Fixed width for status consistency */
+  height: 28px; /* Fixed height for status consistency */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide any overflow */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.transcription-status.connected {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.transcription-status.disconnected {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.transcription-status.recording {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* Enhanced styling for forward/backward buttons - let SVG handle the styling */
+#back-btn, #forward-btn {
+  position: relative;
+  /* Remove all borders and backgrounds - let the SVG handle the visual design */
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#back-btn:not(.active):not(:hover), 
+#forward-btn:not(.active):not(:hover) {
+  border: none !important; /* No border - SVG has its own stroke */
+  background-color: transparent !important; /* Transparent background */
+}
+
+#back-btn:hover:not(.active), 
+#forward-btn:hover:not(.active) {
+  border: none !important; /* No border on hover */
+  background-color: rgba(224, 109, 55, 0.1) !important; /* Light orange background on hover */
+}
+
+#back-btn.active, 
+#forward-btn.active {
+  border: none !important; /* No border when active */
+  background-color: rgba(62, 76, 113, 0.2) !important; /* Light blue background when active */
+} 

@@ -1,0 +1,93 @@
+.nav-map {
+  width: 51px;
+  min-width: 51px;
+  max-width: 51px;
+  flex: 0 0 51px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  height: calc(50vh - 40px);
+  border-right: 1px solid #ddd;
+}
+
+@media (max-width: 600px) {
+  .nav-map {
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    flex: 0 0 40px;
+    flex-shrink: 0;
+    flex-grow: 0;
+  }
+}
+
+.nav-item {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #d9d9d9;
+  border-bottom: 1px solid #3E4C71;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s;
+}
+.nav-item:last-child {
+  border-bottom: none;
+}
+.nav-item.active {
+  background: #3e4c71;
+  color: #fff;
+}
+.nav-item.hovered {
+  background: #D07B47;
+}
+
+.nav-item .icon-bg {
+  width: 99px;
+  height: 99px;
+  margin: 0 auto;
+  border-radius: 16px;
+  background: #d9d9d9; /* Neutral background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.nav-item .icon-bg img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+}
+
+.nav-item.hovered .icon-bg {
+  background: #D07B47;
+}
+
+.nav-item.active .icon-bg {
+  background: #3e4c71 !important;
+}
+
+.nav-icon {
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  object-fit: contain;
+  display: block;
+  transition: none;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+  backface-visibility: hidden;
+}
+
+/* Make fishbowl icon 50% bigger */
+.nav-icon.fishbowl-icon {
+  transform: scale(1.5);
+  transform-origin: center;
+} 

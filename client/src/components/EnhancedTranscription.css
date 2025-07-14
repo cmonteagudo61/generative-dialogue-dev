@@ -1,0 +1,197 @@
+.enhanced-transcription {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: calc(100vh - 200px); /* Constrain overall height */
+  gap: 8px; /* Compact spacing */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: white;
+  padding: 12px;
+}
+
+/* Transcription Sections */
+.transcription-section {
+  background: #f8f9fa;
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.section-title {
+  background: #e9ecef;
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+/* Live Transcript Section - Running Log with Scroll */
+.live-section .realtime-transcript {
+  padding: 8px 12px;
+  height: 50px; /* Exactly 2 lines */
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #212529;
+  background: white;
+  word-wrap: break-word;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.live-section .stats-line {
+  padding: 4px 12px;
+  font-size: 11px;
+  color: #6c757d;
+  background: #f8f9fa;
+  border-top: 1px solid #e1e5e9;
+  display: flex;
+  gap: 12px;
+}
+
+.confidence, .speakers {
+  font-weight: 500;
+}
+
+/* Final Transcript Section - Extended to footer */
+.final-section {
+  flex: 1; /* Take up remaining space */
+  display: flex;
+  flex-direction: column;
+}
+
+.final-section .final-transcript {
+  padding: 12px;
+  flex: 1; /* Fill the section */
+  height: calc(100vh - 380px); /* Fixed height to trigger scroll */
+  max-height: calc(100vh - 380px); /* Ensure scrolling activates */
+  font-size: 14px;
+  line-height: 1.5;
+  color: #212529;
+  background: white;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+/* Placeholder text */
+.placeholder {
+  color: #6c757d;
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* Error Display */
+.error-section {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-top: 4px;
+}
+
+.error-text {
+  color: #721c24;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Custom scrollbar for webkit browsers */
+.realtime-transcript::-webkit-scrollbar,
+.final-transcript::-webkit-scrollbar {
+  width: 6px;
+}
+
+.realtime-transcript::-webkit-scrollbar-track,
+.final-transcript::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.realtime-transcript::-webkit-scrollbar-thumb,
+.final-transcript::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.realtime-transcript::-webkit-scrollbar-thumb:hover,
+.final-transcript::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Enhancement UI Components */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #e9ecef;
+  margin: 0;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e1e5e9;
+  gap: 12px;
+}
+
+.section-header .section-title {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+}
+
+/* Enhancement status display */
+.enhancement-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+}
+
+.enhancement-status .enhancing {
+  color: #856404;
+  font-weight: 500;
+  animation: pulse 1.5s infinite;
+}
+
+.enhancement-status .enhancement-info {
+  color: #155724;
+  font-weight: 500;
+}
+
+/* Enhancement button */
+.enhance-btn {
+  padding: 3px 8px;
+  font-size: 11px;
+  background: #3E4C71;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.enhance-btn:hover {
+  background: #2d3a5f;
+  transform: translateY(-1px);
+}
+
+.enhance-btn:active {
+  transform: translateY(0);
+}
+
+/* Pulse animation for enhancement status */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+} 

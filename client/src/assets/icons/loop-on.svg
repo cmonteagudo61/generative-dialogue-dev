@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Clean blue circle -->
+  <circle cx="30" cy="30" r="25.5" fill="none" stroke="#3E4C71" stroke-width="4.5"/>
+  
+  <!-- Clean blue handle -->
+  <line x1="50" y1="50" x2="70" y2="70" stroke="#3E4C71" stroke-width="6" stroke-linecap="round"/>
+</svg>

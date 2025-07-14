@@ -1,0 +1,184 @@
+/* CommunityViewExperimental.css - Experimental Community View with Hover Effects */
+
+/* GLOBAL RULE: ALL experimental name labels should have black background and square corners */
+.experimental-name-label,
+.experimental-name-label:hover,
+.experimental-participant-container:hover .experimental-name-label,
+.experimental-participant-container .experimental-name-label {
+  background: rgba(0,0,0,0.95) !important;
+  color: white !important;
+  border-radius: 0px !important;
+  border: 1px solid #333 !important;
+}
+
+.experimental-participants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 60px);
+  width: 100%;
+  height: 100%;
+  max-height: 50vh;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-sizing: border-box;
+  gap: 2px;
+  overflow-y: auto;
+  overflow-x: visible;
+  justify-content: start;
+}
+
+.experimental-participant-container {
+  width: 60px;
+  height: 60px;
+  min-width: 60px;
+  min-height: 60px;
+  max-width: 60px;
+  max-height: 60px;
+  background: #000;
+  position: relative;
+  overflow: visible;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.experimental-participant {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid #333;
+}
+
+.experimental-img-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.experimental-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Name label styles - key for hover functionality */
+.experimental-name-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0,0,0,0.95) !important;
+  color: white !important;
+  text-align: center;
+  padding: 2px 4px;
+  font-size: 10px;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  pointer-events: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  border-radius: 0px !important;
+}
+
+/* Hover effects - this is the critical functionality */
+.experimental-participant-container:hover .experimental-name-label {
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow: visible;
+  white-space: normal;
+  width: max-content;
+  min-width: 60px;
+  max-width: 400px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  bottom: 100%;
+  background: rgba(0,0,0,0.95) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 200;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 0px !important;
+  text-overflow: unset;
+  border: 1px solid #333;
+}
+
+/* Magnifier-specific styles */
+.experimental-participant-container.magnifier-active {
+  border: 2px solid #4a90e2;
+  z-index: 10;
+}
+
+.experimental-participant-container.center-participant {
+  border: 2px solid #ff6b6b;
+  z-index: 15;
+}
+
+/* Video styles */
+.experimental-video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+/* Debug styles (can be removed in production) */
+.experimental-debug-border {
+  border: 1px dashed red !important;
+}
+
+/* Responsive adjustments - maintain 60px sizing */
+@media (max-width: 768px) {
+  .experimental-participants-grid {
+    grid-template-columns: repeat(auto-fit, 60px);
+    gap: 1px;
+  }
+  
+  .experimental-participant-container {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    min-height: 60px;
+    max-width: 60px;
+    max-height: 60px;
+  }
+  
+  .experimental-name-label {
+    font-size: 9px;
+    padding: 1px 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .experimental-participants-grid {
+    grid-template-columns: repeat(auto-fit, 60px);
+  }
+  
+  .experimental-participant-container {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    min-height: 60px;
+    max-width: 60px;
+    max-height: 60px;
+  }
+  
+  .experimental-name-label {
+    font-size: 8px;
+    padding: 1px;
+  }
+} 

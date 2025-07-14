@@ -1,0 +1,270 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.header-section {
+  display: flex;
+  width: 100%;
+  background-color: #E6DDD2;
+  border-bottom: 2px solid #E06D37;
+  z-index: 20;
+}
+
+.header-upper-row {
+  display: flex;
+  width: 100%;
+  height: 51px; /* Reduce to match original left nav proportions */
+  align-items: center;
+}
+
+.logo-container {
+  width: 51px;
+  height: 51px;
+  background-color: #393d54;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-right: 1px solid #2E334A;
+  flex: 0 0 51px !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+}
+
+.top-nav {
+  display: flex;
+  height: 51px;
+  flex: 1;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  height: 51px; /* Match header height */
+  background-color: #d2d2d8;
+  width: 320px; /* Fixed width to prevent dancing */
+  flex: 0 0 320px; /* Don't grow or shrink */
+  border-left: 1px solid #c0c0c6;
+}
+
+.participant-counter-fixed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  height: 51px; /* Match header height */
+  background-color: #d2d2d8;
+  width: 180px; /* Fixed width for participant counter */
+  flex: 0 0 180px; /* Don't grow or shrink */
+  border-left: 1px solid #c0c0c6;
+}
+
+.stage-tab {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #e0e0e3;
+  color: #E06D37;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-size: 14px;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+  border-right: 1px solid #E06D37;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.stage-tab:last-child {
+  border-right: none;
+}
+.stage-tab.active,
+.stage-tab.active:hover {
+  background-color: #E06D37;
+  color: white;
+  border-color: #E06D37;
+}
+.stage-tab:hover:not(.active) {
+  background-color: #3E4C71;
+  color: white;
+}
+
+.view-title {
+  font-size: 28px; /* Match navigation tab font size */
+  font-weight: 600; /* Match navigation tab font weight */
+  color: #3E4C71;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.5px;
+  text-align: center;
+  line-height: 1; /* Reduce line height to make container thinner */
+  padding: 0; /* Remove any padding */
+}
+
+.two-line-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.two-line-title div {
+  font-size: 24px; /* Slightly smaller than navigation tabs for better proportion */
+  font-weight: 600; /* Match navigation tab font weight */
+  color: #3E4C71;
+  letter-spacing: 0.4px;
+  line-height: 1; /* Reduce line height to make container thinner */
+  padding: 0; /* Remove any padding */
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+  height: calc(100vh - 51px); /* Total height minus header only */
+  max-height: calc(100vh - 51px); /* Ensure it never exceeds this */
+}
+
+/* Grid wrapper to contain both left nav and viewing area */
+.grid-wrapper {
+  display: flex;
+  flex: 1; /* Take available space, share with bottom area */
+  max-height: calc(50vh - 40px); /* Keep video grid to half viewport height for text area below */
+  min-height: 300px; /* Ensure minimum usable height */
+  overflow: hidden; /* Keep the navigation container boundary */
+  width: 100%; /* Ensure full width responsiveness */
+}
+
+.left-nav {
+  width: 64px !important;
+  min-width: 64px !important;
+  max-width: 64px !important;
+  height: 100%; /* Fill the exact grid-wrapper height */
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #ddd;
+  flex: 0 0 64px !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+}
+
+.nav-item {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #D9D9D9;
+  border-bottom: 1px solid #3E4C71;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: none;
+}
+.nav-item:last-child {
+  border-bottom: none;
+}
+.nav-item.active {
+  background-color: #3E4C71;
+  color: #fff;
+}
+.nav-item:hover:not(.active) {
+  background-color: #D07B47;
+}
+
+/* Viewing area */
+.viewing-area {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background-color: #f5f5f5;
+  overflow: visible; /* Allow labels to overflow slightly */
+  box-shadow: none;
+  border-bottom: none;
+  height: 100%; /* Fill grid-wrapper height exactly */
+  max-height: 100%; /* Never exceed grid-wrapper height */
+  width: 100%; /* Ensure full width responsiveness */
+  min-width: 0; /* Allow shrinking below content size */
+}
+
+.view-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: visible; /* Allow labels to extend beyond video area */
+  background-color: #222;
+  justify-content: stretch;
+  align-items: stretch;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  max-height: 100%; /* Ensure it stays within viewing-area */
+  min-width: 0; /* Allow shrinking and proper width calculations */
+}
+
+.participant-counter {
+  display: flex;
+  align-items: center;
+}
+
+.participant-badge {
+  background: #3E4C71;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 4px 12px;
+  margin-left: 8px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  display: inline-block;
+}
+
+@media (max-width: 600px) {
+  .logo-container,
+  .left-nav {
+    width: 51px !important;
+    min-width: 51px !important;
+    max-width: 51px !important;
+    flex: 0 0 51px !important;
+  }
+
+  .header-upper-row {
+    height: 51px;
+  }
+
+  .header-info {
+    width: 250px;
+    flex: 0 0 250px;
+    padding: 0 12px;
+  }
+
+  .participant-counter-fixed {
+    width: 140px;
+    flex: 0 0 140px;
+    padding: 0 8px;
+  }
+
+  .two-line-title div {
+    font-size: 22px; /* Slightly smaller than navigation tabs on mobile */
+  }
+
+  .participant-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+} 
