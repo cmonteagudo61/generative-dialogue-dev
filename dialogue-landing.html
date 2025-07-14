@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generative Dialogue - Meeting Setup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3498db;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        .loading-text {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #videoPreview {
+            width: 320px;
+            height: 240px;
+            background-color: #2c3e50;
+            margin: 20px auto;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        #localVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Generative Dialogue</h1>
+        <p>This page will help you set up your camera and microphone before joining the dialogue experience.</p>
+        
+        <div id="videoPreview">
+            <video id="localVideo" autoplay muted playsinline></video>
+        </div>
+        
+        <div id="status" class="status">
+            Ready to begin setup
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <div class="loading-text">Setting up your connection...</div>
+        </div>
+        
+        <button id="setupButton">Set Up Camera & Microphone</button>
+    </div>
+
+    <script>
+        // Store key elements
+        const setupButton = document.getElementById('setupButton');
+        const statusDiv = document.getElementById('status');
+        const loadingDiv = document.getElementById('loading');
+        const videoPreview = document.getElementById('videoPreview');
+        const localVideo = document.getElementById('localVideo');
+        
+        // Track our setup state
+        let mediaStream = null;
+        let setupComplete = false;
+
+        // Start the setup process - using direct WebRTC rather than Daily.co
+        async function startSetup() {
+            setupButton.disabled = true;
+            updateStatus('Requesting camera and microphone access...', 'loading');
+            loadingDiv.style.display = 'block';
+            
+            try {
+                // Get user media directly with WebRTC
+                mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true, 
+                    audio: true 
+                });
+                
+                // Show the local video feed
+                localVideo.srcObject = mediaStream;
+                
+                // Store camera information
+                const videoTracks = mediaStream.getVideoTracks();
+                const audioTracks = mediaStream.getAudioTracks();
+                
+                const deviceInfo = {
+                    videoEnabled: videoTracks.length > 0,
+                    audioEnabled: audioTracks.length > 0,
+                    videoDeviceId: videoTracks.length > 0 ? videoTracks[0].id : null,
+                    audioDeviceId: audioTracks.length > 0 ? audioTracks[0].id : null,
+                    videoLabel: videoTracks.length > 0 ? videoTracks[0].label : null,
+                    audioLabel: audioTracks.length > 0 ? audioTracks[0].label : null
+                };
+                
+                // Store device info for the main page
+                localStorage.setItem('dialogueDeviceInfo', JSON.stringify(deviceInfo));
+                
+                // Update UI
+                setupComplete = true;
+                updateStatus('Camera and microphone are ready!', 'success');
+                loadingDiv.style.display = 'none';
+                setupButton.textContent = 'Continue to Dialogue';
+                setupButton.disabled = false;
+                setupButton.onclick = proceedToDialogue;
+                
+            } catch (error) {
+                console.error('Media access error:', error);
+                let errorMessage = 'Could not access camera or microphone.';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMessage = 'Permission denied. Please allow camera and microphone access.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage = 'No camera or microphone found on your device.';
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage = 'Camera or microphone is already in use by another application.';
+                }
+                
+                updateStatus(`Error: ${errorMessage}`, 'error');
+                setupButton.disabled = false;
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // Update the status message
+        function updateStatus(message, type = '') {
+            statusDiv.textContent = message;
+            statusDiv.className = 'status';
+            if (type) {
+                statusDiv.classList.add(type);
+            }
+        }
+
+        // Proceed to the main dialogue page
+        function proceedToDialogue() {
+            if (!setupComplete) {
+                updateStatus('Setup not complete. Please try again.', 'error');
+                return;
+            }
+            
+            // Stop all tracks to release the camera
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Redirect to the main dialogue page
+            window.location.href = 'dialogue-main.html';
+        }
+
+        // Set up initial button click handler
+        setupButton.addEventListener('click', startSetup);
+    </script>
+</body>
+</html>
