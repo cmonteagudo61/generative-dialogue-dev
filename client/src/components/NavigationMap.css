@@ -1,8 +1,8 @@
 .nav-map {
-  width: 51px;
-  min-width: 51px;
-  max-width: 51px;
-  flex: 0 0 51px;
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+  flex: 0 0 80px;
   flex-shrink: 0;
   flex-grow: 0;
   background-color: white;
@@ -10,16 +10,22 @@
   flex-direction: column;
   height: calc(50vh - 40px);
   border-right: 1px solid #ddd;
+  border-top: none;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 @media (max-width: 600px) {
   .nav-map {
-    width: 40px;
-    min-width: 40px;
-    max-width: 40px;
-    flex: 0 0 40px;
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    flex: 0 0 60px;
     flex-shrink: 0;
     flex-grow: 0;
+    margin: 0;
+    padding: 0;
   }
 }
 

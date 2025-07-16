@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 
 const DAILY_JS_URL = 'https://unpkg.com/@daily-co/daily-js@0.80.0';
 const ROOM_URL = 'https://generativedialogue.daily.co/ReactRoom';
@@ -24,7 +24,33 @@ export const VideoProvider = ({ children }) => {
   const [callObject, setCallObject] = useState(null);
   const [error, setError] = useState(null);
   const [dailyLoaded, setDailyLoaded] = useState(!!window.DailyIframe);
+  const [isConnected, setIsConnected] = useState(false);
   const callObjectRef = useRef(null);
+
+  // Create joinRoom function for external components
+  const joinRoom = useCallback(async (roomUrl) => {
+    if (!callObjectRef.current) {
+      throw new Error('Call object not initialized');
+    }
+    
+    // Check if already joined to avoid "already joined" error
+    const meetingState = callObjectRef.current.meetingState();
+    if (meetingState === 'joined-meeting') {
+      console.log('Already joined meeting, skipping join call');
+      return callObjectRef.current;
+    }
+    
+    try {
+      await callObjectRef.current.join({ 
+        url: roomUrl, 
+        userName: 'User ' + Math.floor(Math.random() * 1000) 
+      });
+      return callObjectRef.current;
+    } catch (error) {
+      console.error('Failed to join room:', error);
+      throw error;
+    }
+  }, []);
 
   // Load Daily.co script
   useEffect(() => {
@@ -53,21 +79,39 @@ export const VideoProvider = ({ children }) => {
     }
     callObjectRef.current = call;
     setCallObject(call);
-    call.join({ url: ROOM_URL, userName: 'User ' + Math.floor(Math.random() * 1000) });
+    // Don't auto-join - let PermissionSetup handle the initial join
+    // call.join({ url: ROOM_URL, userName: 'User ' + Math.floor(Math.random() * 1000) });
     const handleParticipants = () => {
       const all = call.participants();
       setParticipants(Object.values(all));
       setLocalParticipant(Object.values(all).find(p => p.local));
     };
-    const handleError = (e) => setError(e.errorMsg || 'Unknown error');
-    call.on('joined-meeting', handleParticipants);
+    const handleJoinedMeeting = () => {
+      console.log('📞 Daily.co: Joined meeting successfully');
+      setIsConnected(true);
+      handleParticipants();
+    };
+    const handleLeftMeeting = () => {
+      console.log('📞 Daily.co: Left meeting');
+      setIsConnected(false);
+      setParticipants([]);
+      setLocalParticipant(null);
+    };
+    const handleError = (e) => {
+      console.error('📞 Daily.co error:', e);
+      setError(e.errorMsg || 'Unknown error');
+    };
+    
+    call.on('joined-meeting', handleJoinedMeeting);
+    call.on('left-meeting', handleLeftMeeting);
     call.on('participant-joined', handleParticipants);
     call.on('participant-updated', handleParticipants);
     call.on('participant-left', handleParticipants);
     call.on('track-started', handleParticipants);
     call.on('error', handleError);
     return () => {
-      call.off('joined-meeting', handleParticipants);
+      call.off('joined-meeting', handleJoinedMeeting);
+      call.off('left-meeting', handleLeftMeeting);
       call.off('participant-joined', handleParticipants);
       call.off('participant-updated', handleParticipants);
       call.off('participant-left', handleParticipants);
@@ -109,7 +153,9 @@ export const VideoProvider = ({ children }) => {
       realParticipants: realParticipants, // NEW: Provide real participants count
       localParticipant: local, 
       callObject, 
-      error 
+      error,
+      isConnected,
+      joinRoom
     }}>
       {children}
     </VideoContext.Provider>

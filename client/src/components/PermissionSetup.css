@@ -1,0 +1,316 @@
+/* Permission Setup Styles */
+.permission-setup {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+}
+
+/* Development Footer Navigation */
+.permission-setup .dev-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: #e0e0e3; /* Match the video conference footer */
+    color: #3E4C71;
+    border-top: 1px solid #ccc;
+}
+
+.permission-setup .dev-footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 51px; /* Match the control-bar height */
+}
+
+.permission-setup .page-info {
+    display: flex;
+    align-items: center;
+}
+
+.permission-setup .page-indicator {
+    font-weight: 600;
+    color: #3E4C71;
+    font-size: 16px;
+    background: linear-gradient(90deg, #3E4C71, #E06D37);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.permission-setup .nav-controls {
+    display: flex;
+    gap: 0;
+    align-items: center;
+}
+
+/* Control button styling - matching BottomContentArea exactly */
+.permission-setup .control-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 8px;
+}
+
+.permission-setup .control-button:hover {
+    background-color: rgba(224, 109, 55, 0.15);
+}
+
+/* Enhanced styling for forward/backward buttons - matching BottomContentArea */
+.permission-setup #back-btn, 
+.permission-setup #forward-btn {
+    position: relative;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.permission-setup #back-btn:not(.active):not(:hover), 
+.permission-setup #forward-btn:not(.active):not(:hover) {
+    border: none !important;
+    background-color: transparent !important;
+}
+
+.permission-setup #back-btn:hover:not(.active), 
+.permission-setup #forward-btn:hover:not(.active) {
+    border: none !important;
+    background-color: rgba(224, 109, 55, 0.1) !important;
+}
+
+.permission-setup #back-btn.active, 
+.permission-setup #forward-btn.active {
+    border: none !important;
+    background-color: rgba(62, 76, 113, 0.2) !important;
+}
+
+.setup-container {
+    max-width: 600px;
+    width: 90%;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    text-align: center;
+    margin: 20px;
+}
+
+.logo-container {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    padding: 10px;
+    background-color: #3b405a;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+.permission-setup h1 {
+    color: #3b405a;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.permission-setup p {
+    margin-bottom: 25px;
+    line-height: 1.6;
+    color: #555;
+    font-size: 16px;
+}
+
+.video-preview {
+    width: 100%;
+    height: 300px;
+    background-color: #333;
+    margin: 20px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: #333;
+}
+
+.video-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2c3e50;
+    color: #ffffff;
+}
+
+.placeholder-text {
+    font-size: 16px;
+    color: #7f8c8d;
+}
+
+.status-container {
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #3b405a;
+    font-size: 14px;
+    text-align: left;
+}
+
+.status-container.error {
+    background-color: #fff5f5;
+    border-left-color: #e53e3e;
+    color: #e53e3e;
+}
+
+.status-container.success {
+    background-color: #f0fff4;
+    border-left-color: #38a169;
+    color: #38a169;
+}
+
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(59, 64, 90, 0.3);
+    border-radius: 50%;
+    border-top-color: #e17b43;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+.spinner-text {
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+@keyframes spin {
+    to { 
+        transform: rotate(360deg); 
+    }
+}
+
+.btn {
+    background-color: #3b405a;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    min-width: 200px;
+}
+
+.btn:hover {
+    background-color: #2d3142;
+}
+
+.btn:disabled {
+    background-color: #a0a0a0;
+    cursor: not-allowed;
+}
+
+.btn-icon {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .setup-container {
+        width: 95%;
+        padding: 20px;
+        margin: 10px;
+    }
+    
+    .video-preview {
+        height: 250px;
+    }
+    
+    .permission-setup h1 {
+        font-size: 20px;
+    }
+    
+    .permission-setup p {
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .setup-container {
+        width: 100%;
+        padding: 15px;
+        margin: 5px;
+        border-radius: 5px;
+    }
+    
+    .video-preview {
+        height: 200px;
+    }
+    
+    .logo-container {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .logo {
+        width: 40px;
+        height: 40px;
+    }
+} 

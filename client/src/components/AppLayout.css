@@ -5,6 +5,9 @@
   max-width: 100%;
   overflow: hidden;
   position: relative;
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 
 .header-section {
@@ -13,32 +16,58 @@
   background-color: #E6DDD2;
   border-bottom: 2px solid #E06D37;
   z-index: 20;
+  margin: 0;
+  padding: 0;
+  position: relative; /* Ensure proper positioning context */
 }
 
 .header-upper-row {
   display: flex;
   width: 100%;
-  height: 51px; /* Reduce to match original left nav proportions */
+  height: 80px; /* Increase to accommodate square logo */
   align-items: center;
+  margin: 0;
+  padding: 0;
+  border: none;
+  overflow: hidden; /* Prevent any child elements from overflowing */
+  box-sizing: border-box;
 }
 
 .logo-container {
-  width: 51px;
-  height: 51px;
+  width: 80px;
+  height: 80px; /* Make square - same as width */
   background-color: #393d54;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-right: 1px solid #2E334A;
-  flex: 0 0 51px !important;
+  border-right: 1px solid #ddd;
+  border-bottom: none;
+  border-radius: 0 !important; /* Sharp corners as requested */
+  flex: 0 0 80px !important;
   flex-shrink: 0 !important;
   flex-grow: 0 !important;
+  position: static; /* Remove relative positioning that was causing overflow */
+  box-sizing: border-box;
+  margin: 0 !important;
+  padding: 8px !important; /* More padding for square container */
+  overflow: hidden; /* Prevent content from extending beyond container */
+}
+
+.app-logo {
+  width: 64px; /* Square logo to fit within 80px container with padding */
+  height: 64px; /* Square logo - same as width */
+  max-width: calc(100% - 16px); /* Ensure it stays within container bounds */
+  max-height: calc(100% - 16px); /* Ensure it stays within container bounds */
+  object-fit: contain;
+  filter: brightness(1.1);
 }
 
 .top-nav {
   display: flex;
-  height: 51px;
-  flex: 1;
+  height: 80px; /* Match new header height */
+  flex: 1 1 auto; /* Allow growth but constrain with max-width */
+  max-width: 65vw; /* Constrain to 65% of viewport width on desktop */
+  min-width: 400px; /* Ensure minimum width for readability */
 }
 
 .header-info {
@@ -46,10 +75,10 @@
   align-items: center;
   justify-content: center;
   padding: 0 20px;
-  height: 51px; /* Match header height */
+  height: 80px; /* Match new header height */
   background-color: #d2d2d8;
-  width: 320px; /* Fixed width to prevent dancing */
-  flex: 0 0 320px; /* Don't grow or shrink */
+  min-width: 250px; /* Minimum width for title readability */
+  flex: 1; /* Grow to fill available space */
   border-left: 1px solid #c0c0c6;
 }
 
@@ -58,7 +87,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 16px;
-  height: 51px; /* Match header height */
+  height: 80px; /* Match new header height */
   background-color: #d2d2d8;
   width: 180px; /* Fixed width for participant counter */
   flex: 0 0 180px; /* Don't grow or shrink */
@@ -74,7 +103,7 @@
   color: #E06D37;
   font-weight: 600;
   letter-spacing: 0.5px;
-  font-size: 14px;
+  font-size: 22px; /* Increased to 22px for optimal readability */
   border-top: none;
   border-bottom: none;
   border-left: none;
@@ -134,6 +163,9 @@
   overflow: hidden;
   height: calc(100vh - 51px); /* Total height minus header only */
   max-height: calc(100vh - 51px); /* Ensure it never exceeds this */
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 
 /* Grid wrapper to contain both left nav and viewing area */
@@ -144,45 +176,15 @@
   min-height: 300px; /* Ensure minimum usable height */
   overflow: hidden; /* Keep the navigation container boundary */
   width: 100%; /* Ensure full width responsiveness */
+  position: relative; /* For precise alignment */
+  margin: 0; /* Remove all margins */
+  padding: 0; /* Remove all padding */
+  border: none; /* Remove any borders */
 }
 
-.left-nav {
-  width: 64px !important;
-  min-width: 64px !important;
-  max-width: 64px !important;
-  height: 100%; /* Fill the exact grid-wrapper height */
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid #ddd;
-  flex: 0 0 64px !important;
-  flex-shrink: 0 !important;
-  flex-grow: 0 !important;
-}
+/* Removed duplicate left-nav styles - using NavigationMap.css instead */
 
-.nav-item {
-  flex: 1;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #D9D9D9;
-  border-bottom: 1px solid #3E4C71;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: none;
-}
-.nav-item:last-child {
-  border-bottom: none;
-}
-.nav-item.active {
-  background-color: #3E4C71;
-  color: #fff;
-}
-.nav-item:hover:not(.active) {
-  background-color: #D07B47;
-}
+/* Removed duplicate nav-item styles - using NavigationMap.css instead */
 
 /* Viewing area */
 .viewing-area {
@@ -235,28 +237,49 @@
 }
 
 @media (max-width: 600px) {
-  .logo-container,
-  .left-nav {
-    width: 51px !important;
-    min-width: 51px !important;
-    max-width: 51px !important;
-    flex: 0 0 51px !important;
+  .logo-container {
+    width: 60px !important;
+    height: 60px !important; /* Make square on mobile too */
+    min-width: 60px !important;
+    max-width: 60px !important;
+    flex: 0 0 60px !important;
+    margin: 0 !important;
+    padding: 5px !important; /* Adjust padding for square mobile container */
+    border-radius: 0 !important; /* Sharp corners for mobile too */
+    position: static !important; /* Ensure proper positioning on mobile */
+    overflow: hidden !important; /* Prevent overflow on mobile */
   }
 
   .header-upper-row {
-    height: 51px;
+    height: 60px; /* Match square logo height on mobile */
   }
 
-  .header-info {
-    width: 250px;
-    flex: 0 0 250px;
+.header-info {
+    min-width: 180px; /* Smaller minimum on mobile */
+    height: 60px; /* Match new mobile header height */
+    flex: 1; /* Flexible on mobile too */
     padding: 0 12px;
   }
 
   .participant-counter-fixed {
     width: 140px;
+    height: 60px; /* Match new mobile header height */
     flex: 0 0 140px;
     padding: 0 8px;
+  }
+
+  .top-nav {
+    height: 60px; /* Match new mobile header height */
+    max-width: none; /* Remove desktop constraint on mobile */
+    min-width: auto; /* Remove minimum width on mobile */
+    flex: 1; /* Take available space on mobile for better fit */
+  }
+
+  .app-logo {
+    width: 50px; /* Square logo for mobile */
+    height: 50px; /* Square logo - same as width */
+    max-width: calc(100% - 10px); /* Account for mobile padding */
+    max-height: calc(100% - 10px); /* Account for mobile padding */
   }
 
   .two-line-title div {

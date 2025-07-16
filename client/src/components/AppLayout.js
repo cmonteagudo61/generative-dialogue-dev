@@ -29,7 +29,20 @@ const STAGE_TABS = [
   { key: 'harvest', label: 'HARVEST' },
 ];
 
-const AppLayout = ({ children, activeSize, viewMode, onSizeChange, participantCount, onLoopToggle }) => {
+const AppLayout = ({ 
+  children, 
+  activeSize, 
+  viewMode, 
+  onSizeChange, 
+  participantCount, 
+  onLoopToggle,
+  developmentMode,
+  canGoBack,
+  canGoForward,
+  onBack,
+  onForward,
+  currentPage
+}) => {
   const [activeTab, setActiveTab] = useState('discover');
 
   return (
@@ -38,7 +51,7 @@ const AppLayout = ({ children, activeSize, viewMode, onSizeChange, participantCo
       <header className="header-section">
         <div className="header-upper-row">
           <div className="logo-container">
-            <img src="/logo192.png" alt="Logo" style={{ width: 32, height: 32 }} />
+            <img src="/logo192.png" alt="Logo" className="app-logo" />
           </div>
           <nav className="top-nav">
             {STAGE_TABS.map(tab => (
@@ -87,7 +100,16 @@ const AppLayout = ({ children, activeSize, viewMode, onSizeChange, participantCo
         </div>
 
         {/* Bottom content area with tabs and control bar */}
-        <BottomContentArea participantCount={participantCount} onLoopToggle={onLoopToggle} />
+        <BottomContentArea 
+          participantCount={participantCount} 
+          onLoopToggle={onLoopToggle}
+          developmentMode={developmentMode}
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          onBack={onBack}
+          onForward={onForward}
+          currentPage={currentPage}
+        />
       </div>
     </div>
   );

@@ -27,11 +27,20 @@ import {
   loopHover
 } from '../assets/icons';
 
-const BottomContentArea = ({ participantCount = 1093, onLoopToggle }) => {
+const BottomContentArea = ({ 
+  participantCount = 1093, 
+  onLoopToggle,
+  developmentMode,
+  canGoBack,
+  canGoForward,
+  onBack,
+  onForward,
+  currentPage
+}) => {
   const [activeTab, setActiveTab] = useState('catalyst');
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
-  const [isInCall, setIsInCall] = useState(false);
+  const [isInCall, setIsInCall] = useState(true);
   const [totalTime, setTotalTime] = useState('01:30:00');
   const [segmentTime, setSegmentTime] = useState('00:00');
   const [voteState, setVoteState] = useState(null); // 'up', 'down', or null
@@ -125,26 +134,38 @@ const BottomContentArea = ({ participantCount = 1093, onLoopToggle }) => {
   };
 
   const handleBackClick = () => {
-    console.log('Back button clicked');
-    // Toggle between off and on states
-    const newBackState = backButtonState === 'on' ? 'off' : 'on';
-    setBackButtonState(newBackState);
-    
-    // If activating back button, deactivate forward button
-    if (newBackState === 'on') {
-      setForwardButtonState('off');
+    if (developmentMode && canGoBack && onBack) {
+      // Development mode: navigate to previous page
+      setBackButtonState('on');
+      onBack();
+      setTimeout(() => setBackButtonState('off'), 200);
+    } else {
+      // Normal mode: toggle button state
+      console.log('Back button clicked');
+      const newBackState = backButtonState === 'on' ? 'off' : 'on';
+      setBackButtonState(newBackState);
+      
+      if (newBackState === 'on') {
+        setForwardButtonState('off');
+      }
     }
   };
 
   const handleForwardClick = () => {
-    console.log('Forward button clicked');
-    // Toggle between off and on states
-    const newForwardState = forwardButtonState === 'on' ? 'off' : 'on';
-    setForwardButtonState(newForwardState);
-    
-    // If activating forward button, deactivate back button
-    if (newForwardState === 'on') {
-      setBackButtonState('off');
+    if (developmentMode && canGoForward && onForward) {
+      // Development mode: navigate to next page
+      setForwardButtonState('on');
+      onForward();
+      setTimeout(() => setForwardButtonState('off'), 200);
+    } else {
+      // Normal mode: toggle button state
+      console.log('Forward button clicked');
+      const newForwardState = forwardButtonState === 'on' ? 'off' : 'on';
+      setForwardButtonState(newForwardState);
+      
+      if (newForwardState === 'on') {
+        setBackButtonState('off');
+      }
     }
   };
 
@@ -466,8 +487,18 @@ const BottomContentArea = ({ participantCount = 1093, onLoopToggle }) => {
           </button>
         </div>
         
-        {/* Timer display */}
+        {/* Timer display and development page indicator */}
         <div className="timer-display">
+          {developmentMode && (
+            <div className="timer-cell">
+              <div className="timer-label">PAGE</div>
+              <div className="timer-value page-indicator-control">
+                {currentPage === 'landing' && 'Landing (1/3)'}
+                {currentPage === 'permission' && 'Permission (2/3)'}
+                {currentPage === 'video' && 'Video (3/3)'}
+              </div>
+            </div>
+          )}
           <div className="timer-cell">
             <div className="timer-label">TOTAL TIME</div>
             <div className="timer-value" id="total-time">{totalTime}</div>
@@ -484,46 +515,52 @@ const BottomContentArea = ({ participantCount = 1093, onLoopToggle }) => {
             id="back-btn" 
             className="control-button"
             onClick={handleBackClick}
-            onMouseEnter={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
+            onMouseEnter={() => (!developmentMode || canGoBack) && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
             onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
+            disabled={developmentMode && !canGoBack}
             style={{
-              backgroundColor: 'transparent', // Make background transparent to avoid conflicts
+              backgroundColor: 'transparent',
               border: 'none',
-              outline: 'none', // Remove focus ring
-              borderRadius: '50%', // Ensure circular shape
-              boxShadow: 'none' // Remove any box shadow
+              outline: 'none',
+              borderRadius: '50%',
+              boxShadow: 'none',
+              opacity: (developmentMode && !canGoBack) ? 0.4 : 1,
+              cursor: (developmentMode && !canGoBack) ? 'not-allowed' : 'pointer'
             }}
           >
             <img 
               src={getBackButtonIcon()} 
               alt="Back" 
-              style={{width: '34px', height: '34px'}} // Reduced from 36px to 34px (95%)
+              style={{width: '34px', height: '34px'}}
             />
           </button>
           <button 
             id="forward-btn" 
             className="control-button"
             onClick={handleForwardClick}
-            onMouseEnter={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
+            onMouseEnter={() => (!developmentMode || canGoForward) && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
             onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
+            disabled={developmentMode && !canGoForward}
             style={{
-              backgroundColor: 'transparent', // Make background transparent to avoid conflicts
+              backgroundColor: 'transparent',
               border: 'none',
-              outline: 'none', // Remove focus ring
-              borderRadius: '50%', // Ensure circular shape
-              boxShadow: 'none', // Remove any box shadow
-              overflow: 'hidden' // Hide any overflow from the SVG's white background
+              outline: 'none',
+              borderRadius: '50%',
+              boxShadow: 'none',
+              overflow: 'hidden',
+              opacity: (developmentMode && !canGoForward) ? 0.4 : 1,
+              cursor: (developmentMode && !canGoForward) ? 'not-allowed' : 'pointer'
             }}
           >
             <img 
               src={getForwardButtonIcon()} 
               alt="Forward" 
               style={{
-                width: '34px', // Reduced from 36px to 34px (95%)
-                height: '34px', // Reduced from 36px to 34px (95%)
-                borderRadius: '50%', // Make the image itself circular
-                objectFit: 'cover', // Ensure the image fits properly
-                display: 'block' // Remove any inline spacing
+                width: '34px',
+                height: '34px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                display: 'block'
               }}
             />
           </button>

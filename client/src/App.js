@@ -5,37 +5,66 @@ import './App.css';
 // Import components
 import GenerativeDialogue from './components/GenerativeDialogue';
 import LandingPage from './components/LandingPage';
+import PermissionSetup from './components/PermissionSetup';
+import { VideoProvider } from './components/VideoProvider';
 
 function App() {
-  const [showLandingPage, setShowLandingPage] = useState(true);
+  const [currentPage, setCurrentPage] = useState('landing');
 
   // Check if user has already completed setup in this session
   useEffect(() => {
     const deviceInfo = localStorage.getItem('dialogueDeviceInfo');
     const sessionSetupComplete = sessionStorage.getItem('setupComplete');
     
-    // If user has completed setup in this session, skip landing page
+    // If user has completed setup in this session, skip to video conference
     if (sessionSetupComplete === 'true' && deviceInfo) {
-      setShowLandingPage(false);
+      setCurrentPage('videoconference');
     }
   }, []);
+
+  const handleContinueToPermissions = () => {
+    setCurrentPage('permissions');
+  };
 
   const handleSetupComplete = () => {
     // Mark setup as complete for this session
     sessionStorage.setItem('setupComplete', 'true');
-    setShowLandingPage(false);
+    setCurrentPage('videoconference');
+  };
+
+  const renderCurrentPage = () => {
+    const pages = ['landing', 'permissions', 'videoconference'];
+    const currentIndex = pages.indexOf(currentPage);
+    
+    const navigationProps = {
+      currentPage,
+      currentIndex,
+      totalPages: pages.length,
+      canGoBack: currentIndex > 0,
+      canGoForward: currentIndex < pages.length - 1,
+      onBack: () => currentIndex > 0 && setCurrentPage(pages[currentIndex - 1]),
+      onForward: () => currentIndex < pages.length - 1 && setCurrentPage(pages[currentIndex + 1]),
+      developmentMode: true
+    };
+
+    switch (currentPage) {
+      case 'landing':
+        return <LandingPage onContinue={handleContinueToPermissions} {...navigationProps} />;
+      case 'permissions':
+        return <PermissionSetup onSetupComplete={handleSetupComplete} {...navigationProps} />;
+      case 'videoconference':
+        return <GenerativeDialogue {...navigationProps} />;
+      default:
+        return <LandingPage onContinue={handleContinueToPermissions} {...navigationProps} />;
+    }
   };
 
   return (
     <Router>
       <div className="App">
-        {showLandingPage ? (
-          <LandingPage onSetupComplete={handleSetupComplete} />
-        ) : (
-          <Routes>
-            <Route path="/" element={<GenerativeDialogue />} />
-          </Routes>
-        )}
+        <VideoProvider>
+          {renderCurrentPage()}
+        </VideoProvider>
       </div>
     </Router>
   );

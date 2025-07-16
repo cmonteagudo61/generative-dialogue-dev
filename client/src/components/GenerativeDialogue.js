@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { VideoProvider, useVideo } from './VideoProvider';
+import { useVideo } from './VideoProvider';
 import VideoGrid from './video/VideoGrid';
 import AppLayout from './AppLayout';
 import '../App.css';
@@ -25,7 +25,16 @@ const getLayoutFromView = (activeView) => {
   }
 };
 
-const GenerativeDialogueInner = () => {
+const GenerativeDialogueInner = ({ 
+  canGoBack,
+  canGoForward, 
+  onBack,
+  onForward,
+  currentPage,
+  currentIndex,
+  totalPages,
+  developmentMode
+}) => {
   // Start with community view to test loop
   const [activeView, setActiveView] = useState('all');
   // Pre-select 6 participants for fishbowl demo
@@ -61,6 +70,12 @@ const GenerativeDialogueInner = () => {
       onSizeChange={handleViewChange}
       participantCount={participantCount}
       onLoopToggle={handleLoopToggle}
+      developmentMode={developmentMode}
+      canGoBack={canGoBack}
+      canGoForward={canGoForward}
+      onBack={onBack}
+      onForward={onForward}
+      currentPage={currentPage}
     >
       <VideoGrid 
         participants={participants} 
@@ -75,10 +90,6 @@ const GenerativeDialogueInner = () => {
   );
 };
 
-const GenerativeDialogue = () => (
-  <VideoProvider>
-    <GenerativeDialogueInner />
-  </VideoProvider>
-);
+const GenerativeDialogue = (props) => <GenerativeDialogueInner {...props} />;
 
 export default GenerativeDialogue; 

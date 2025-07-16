@@ -5,6 +5,7 @@ import {
   DefaultGrey
 } from '../../assets/icons';
 import './CommunityViewExperimental.css';
+import LoopMagnifier from './LoopMagnifier';
 
 // Constants moved to inside component to avoid duplication
 
@@ -16,34 +17,7 @@ const randomAvatar = (i) => {
   return `${baseUrl}${type}/${id}.jpg`;
 };
 
-// Helper to get grid config for each view mode
-function getGridConfig(viewMode, count) {
-  switch (viewMode) {
-    case 'self':
-    case 'individual':
-      return { rows: 1, cols: 1 };
-    case 'dyad':
-      return { rows: 1, cols: 2 };
-    case 'triad':
-      return { rows: 1, cols: 3 };
-    case 'quad':
-      return { rows: 2, cols: 2 };
-    case 'kiva':
-      return { rows: 2, cols: 3 };
-    case 'community': {
-      // For community, try to fill as square as possible
-      const cols = Math.ceil(Math.sqrt(count));
-      const rows = Math.ceil(count / cols);
-      return { rows, cols };
-    }
-    default: {
-      // Fallback: try to fill as square as possible
-      const cols = Math.ceil(Math.sqrt(count));
-      const rows = Math.ceil(count / cols);
-      return { rows, cols };
-    }
-  }
-}
+
 
 const CommunityViewExperimental = ({ 
   participants = [], 
@@ -55,17 +29,186 @@ const CommunityViewExperimental = ({
   magnifierSize = 200,
   forceUpdate = 0,
   onCenterParticipantChange = null,
-  onParticipantArrayReady = null // NEW: Callback to send participant array to magnifier
+  onParticipantArrayReady = null, // NEW: Callback to send participant array to magnifier
+  mockParticipantCount = 500 // For development: scroll testing (12 real + 488 mock = 500 total)
 }) => {
   // State declarations must come first
   const gridRef = useRef(null);
   const scrollWrapperRef = useRef(null);
   const [gridStyle, setGridStyle] = useState({});
   const [debugInfo, setDebugInfo] = useState({});
-  const [mockParticipantCount, setMockParticipantCount] = useState(300);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 50 });
-  const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
-  const [isInitialized, setIsInitialized] = useState(false);
+
+  // FLICKERING FIX: Create stable refs for video elements with throttling
+  const videoRefs = useRef(new Map());
+  const resizeObservers = useRef(new Map());
+  const trackStates = useRef(new Map());
+  const videoUpdateTimers = useRef(new Map()); // Throttle video updates
+
+  // Accept both array and object - MOVED UP to fix dependency order
+  const realParticipants = Array.isArray(participants)
+    ? participants
+    : Object.values(participants);
+
+  // FLICKERING FIX: Enhanced stable video ref handler with Daily.co specific optimizations
+  const createVideoRef = useCallback((sessionId) => {
+    return (el) => {
+      if (!el) {
+        // Cleanup when element is unmounted
+        videoRefs.current.delete(sessionId);
+        trackStates.current.delete(sessionId);
+        
+        // Cleanup ResizeObserver
+        const observer = resizeObservers.current.get(sessionId);
+        if (observer) {
+          observer.disconnect();
+          resizeObservers.current.delete(sessionId);
+        }
+        return;
+      }
+
+      // Store the video element
+      videoRefs.current.set(sessionId, el);
+      
+      // Find participant (use closure to avoid dependency on realParticipants)
+      const participant = participantArray.find(p => p.session_id === sessionId);
+      if (!participant) return;
+
+      // Enhanced Daily.co track handling
+      const track = participant.tracks?.video?.persistentTrack;
+      const currentTrackState = trackStates.current.get(sessionId);
+      
+      // More robust track comparison - check multiple properties
+      const trackChanged = !currentTrackState || 
+                          (track?.id !== currentTrackState.trackId) ||
+                          (track?.enabled !== currentTrackState.enabled) ||
+                          (track?.readyState !== currentTrackState.readyState);
+      
+             if (track && trackChanged) {
+         // Throttle video updates to prevent excessive flickering
+         const existingTimer = videoUpdateTimers.current.get(sessionId);
+         if (existingTimer) {
+           clearTimeout(existingTimer);
+         }
+         
+         const timer = setTimeout(() => {
+           // Only update if track actually changed and element still exists
+           const currentEl = videoRefs.current.get(sessionId);
+           if (currentEl && track) {
+             const newMediaStream = new window.MediaStream([track]);
+             if (currentEl.srcObject !== newMediaStream) {
+               currentEl.srcObject = newMediaStream;
+             }
+             
+             // Store enhanced track state
+             trackStates.current.set(sessionId, {
+               trackId: track.id,
+               enabled: track.enabled,
+               readyState: track.readyState,
+               lastUpdate: Date.now()
+             });
+             
+                           // Reduced logging for performance (500 participants)
+              if (Math.random() < 0.02) { // Only log 2% of updates for 500 participants
+                console.log('🎥 Video track updated (throttled) for', sessionId, {
+                  trackId: track.id,
+                  enabled: track.enabled,
+                  readyState: track.readyState
+                });
+              }
+           }
+           videoUpdateTimers.current.delete(sessionId);
+         }, 50); // 50ms throttle to prevent rapid fire updates
+         
+         videoUpdateTimers.current.set(sessionId, timer);
+       } else if (!track && currentTrackState) {
+         // Remove track immediately (no throttling for removal)
+         el.srcObject = null;
+         trackStates.current.delete(sessionId);
+         
+         // Clear any pending update
+         const existingTimer = videoUpdateTimers.current.get(sessionId);
+         if (existingTimer) {
+           clearTimeout(existingTimer);
+           videoUpdateTimers.current.delete(sessionId);
+         }
+         
+                   // Reduced logging for performance (500 participants)
+          if (Math.random() < 0.02) { // Only log 2% of removals for 500 participants
+            console.log('🎥 Video track removed for', sessionId);
+          }
+       }
+    };
+  }, []); // Remove realParticipants dependency to prevent recreation
+
+  // FLICKERING FIX: Move ResizeObserver to useEffect for proper lifecycle management
+  useEffect(() => {
+    if (typeof ResizeObserver === 'undefined') return;
+
+    realParticipants.forEach(participant => {
+      const sessionId = participant.session_id;
+      const videoElement = videoRefs.current.get(sessionId);
+      
+      if (videoElement && !resizeObservers.current.has(sessionId)) {
+        const resizeObserver = new ResizeObserver((entries) => {
+          // Throttle ResizeObserver to prevent excessive calls
+          setTimeout(() => {
+            for (let _entry of entries) {
+              const currentEl = videoRefs.current.get(sessionId);
+              if (currentEl) {
+                currentEl.style.width = '100%';
+                currentEl.style.height = '100%';
+                currentEl.style.objectFit = 'cover';
+                currentEl.style.position = 'absolute';
+                currentEl.style.top = '0';
+                currentEl.style.left = '0';
+              }
+            }
+          }, 16); // ~60fps throttle for smooth but not excessive updates
+        });
+        
+        const container = videoElement.parentElement;
+        if (container) {
+          resizeObserver.observe(container);
+          resizeObservers.current.set(sessionId, resizeObserver);
+        }
+      }
+    });
+
+    // Cleanup observers for participants that no longer exist
+    const currentSessionIds = new Set(realParticipants.map(p => p.session_id));
+    for (const [sessionId, observer] of resizeObservers.current.entries()) {
+      if (!currentSessionIds.has(sessionId)) {
+        observer.disconnect();
+        resizeObservers.current.delete(sessionId);
+      }
+    }
+  }, [realParticipants]);
+
+  // FLICKERING FIX: Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Copy ref values to avoid exhaustive-deps warning
+      const observers = resizeObservers.current;
+      const videos = videoRefs.current;
+      const tracks = trackStates.current;
+      const timers = videoUpdateTimers.current;
+      
+      // Cleanup all timers first
+      for (const timer of timers.values()) {
+        clearTimeout(timer);
+      }
+      timers.clear();
+      
+      // Cleanup all ResizeObservers
+      for (const observer of observers.values()) {
+        observer.disconnect();
+      }
+      observers.clear();
+      videos.clear();
+      tracks.clear();
+    };
+  }, []);
 
   // Debug logging for centerMousePosition
   useEffect(() => {
@@ -78,16 +221,14 @@ const CommunityViewExperimental = ({
 
   // Constants
   const MIN_SIZE = 60;
-  const MAX_SIZE = 200;
-  const SPACING = 8;
 
-  // Accept both array and object
-  const realParticipants = Array.isArray(participants)
-    ? participants
-    : Object.values(participants);
+
 
   // Generate mock participants for testing (ensure we have enough to test)
   const generateMockParticipants = (count) => {
+    const firstNames = ["Alex", "Jordan", "Casey", "Morgan", "Taylor", "Riley", "Avery", "Quinn", "Sage", "Cameron"];
+    const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez"];
+    
     return Array.from({ length: count }, (_, i) => {
       // Test long names for first 3 participants
       let userName;
@@ -97,6 +238,9 @@ const CommunityViewExperimental = ({
         userName = "Professor Christopher Montgomery-Smith III";
       } else if (i === 2) {
         userName = "Maria Elena Rodriguez-Gonzalez de la Cruz";
+      } else if (i < 20) {
+        // More realistic test names for first 20
+        userName = `${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}`;
       } else {
         userName = `User ${realParticipants.length + i + 1}`;
       }
@@ -127,6 +271,15 @@ const CommunityViewExperimental = ({
     // For demo/testing: add mock participants based on controlled count
     const mockCount = Math.max(0, mockParticipantCount - realParticipants.length);
     const mockParticipants = generateMockParticipants(mockCount);
+    
+    console.log('📜 Scroll Test - Participant Array:', {
+      realCount: realParticipants.length,
+      mockParticipantCount,
+      mockCount,
+      mockGenerated: mockParticipants.length,
+      totalParticipants: realParticipants.length + mockParticipants.length,
+      testingMode: 'SCROLL_TESTING_500_PARTICIPANTS'
+    });
     
     return [...realParticipants, ...mockParticipants];
   }, [participants, mockParticipantCount]);
@@ -263,7 +416,7 @@ const CommunityViewExperimental = ({
     let resizeObserver;
     if (scrollWrapperRef.current && typeof ResizeObserver !== 'undefined') {
       resizeObserver = new ResizeObserver((entries) => {
-        for (let entry of entries) {
+        for (let _entry of entries) {
           // Trigger resize when the scroll wrapper size changes
           throttledResize();
         }
@@ -484,40 +637,7 @@ const CommunityViewExperimental = ({
           >
             {hasVideo ? (
               <video
-                ref={(el) => {
-                  if (el) {
-                    const track = participant.tracks?.video?.persistentTrack;
-                    if (track) {
-                      el.srcObject = new window.MediaStream([track]);
-                    }
-                    
-                    if (typeof ResizeObserver !== 'undefined') {
-                      const resizeObserver = new ResizeObserver(entries => {
-                        for (let _entry of entries) {
-                          if (el) {
-                            el.style.width = '100%';
-                            el.style.height = '100%';
-                            el.style.objectFit = 'cover';
-                            el.style.position = 'absolute';
-                            el.style.top = '0';
-                            el.style.left = '0';
-                          }
-                        }
-                      });
-                      
-                      const container = el.parentElement;
-                      if (container) {
-                        resizeObserver.observe(container);
-                      }
-                      
-                      el._resizeObserverCleanup = () => resizeObserver.disconnect();
-                    }
-                  } else {
-                    if (el && el._resizeObserverCleanup) {
-                      el._resizeObserverCleanup();
-                    }
-                  }
-                }}
+                ref={createVideoRef(participant.session_id)}
                 autoPlay
                 playsInline
                 muted={participant.local}
@@ -637,7 +757,13 @@ const CommunityViewExperimental = ({
   };
 
   return (
-    <>
+    <LoopMagnifier
+      isActive={isMagnifierActive}
+      magnification={2.5}
+      size={magnifierSize}
+      participantArray={participantArray}
+      feedSize={MIN_SIZE}
+    >
       <style>{`
         .experimental-community-container {
           position: relative !important;
@@ -827,7 +953,7 @@ const CommunityViewExperimental = ({
           {renderParticipants()}
         </div>
       </div>
-    </>
+    </LoopMagnifier>
   );
 };
 

@@ -9,6 +9,41 @@
   background-color: white;
   margin: 0; /* Remove any margin */
   padding: 0; /* Remove any padding */
+  text-align: left; /* Ensure left alignment by default */
+}
+
+/* Force left alignment for all content elements */
+.bottom-content-area p,
+.bottom-content-area h1,
+.bottom-content-area h2,
+.bottom-content-area h3,
+.bottom-content-area h4,
+.bottom-content-area h5,
+.bottom-content-area h6,
+.bottom-content-area div,
+.bottom-content-area span,
+.bottom-content-area li,
+.bottom-content-area ol,
+.bottom-content-area ul {
+  text-align: left !important;
+}
+
+/* Specific overrides for content areas that need strong left alignment */
+.guiding-question,
+.dialogue-instructions,
+.summary-content,
+.voice-card,
+.voice-quote,
+.theme-tags {
+  text-align: left !important;
+}
+
+/* Preserve center alignment only for UI controls */
+.timer-cell,
+.transcription-control-btn,
+.transcription-status,
+.vote-btn {
+  text-align: center !important;
 }
 
 /* Tab folder area */
@@ -19,7 +54,7 @@
   overflow: hidden;
   position: relative;
   margin-left: -64px; /* Extend to the left edge */
-  padding-left: 64px; /* Add padding to offset content */
+  padding-left: 88px; /* Slightly more than 80px nav to avoid text overlap */
   box-sizing: border-box;
   width: calc(100% + 64px); /* Make sure it takes full width */
   background-color: white; /* Ensure white background */
@@ -72,7 +107,7 @@
   position: relative;
   z-index: 1;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 22px; /* Increased from 20px to 22px */
   color: #555; /* Dark grey text */
   transition: all 0.15s ease;
 }
@@ -95,12 +130,13 @@
   overflow-y: auto;
   background-color: white;
   border-top: 1px solid #ccc;
-  padding: 20px;
+  padding: 20px 20px 20px 8px; /* Reduced left padding from 20px to 8px */
   line-height: 1.5;
   text-align: left;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  font-size: 18px; /* Added base font size for content */
 }
 
 /* Content sections */
@@ -108,8 +144,29 @@
   height: 100%;
   overflow-y: auto;
   width: 100%;
-  text-align: left;
+  text-align: left !important;
   align-self: flex-start;
+  font-size: 18px; /* Increased base content font size */
+}
+
+/* Ensure all content within sections is left-aligned */
+.content-section * {
+  text-align: left !important;
+}
+
+/* Override any inherited center alignment */
+#catalystContent,
+#dialogueContent,
+#summaryContent,
+#weContent {
+  text-align: left !important;
+}
+
+#catalystContent *,
+#dialogueContent *,
+#summaryContent *,
+#weContent * {
+  text-align: left !important;
 }
 
 /* Enhanced styling for dialogue tab with transcription functionality */
@@ -124,15 +181,32 @@
 .dialogue-section {
   max-width: 800px;
   margin: 0;
-  text-align: left;
+  text-align: left !important;
+}
+
+.dialogue-section p,
+.dialogue-section h1,
+.dialogue-section h2,
+.dialogue-section h3,
+.dialogue-section h4,
+.dialogue-section h5,
+.dialogue-section h6,
+.dialogue-section div,
+.dialogue-section span,
+.dialogue-section li,
+.dialogue-section ol,
+.dialogue-section ul,
+.dialogue-section strong {
+  text-align: left !important;
 }
 
 .dialogue-title {
   color: #3E4C71;
-  font-size: 18px;
+  font-size: 22px; /* Increased from 18px to 22px */
   font-weight: 600;
   margin-bottom: 16px;
   margin-top: 0;
+  text-align: left;
 }
 
 .dialogue-instructions {
@@ -141,22 +215,36 @@
   border-radius: 6px;
   margin: 16px 0;
   border-left: 4px solid #3E4C71;
+  text-align: left;
+  overflow-y: auto;
+  max-height: 300px; /* Add max height with scrolling for longer content */
 }
 
 .dialogue-instructions h4 {
   margin-top: 0;
   margin-bottom: 12px;
   color: #3E4C71;
-  font-size: 16px;
+  font-size: 20px; /* Increased from 16px to 20px */
+  text-align: left;
 }
 
 .dialogue-instructions ol {
   margin: 12px 0;
   padding-left: 20px;
+  font-size: 18px; /* Added font size for list items */
+  text-align: left;
 }
 
 .dialogue-instructions li {
   margin-bottom: 4px;
+  text-align: left;
+}
+
+.dialogue-instructions p {
+  font-size: 18px; /* Added font size for paragraphs */
+  text-align: left;
+  margin: 12px 0;
+  line-height: 1.6;
 }
 
 .guiding-question {
@@ -165,13 +253,18 @@
   border-radius: 6px;
   margin: 16px 0;
   border-left: 4px solid #2196F3;
-  font-size: 16px;
+  font-size: 20px; /* Increased from 16px to 20px */
+  text-align: left;
+  overflow-y: auto;
+  max-height: 200px; /* Add max height with scrolling */
 }
 
 /* Transcription styling */
 .transcription p {
   margin: 12px 0;
   line-height: 1.6;
+  font-size: 18px; /* Added font size */
+  text-align: left;
 }
 
 .transcription strong {
@@ -201,7 +294,8 @@
 .summary-title {
   font-weight: 600;
   color: #3E4C71;
-  font-size: 16px;
+  font-size: 20px; /* Increased from 16px to 20px */
+  text-align: left;
 }
 
 .ai-tag {
@@ -209,7 +303,7 @@
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 14px; /* Increased from 12px to 14px */
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -217,11 +311,16 @@
 
 .summary-content {
   padding: 16px 20px;
+  text-align: left;
+  overflow-y: auto;
+  max-height: 400px; /* Add max height with scrolling for longer content */
 }
 
 .summary-content p {
   margin: 12px 0;
   line-height: 1.6;
+  font-size: 20px; /* Increased from ~16px to 20px */
+  text-align: left;
 }
 
 .summary-content strong {
@@ -241,6 +340,8 @@
 .vote-controls span {
   font-weight: 500;
   color: #555;
+  font-size: 18px; /* Added font size */
+  text-align: left;
 }
 
 .vote-btn {
@@ -253,7 +354,7 @@
   padding: 8px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 14px;
+  font-size: 18px; /* Increased from 14px to 18px */
   color: #555;
 }
 
@@ -269,36 +370,45 @@
   padding: 16px;
   margin-bottom: 16px;
   border-radius: 6px;
+  text-align: left;
+  overflow-y: auto;
+  max-height: 300px; /* Add max height with scrolling for longer content */
 }
 
 .voice-speaker {
   font-weight: 600;
   color: #3E4C71;
   margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 18px; /* Increased from 14px to 18px */
+  text-align: left;
 }
 
 .voice-quote {
   line-height: 1.6;
   font-style: italic;
   color: #333;
+  font-size: 18px; /* Added font size */
+  text-align: left;
 }
 
 /* Theme tags */
 .theme-tags {
   margin-top: 24px;
+  text-align: left;
 }
 
 .theme-tags h4 {
   margin-bottom: 12px;
   color: #3E4C71;
-  font-size: 16px;
+  font-size: 20px; /* Increased from 16px to 20px */
+  text-align: left;
 }
 
 .theme-tags > div {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  text-align: left;
 }
 
 .theme-tag {
@@ -306,7 +416,7 @@
   color: #2196F3;
   padding: 6px 12px;
   border-radius: 16px;
-  font-size: 12px;
+  font-size: 14px; /* Increased from 12px to 14px */
   font-weight: 500;
   border: 1px solid #bbdefb;
 }
@@ -368,7 +478,7 @@
 }
 
 .timer-label {
-  font-size: 11px;
+  font-size: 14px; /* Increased from 11px to 14px */
   opacity: 0.8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -376,9 +486,17 @@
 }
 
 .timer-value {
-  font-size: 16px;
+  font-size: 20px; /* Increased from 16px to 20px */
   font-weight: 600;
   color: #3E4C71;
+}
+
+.page-indicator-control {
+  background: linear-gradient(90deg, #3E4C71, #E06D37);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
 }
 
 /* Spin animation for loading states */
@@ -394,9 +512,9 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .tab-area {
-    margin-left: -51px; /* Adjust for smaller nav width */
-    padding-left: 51px;
-    width: calc(100% + 51px);
+    margin-left: -60px; /* Adjust for updated mobile nav width (60px) */
+    padding-left: 68px; /* 60px nav + 8px gap */
+    width: calc(100% + 60px);
   }
   
   .tab-navigation {
@@ -405,11 +523,16 @@
   
   .tab-btn {
     padding: 8px 16px;
-    font-size: 13px;
+    font-size: 18px; /* Increased from 13px to 18px for mobile */
   }
   
   .tab-content {
-    padding: 16px;
+    padding: 16px 16px 16px 6px; /* Reduced left padding from 16px to 6px */
+    font-size: 16px; /* Increased base font for mobile */
+  }
+  
+  .content-section {
+    font-size: 16px; /* Increased for mobile */
   }
   
   .control-bar {
@@ -421,11 +544,27 @@
   }
   
   .timer-label {
-    font-size: 10px;
+    font-size: 12px; /* Increased from 10px to 12px for mobile */
   }
   
   .timer-value {
-    font-size: 14px;
+    font-size: 18px; /* Increased from 14px to 18px for mobile */
+  }
+  
+  .dialogue-title {
+    font-size: 20px; /* Adjusted for mobile */
+  }
+  
+  .summary-title {
+    font-size: 18px; /* Adjusted for mobile */
+  }
+  
+  .voice-speaker {
+    font-size: 16px; /* Adjusted for mobile */
+  }
+  
+  .vote-btn {
+    font-size: 16px; /* Adjusted for mobile */
   }
 }
 
@@ -434,7 +573,7 @@
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 16px; /* Increased from 14px to 16px */
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -482,7 +621,7 @@
 }
 
 .transcription-status {
-  font-size: 12px;
+  font-size: 14px; /* Increased from 12px to 14px */
   font-weight: 500;
   padding: 4px 8px;
   border-radius: 4px;

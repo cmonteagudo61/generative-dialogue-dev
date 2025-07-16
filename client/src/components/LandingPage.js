@@ -1,159 +1,196 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import './LandingPage.css';
+import {
+  directionBackwardOff,
+  directionBackwardOn,
+  directionBackwardHover,
+  directionForwardOff,
+  directionForwardOn,
+  directionForwardHover
+} from '../assets/icons';
 
-const LandingPage = ({ onSetupComplete }) => {
-    const [status, setStatus] = useState({ message: 'Ready to begin setup. Click the button below to start.', type: '' });
-    const [isLoading, setIsLoading] = useState(false);
-    const [isSetupComplete, setIsSetupComplete] = useState(false);
-    const [setupInProgress, setSetupInProgress] = useState(false);
-    const videoRef = useRef(null);
-    const mediaStreamRef = useRef(null);
+const LandingPage = ({ 
+  onContinue, 
+  developmentMode, 
+  canGoBack, 
+  canGoForward, 
+  onBack, 
+  onForward, 
+  currentPage 
+}) => {
+  const [backButtonState, setBackButtonState] = useState('off');
+  const [forwardButtonState, setForwardButtonState] = useState('off');
 
-    const updateStatus = (message, type = '') => {
-        setStatus({ message, type });
-    };
+  const getBackButtonIcon = () => {
+    switch (backButtonState) {
+      case 'on': return directionBackwardOn;
+      case 'hover': return directionBackwardHover;
+      default: return directionBackwardOff;
+    }
+  };
 
-    const startSetup = async () => {
-        if (setupInProgress) return;
+  const getForwardButtonIcon = () => {
+    switch (forwardButtonState) {
+      case 'on': return directionForwardOn;
+      case 'hover': return directionForwardHover;
+      default: return directionForwardOff;
+    }
+  };
 
-        setSetupInProgress(true);
-        updateStatus('Requesting camera and microphone access...', '');
-        setIsLoading(true);
+  const handleBackClick = () => {
+    if (canGoBack && onBack) {
+      setBackButtonState('on');
+      onBack();
+      setTimeout(() => setBackButtonState('off'), 200);
+    }
+  };
 
-        try {
-            // Request camera and microphone access
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: true
-            });
+  const handleForwardClick = () => {
+    if (canGoForward && onForward) {
+      setForwardButtonState('on');
+      onForward();
+      setTimeout(() => setForwardButtonState('off'), 200);
+    }
+  };
 
-            mediaStreamRef.current = stream;
-
-            // Display video preview
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-            }
-
-            // Get device information
-            const videoTracks = stream.getVideoTracks();
-            const audioTracks = stream.getAudioTracks();
-
-            const deviceInfo = {
-                videoEnabled: videoTracks.length > 0,
-                audioEnabled: audioTracks.length > 0,
-                videoDeviceId: videoTracks.length > 0 ? videoTracks[0].id : null,
-                audioDeviceId: audioTracks.length > 0 ? audioTracks[0].id : null,
-                videoLabel: videoTracks.length > 0 ? videoTracks[0].label : null,
-                audioLabel: audioTracks.length > 0 ? audioTracks[0].label : null
-            };
-
-            // Store device info
-            localStorage.setItem('dialogueDeviceInfo', JSON.stringify(deviceInfo));
-
-            setIsSetupComplete(true);
-            updateStatus('Camera and microphone are ready!', 'success');
-            setIsLoading(false);
-
-        } catch (error) {
-            console.error('Media access error:', error);
-            let errorMessage = 'Could not access camera or microphone.';
-
-            if (error.name === 'NotAllowedError') {
-                errorMessage = 'Permission denied. Please allow camera and microphone access.';
-            } else if (error.name === 'NotFoundError') {
-                errorMessage = 'No camera or microphone found on your device.';
-            } else if (error.name === 'NotReadableError') {
-                errorMessage = 'Camera or microphone is already in use by another application.';
-            }
-
-            updateStatus(`Error: ${errorMessage}`, 'error');
-            setIsLoading(false);
-            setSetupInProgress(false);
-        }
-    };
-
-    const proceedToDialogue = () => {
-        if (!isSetupComplete) {
-            updateStatus('Setup not complete. Please try again.', 'error');
-            return;
-        }
-
-        // Stop all tracks to release the camera
-        if (mediaStreamRef.current) {
-            mediaStreamRef.current.getTracks().forEach(track => track.stop());
-        }
-
-        // Call the parent callback to proceed to the main app
-        if (onSetupComplete) {
-            onSetupComplete();
-        }
-    };
-
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            if (mediaStreamRef.current) {
-                mediaStreamRef.current.getTracks().forEach(track => track.stop());
-            }
-        };
-    }, []);
-
-    return (
-        <div className="landing-page">
-            <div className="setup-container">
-                <div className="logo-container">
-                    <img 
-                        src="./images/EarthLogoSmallTransparent.png" 
-                        alt="Generative Dialogue Logo" 
-                        className="logo"
-                    />
-                </div>
-
-                <h1>Welcome to Generative Dialogue</h1>
-
-                <p>Before joining the dialogue, let's set up your camera and microphone to ensure everything works properly.</p>
-
-                <div className={`status-container ${status.type}`}>
-                    {status.message}
-                </div>
-
-                <div className="video-preview">
-                    <video 
-                        ref={videoRef}
-                        autoPlay 
-                        muted 
-                        playsInline
-                        className="preview-video"
-                    />
-                    {!mediaStreamRef.current && (
-                        <div className="video-placeholder">
-                            <div className="placeholder-text">Video preview will appear here</div>
-                        </div>
-                    )}
-                </div>
-
-                {isLoading && (
-                    <div className="loading-spinner">
-                        <div className="spinner"></div>
-                        <div className="spinner-text">Setting up your connection...</div>
-                    </div>
-                )}
-
-                <button 
-                    className="btn"
-                    onClick={isSetupComplete ? proceedToDialogue : startSetup}
-                    disabled={setupInProgress && !isSetupComplete}
-                >
-                    <img 
-                        src="/src/assets/icons/camera-on.svg" 
-                        alt="Camera" 
-                        className="btn-icon"
-                    />
-                    {isSetupComplete ? 'Continue to Dialogue' : 'Set Up Camera & Microphone'}
-                </button>
+  return (
+    <div className="landing-page">
+      <div className="landing-container">
+        <header className="landing-header">
+          <div className="header-content">
+            <div className="logo-container">
+              <img 
+                src="/images/EarthLogoSmallTransparent.png" 
+                alt="Generative Dialogue Logo" 
+                className="actual-logo"
+              />
             </div>
+            <h1 className="main-title">GENERATIVE DIALOGUE</h1>
+          </div>
+        </header>
+        
+        <main className="landing-content">
+          <div className="hero-image-container">
+            <img 
+              src="/images/global-faces-sphere.jpg" 
+              alt="Global sphere made of diverse human faces representing worldwide connection" 
+              className="hero-image"
+            />
+            <div className="hero-overlay">
+              <h2 className="subtitle">For A New Global WE</h2>
+            </div>
+          </div>
+          
+          <div className="content-section">
+            <div className="overview-text">
+              <p>
+                In an era where technology has increasingly separated us from nature and authentic human connection, 
+                we find ourselves longing for deeper meaning and genuine community. The digital revolution, while 
+                advancing human capability, has created unprecedented levels of isolation and disconnection from 
+                the natural world that once grounded us.
+              </p>
+              
+              <p>
+                Generative Dialogue harnesses the power of AI technology not to further separate us, but to 
+                reconnect us with our essential humanity and the natural wisdom that flows through meaningful 
+                conversation. Through structured dialogue experiences, we create spaces where creative interaction 
+                flourishes and collective intelligence emerges.
+              </p>
+              
+              <p>
+                By bringing together diverse perspectives in facilitated conversations, we generate synergy 
+                that transcends individual limitations and creates new possibilities for understanding, 
+                collaboration, and collective action toward a more connected and sustainable future.
+              </p>
+            </div>
+            
+            <div className="navigation-section">
+              <button className="continue-button" onClick={onContinue}>
+                Begin Your Journey
+                <span className="arrow-right">→</span>
+              </button>
+              
+              {developmentMode && (
+                <div className="dev-continue-option">
+                  <p>Development Mode: Use navigation buttons above or continue normally</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+        
+        <footer className="landing-footer">
+          <p>Step into a new paradigm of human connection and collective wisdom.</p>
+        </footer>
+      </div>
+
+      {/* Development Navigation Footer */}
+      {developmentMode && (
+        <div className="dev-footer">
+          <div className="dev-footer-content">
+            <div className="page-info">
+              <span className="page-indicator">Landing Page (1/3)</span>
+            </div>
+            <div className="nav-controls">
+              <button 
+                id="back-btn" 
+                className="control-button"
+                onClick={handleBackClick}
+                onMouseEnter={() => canGoBack && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
+                onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
+                disabled={!canGoBack}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  borderRadius: '50%',
+                  boxShadow: 'none',
+                  opacity: !canGoBack ? 0.4 : 1,
+                  cursor: !canGoBack ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <img 
+                  src={getBackButtonIcon()} 
+                  alt="Back" 
+                  style={{width: '34px', height: '34px'}}
+                />
+              </button>
+              <button 
+                id="forward-btn" 
+                className="control-button"
+                onClick={handleForwardClick}
+                onMouseEnter={() => canGoForward && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
+                onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
+                disabled={!canGoForward}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  borderRadius: '50%',
+                  boxShadow: 'none',
+                  overflow: 'hidden',
+                  opacity: !canGoForward ? 0.4 : 1,
+                  cursor: !canGoForward ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <img 
+                  src={getForwardButtonIcon()} 
+                  alt="Forward" 
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }}
+                />
+              </button>
+            </div>
+          </div>
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
 export default LandingPage; 
