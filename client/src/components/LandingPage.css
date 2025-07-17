@@ -261,7 +261,7 @@
 }
 
 .subtitle {
-  font-size: 2.5rem;
+  font-size: 4rem;
   font-weight: 700;
   color: #B8860B;
   text-align: center;
@@ -279,8 +279,6 @@
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  
-  filter: drop-shadow(2px 2px 0px #8B4513) drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.7));
 }
 
 @keyframes fadeIn {
@@ -327,6 +325,18 @@
 .overview-text p:nth-child(3) {
   color: #2D3748;
   font-weight: 500;
+}
+
+.footer-message {
+  margin-top: 30px;
+  text-align: center;
+  color: #B8860B;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.footer-message em {
+  color: #B8860B;
 }
 
 .navigation-section {
@@ -403,7 +413,7 @@
   /* Main title now uses clamp() for fluid responsive sizing */
   
   .subtitle {
-    font-size: 1.8rem;
+    font-size: 4rem !important;
   }
   
   .hero-image-container {
@@ -442,7 +452,7 @@
   /* Main title now uses clamp() for fluid responsive sizing */
   
   .subtitle {
-    font-size: 1.5rem;
+    font-size: 4rem !important;
   }
   
   .hero-image-container {
@@ -503,6 +513,10 @@
     letter-spacing: clamp(0.2px, 0.3vw, 1px);
   }
   
+  .subtitle {
+    font-size: 4rem !important; /* Keep consistent with InputPage */
+  }
+  
   .landing-container {
     margin: 0; /* Remove margins to eliminate blue stripes */
   }
@@ -525,5 +539,19 @@
   .actual-logo {
     height: 40px;
     min-width: 40px;
+  }
+}
+
+/* Medium screens */
+@media (max-width: 768px) {
+  .subtitle {
+    font-size: 4rem !important;
+  }
+}
+
+/* Small screens */
+@media (max-width: 480px) {
+  .subtitle {
+    font-size: 4rem !important;
   }
 }

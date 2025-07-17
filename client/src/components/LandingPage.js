@@ -77,7 +77,7 @@ const LandingPage = ({
               className="hero-image"
             />
             <div className="hero-overlay">
-              <h2 className="subtitle">For A New Global WE</h2>
+              <h2 className="hero-subtitle">For A New Global WE</h2>
             </div>
           </div>
           
@@ -93,35 +93,23 @@ const LandingPage = ({
               <p>
                 Generative Dialogue harnesses the power of AI technology not to further separate us, but to 
                 reconnect us with our essential humanity and the natural wisdom that flows through meaningful 
-                conversation. Through structured dialogue experiences, we create spaces where creative interaction 
-                flourishes and collective intelligence emerges.
+                conversation. Through structured dialogue experiences, we create spaces where creative interaction, 
+                deep listening, and collective intelligence can emerge organically.
               </p>
               
               <p>
-                By bringing together diverse perspectives in facilitated conversations, we generate synergy 
-                that transcends individual limitations and creates new possibilities for understanding, 
-                collaboration, and collective action toward a more connected and sustainable future.
+                Step into a transformative journey where technology serves as a bridge back to authentic human 
+                connection, where diverse voices unite in creative collaboration, and where the collective wisdom 
+                of our global community can flourish in service of our shared future.
+              </p>
+              
+              <p className="footer-message">
+                <em>Step into a new paradigm of human connection and collective wisdom</em>
               </p>
             </div>
-            
-            <div className="navigation-section">
-              <button className="continue-button" onClick={onContinue}>
-                Begin Your Journey
-                <span className="arrow-right">→</span>
-              </button>
-              
-              {developmentMode && (
-                <div className="dev-continue-option">
-                  <p>Development Mode: Use navigation buttons above or continue normally</p>
-                </div>
-              )}
-            </div>
           </div>
+          
         </main>
-        
-        <footer className="landing-footer">
-          <p>Step into a new paradigm of human connection and collective wisdom.</p>
-        </footer>
       </div>
 
       {/* Development Navigation Footer */}
@@ -129,7 +117,7 @@ const LandingPage = ({
         <div className="dev-footer">
           <div className="dev-footer-content">
             <div className="page-info">
-              <span className="page-indicator">Landing Page (1/3)</span>
+              <span className="page-indicator">Landing Page (1/4)</span>
             </div>
             <div className="nav-controls">
               <button 
