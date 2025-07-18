@@ -17,6 +17,8 @@ const getHeaderLabel = (viewMode) => {
       return 'KIVA VIEW';
     case 'fishbowl':
       return 'FISHBOWL';
+    case 'reflection':
+      return { line1: 'INDIVIDUAL', line2: 'REFLECTION' };
     default:
       return { line1: 'THE GATHERED', line2: 'COMMUNITY' };
   }

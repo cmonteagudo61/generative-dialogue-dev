@@ -7,6 +7,7 @@ import GenerativeDialogue from './components/GenerativeDialogue';
 import LandingPage from './components/LandingPage';
 import PermissionSetup from './components/PermissionSetup';
 import InputPage from './components/InputPage';
+import IndividualReflectionPage from './components/IndividualReflectionPage';
 import { VideoProvider } from './components/VideoProvider';
 
 function App() {
@@ -52,7 +53,7 @@ function App() {
   };
 
   const renderCurrentPage = () => {
-    const pages = ['landing', 'input', 'permissions', 'videoconference'];
+    const pages = ['landing', 'input', 'permissions', 'videoconference', 'reflection'];
     const currentIndex = pages.indexOf(currentPage);
     
     const navigationProps = {
@@ -76,6 +77,8 @@ function App() {
         return <PermissionSetup onSetupComplete={handleSetupComplete} {...navigationProps} />;
       case 'videoconference':
         return <GenerativeDialogue {...navigationProps} />;
+      case 'reflection':
+        return <IndividualReflectionPage {...navigationProps} />;
       default:
         return <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
     }
