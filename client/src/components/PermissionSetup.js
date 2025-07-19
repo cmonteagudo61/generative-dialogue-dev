@@ -262,7 +262,7 @@ const PermissionSetup = ({
                 <div className="dev-footer">
                     <div className="dev-footer-content">
                         <div className="page-info">
-                            <span className="page-indicator">Permission Setup (2/3)</span>
+                            <span className="page-indicator">Permission Setup (2/4)</span>
                         </div>
                         <div className="nav-controls">
                             <button 

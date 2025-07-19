@@ -88,16 +88,7 @@ button {
   z-index: 20;
 }
 
-/* Logo container */
-.logo-container {
-  width: 64px;
-  height: 54px;
-  background-color: #393d54;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-right: 1px solid #2E334A;
-}
+/* Logo container styles moved to AppLayout.css for better organization */
 
 /* Left navigation bar */
 .left-nav {

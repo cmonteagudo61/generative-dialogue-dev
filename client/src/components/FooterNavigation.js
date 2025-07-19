@@ -10,7 +10,7 @@ import ForwardOn from '../assets/icons/direction-forward-on.svg';
 import ForwardHover from '../assets/icons/direction-forward-hover.svg';
 
 const FooterNavigation = ({ currentPage, onNavigate }) => {
-  const pages = ['landing', 'permissions', 'videoconference'];
+  const pages = ['landing', 'permissions', 'input', 'videoconference'];
   const currentIndex = pages.indexOf(currentPage);
   
   const canGoBack = currentIndex > 0;
@@ -32,6 +32,7 @@ const FooterNavigation = ({ currentPage, onNavigate }) => {
     switch (page) {
       case 'landing': return 'Landing Page';
       case 'permissions': return 'Permission Setup';
+      case 'input': return 'Input Parameters';
       case 'videoconference': return 'Video Conference';
       default: return page;
     }

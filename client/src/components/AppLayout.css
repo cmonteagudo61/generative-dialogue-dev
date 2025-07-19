@@ -54,11 +54,11 @@
 }
 
 .app-logo {
-  width: 64px; /* Square logo to fit within 80px container with padding */
-  height: 64px; /* Square logo - same as width */
-  max-width: calc(100% - 16px); /* Ensure it stays within container bounds */
-  max-height: calc(100% - 16px); /* Ensure it stays within container bounds */
-  object-fit: contain;
+  /* Fixed logo size - no responsive changes */
+  width: 64px;
+  height: 64px;
+  object-fit: contain; /* Maintain aspect ratio */
+  border-radius: 0; /* Sharp corners */
   filter: brightness(1.1);
 }
 
@@ -161,8 +161,8 @@
   flex-direction: column;
   flex-grow: 1;
   overflow: hidden;
-  height: calc(100vh - 51px); /* Total height minus header only */
-  max-height: calc(100vh - 51px); /* Ensure it never exceeds this */
+  height: calc(100vh - 82px); /* Total height minus header (80px + 2px border) */
+  max-height: calc(100vh - 82px); /* Ensure it never exceeds this */
   margin: 0;
   padding: 0;
   border: none;
@@ -171,8 +171,8 @@
 /* Grid wrapper to contain both left nav and viewing area */
 .grid-wrapper {
   display: flex;
-  flex: 1; /* Take available space, share with bottom area */
-  max-height: calc(50vh - 40px); /* Keep video grid to half viewport height for text area below */
+  flex: 0 0 auto; /* Don't grow/shrink, use explicit height */
+  height: calc(50vh - 40px); /* Keep video grid to half viewport height for text area below */
   min-height: 300px; /* Ensure minimum usable height */
   overflow: hidden; /* Keep the navigation container boundary */
   width: 100%; /* Ensure full width responsiveness */
@@ -180,6 +180,17 @@
   margin: 0; /* Remove all margins */
   padding: 0; /* Remove all padding */
   border: none; /* Remove any borders */
+}
+
+/* Bottom content area layout */
+.main-content > *:last-child {
+  /* Target the BottomContentArea component which is the last child of main-content */
+  flex: 1; /* Take remaining space after grid-wrapper */
+  min-height: 200px; /* Ensure minimum height for usability */
+  max-height: calc(100vh - 82px - calc(50vh - 40px)); /* Exact remaining space: total - header - grid */
+  overflow: hidden; /* Prevent overflow beyond container */
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 /* Removed duplicate left-nav styles - using NavigationMap.css instead */
@@ -236,51 +247,126 @@
   display: inline-block;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .logo-container {
+    /* Match navigation bar exactly: 80px -> 60px at 768px breakpoint */
     width: 60px !important;
-    height: 60px !important; /* Make square on mobile too */
-    min-width: 60px !important;
-    max-width: 60px !important;
+    height: 80px !important;
     flex: 0 0 60px !important;
-    margin: 0 !important;
-    padding: 5px !important; /* Adjust padding for square mobile container */
-    border-radius: 0 !important; /* Sharp corners for mobile too */
-    position: static !important; /* Ensure proper positioning on mobile */
-    overflow: hidden !important; /* Prevent overflow on mobile */
   }
 
   .header-upper-row {
-    height: 60px; /* Match square logo height on mobile */
+    display: flex !important; /* Ensure flex layout */
+    flex-direction: row !important; /* Horizontal layout */
+    flex-wrap: nowrap !important; /* Prevent wrapping - keep logo and nav side by side */
+    height: 80px !important; /* Fixed height to match logo */
+    min-height: 80px !important; /* Ensure minimum height */
+    overflow: visible !important; /* Allow navigation to wrap internally */
+    padding: 0 !important; /* Remove padding */
+    margin: 0 !important; /* Remove margins */
+    width: 100% !important; /* Fill full width */
+    box-sizing: border-box !important; /* Include borders in width calculation */
+    align-items: flex-start !important; /* Align to top for proper stacking */
   }
 
-.header-info {
-    min-width: 180px; /* Smaller minimum on mobile */
-    height: 60px; /* Match new mobile header height */
-    flex: 1; /* Flexible on mobile too */
-    padding: 0 12px;
+  .header-info {
+    display: none !important; /* Hide the "AI WE SUMMARY" title on mobile */
   }
 
-  .participant-counter-fixed {
-    width: 140px;
-    height: 60px; /* Match new mobile header height */
-    flex: 0 0 140px;
-    padding: 0 8px;
+  /* Hide or minimize the participant counter that's taking up space */
+  .participant-counter-fixed,
+  [class*="participant-counter-fixed"] {
+    display: none !important; /* Hide completely on mobile to give nav full width */
   }
 
-  .top-nav {
-    height: 60px; /* Match new mobile header height */
-    max-width: none; /* Remove desktop constraint on mobile */
-    min-width: auto; /* Remove minimum width on mobile */
-    flex: 1; /* Take available space on mobile for better fit */
+  /* Target the top nav directly with maximum specificity */
+  .header-upper-row .top-nav {
+    height: 80px !important; /* Match header and logo height */
+    flex: 1 !important; /* Take remaining space after logo */
+    flex-wrap: wrap !important; /* Allow internal wrapping for 2x2 grid */
+    display: flex !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    width: calc(100% - 60px) !important; /* Full width minus logo space - updated for 60px logo */
+    max-width: calc(100% - 60px) !important; /* Constraint to remaining space - updated for 60px logo */
+    min-width: auto !important; /* Allow natural sizing */
+    box-sizing: border-box !important;
+    order: 1 !important; /* Place nav after logo */
+    justify-content: flex-start !important; /* Align items to start */
+    align-content: flex-start !important; /* Align wrapped rows to start */
   }
 
-  .app-logo {
-    width: 50px; /* Square logo for mobile */
-    height: 50px; /* Square logo - same as width */
-    max-width: calc(100% - 10px); /* Account for mobile padding */
-    max-height: calc(100% - 10px); /* Account for mobile padding */
+  /* Target navigation buttons with maximum specificity - create 2x2 grid */
+  .header-upper-row .top-nav .stage-tab {
+    flex: 0 0 50% !important; /* Exactly half width for 2x2 grid */
+    width: 50% !important; 
+    height: 40px !important; /* Half the nav height for stacking */
+    min-width: 50% !important; 
+    max-width: 50% !important; 
+    font-size: 14px !important; 
+    border: 1px solid #E06D37 !important;
+    border-right: none !important; /* Remove right border by default */
+    border-bottom: none !important; /* Remove bottom border by default */
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0 !important; 
+    margin: 0 !important; 
+    box-sizing: border-box !important;
+    background: #e0e0e3 !important; /* Match desktop inactive color */
+    color: #E06D37 !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important; /* Restore smooth transitions */
   }
+
+  /* Perfect 2x2 grid borders - create clean grid lines */
+  .header-upper-row .top-nav .stage-tab:nth-child(1),
+  .header-upper-row .top-nav .stage-tab:nth-child(3) {
+    border-right: 1px solid #E06D37 !important; /* Vertical line between left and right columns */
+  }
+
+  .header-upper-row .top-nav .stage-tab:nth-child(1),
+  .header-upper-row .top-nav .stage-tab:nth-child(2) {
+    border-bottom: 1px solid #E06D37 !important; /* Horizontal line between top and bottom rows */
+  }
+
+  /* Ensure all tabs maintain consistent border styling across all states */
+  .header-upper-row .top-nav .stage-tab.active:nth-child(1),
+  .header-upper-row .top-nav .stage-tab.active:nth-child(3) {
+    border-right: 1px solid #E06D37 !important;
+  }
+
+  .header-upper-row .top-nav .stage-tab.active:nth-child(1),
+  .header-upper-row .top-nav .stage-tab.active:nth-child(2) {
+    border-bottom: 1px solid #E06D37 !important;
+  }
+
+  /* Mobile navigation hover and active states */
+  .header-upper-row .top-nav .stage-tab:hover:not(.active) {
+    background: #3E4C71 !important;
+    color: white !important;
+    transform: scale(0.98) !important; /* Subtle scale effect */
+  }
+
+  .header-upper-row .top-nav .stage-tab.active {
+    background: #E06D37 !important;
+    color: white !important;
+    border-color: #E06D37 !important;
+  }
+
+  .header-upper-row .top-nav .stage-tab.active:hover {
+    background: #d45a2a !important; /* Darker shade on active hover */
+  }
+
+  /* Ensure proper positioning for 2x2 grid */
+  .header-upper-row .top-nav .stage-tab:nth-child(1) { order: 1; } /* CONNECT - top left */
+  .header-upper-row .top-nav .stage-tab:nth-child(2) { order: 2; } /* EXPLORE - top right */
+  .header-upper-row .top-nav .stage-tab:nth-child(3) { order: 3; } /* DISCOVER - bottom left */
+  .header-upper-row .top-nav .stage-tab:nth-child(4) { order: 4; } /* HARVEST - bottom right */
+
+  /* Logo image sizing removed for simplicity - let it scale naturally with container */
 
   .two-line-title div {
     font-size: 22px; /* Slightly smaller than navigation tabs on mobile */
@@ -290,4 +376,13 @@
     font-size: 11px;
     padding: 3px 8px;
   }
-} 
+}
+
+  
+/* Force reload */
+/* Sync test Sat Jul 19 00:32:44 EDT 2025 */
+/* Logo nav sync fix Sat Jul 19 00:34:38 EDT 2025 */
+/* Logo image fixed size Sat Jul 19 00:36:35 EDT 2025 */
+/* CLEANED: Removed conflicting logo rules Sat Jul 19 00:49:30 EDT 2025 */
+/* MEGA CLEANUP COMPLETE Sat Jul 19 00:50:08 EDT 2025 */
+/* Fixed footer positioning Sat Jul 19 01:07:38 EDT 2025 */

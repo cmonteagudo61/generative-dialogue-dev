@@ -17,6 +17,10 @@ const getHeaderLabel = (viewMode) => {
       return 'KIVA VIEW';
     case 'fishbowl':
       return 'FISHBOWL';
+    case 'reflection':
+      return { line1: 'INDIVIDUAL', line2: 'REFLECTION' };
+    case 'summary':
+      return { line1: 'AI WE', line2: 'SUMMARY' };
     default:
       return { line1: 'THE GATHERED', line2: 'COMMUNITY' };
   }
@@ -43,7 +47,16 @@ const AppLayout = ({
   onForward,
   currentPage
 }) => {
-  const [activeTab, setActiveTab] = useState('discover');
+  // Remove experimental debugging behavior - use currentPage for navigation state
+  const getCurrentStage = () => {
+    // Map currentPage to stage based on application flow
+    if (currentPage <= 2) return 'connect';    // Landing, Permission Setup
+    if (currentPage <= 4) return 'explore';    // Input Page, Navigation Map
+    if (currentPage === 5) return 'discover';  // Individual Reflection
+    return 'harvest';                          // Summary Page
+  };
+
+  const activeTab = getCurrentStage();
 
   return (
     <div className="app-container">
@@ -51,14 +64,19 @@ const AppLayout = ({
       <header className="header-section">
         <div className="header-upper-row">
           <div className="logo-container">
-            <img src="/logo192.png" alt="Logo" className="app-logo" />
+            <img src="/images/EarthLogoSmallTransparent.png" alt="Logo" className="app-logo" />
           </div>
           <nav className="top-nav">
             {STAGE_TABS.map(tab => (
               <div
                 key={tab.key}
                 className={`stage-tab${activeTab === tab.key ? ' active' : ''}`}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => {
+                  // Remove debugging behavior - implement proper navigation
+                  // For now, provide visual feedback only
+                  console.log(`Navigating to ${tab.label} stage`);
+                  // Future: Add proper navigation logic here
+                }}
               >
                 {tab.label}
               </div>

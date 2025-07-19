@@ -2,8 +2,8 @@
 .bottom-content-area {
   display: flex;
   flex-direction: column;
-  flex: 1; /* Take available space, share with grid wrapper */
-  max-height: calc(50vh - 11px); /* Remaining space after grid-wrapper takes (50vh - 40px) */
+  flex: 1; /* Take available space from parent container */
+  height: 100%; /* Fill parent container completely */
   overflow: hidden;
   position: relative;
   background-color: white;
@@ -101,6 +101,9 @@
   background-color: #e8e8e8; /* Light grey background */
   border: 1px solid #ccc;
   border-bottom: none;
+  border-top: 2px solid #3E4C71; /* Thinner blue pinstripe on top */
+  border-left: 2px solid #3E4C71; /* Blue pinstripe on left side */
+  border-right: 2px solid #3E4C71; /* Blue pinstripe on right side */
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
   cursor: pointer;
@@ -491,14 +494,6 @@
   color: #3E4C71;
 }
 
-.page-indicator-control {
-  background: linear-gradient(90deg, #3E4C71, #E06D37);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 700;
-}
-
 /* Spin animation for loading states */
 @keyframes spin {
   from {
@@ -515,6 +510,20 @@
     margin-left: -60px; /* Adjust for updated mobile nav width (60px) */
     padding-left: 68px; /* 60px nav + 8px gap */
     width: calc(100% + 60px);
+  }
+  
+  /* Compact timer display for mobile */
+  .timer-cell {
+    margin: 0 8px; /* Reduced from 15px to 8px */
+  }
+  
+  .timer-label {
+    font-size: 11px; /* Smaller on mobile */
+    margin-bottom: 1px;
+  }
+  
+  .timer-value {
+    font-size: 16px; /* Smaller on mobile */
   }
   
   .tab-navigation {
@@ -676,4 +685,6 @@
 #forward-btn.active {
   border: none !important; /* No border when active */
   background-color: rgba(62, 76, 113, 0.2) !important; /* Light blue background when active */
-} 
+} /* Added blue pinstripes to tabs Sat Jul 19 01:10:32 EDT 2025 */
+/* Made pinstripes thinner and extended down sides Sat Jul 19 01:12:20 EDT 2025 */
+/* Simplified active tabs - removed orange pinstripes Sat Jul 19 01:14:33 EDT 2025 */

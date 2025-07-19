@@ -106,27 +106,23 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange }) => {
       {SIZES.map((size) => {
         const isActive = currentSize === size.id || (typeof currentSize === 'number' && currentSize === parseInt(size.id));
         const isHovered = hovered === size.id;
-        let icon, bgColor;
+        let icon;
         if (isActive) {
           icon = getIcon(size.iconName, true, false); // Always use active icon if selected
-          bgColor = '#3e4c71'; // Blue
         } else if (isHovered) {
           icon = getIcon(size.iconName, false, true); // Hover icon
-          bgColor = '#D07B47'; // Orange
         } else {
           icon = getIcon(size.iconName, false, false); // Off icon
-          bgColor = '#d9d9d9'; // Grey
         }
         return (
           <div
             key={size.id}
-            className={`nav-item${isActive ? ' active' : ''}`}
+            className={`nav-item${isActive ? ' active' : ''}${isHovered ? ' hovered' : ''}`}
             data-size={size.id}
             data-icon-name={size.iconName}
             onClick={() => handleNavItemClick(size.id)}
             onMouseEnter={() => setHovered(size.id)}
             onMouseLeave={() => setHovered(null)}
-            style={{ background: bgColor }}
           >
             <img
               src={icon}

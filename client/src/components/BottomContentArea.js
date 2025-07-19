@@ -487,18 +487,8 @@ const BottomContentArea = ({
           </button>
         </div>
         
-        {/* Timer display and development page indicator */}
+        {/* Timer display */}
         <div className="timer-display">
-          {developmentMode && (
-            <div className="timer-cell">
-              <div className="timer-label">PAGE</div>
-              <div className="timer-value page-indicator-control">
-                {currentPage === 'landing' && 'Landing (1/3)'}
-                {currentPage === 'permission' && 'Permission (2/3)'}
-                {currentPage === 'video' && 'Video (3/3)'}
-              </div>
-            </div>
-          )}
           <div className="timer-cell">
             <div className="timer-label">TOTAL TIME</div>
             <div className="timer-value" id="total-time">{totalTime}</div>

@@ -158,23 +158,7 @@
   padding-top: 10px; /* Additional top padding for logo breathing room */
 }
 
-.logo-container {
-  position: relative;
-  left: auto;
-  top: auto;
-  transform: none;
-  min-width: 80px; /* Ensure minimum width for logo background */
-  width: auto;
-  height: 80px; /* Fixed height to prevent shrinking */
-  padding: 15px; /* Increase padding to prevent clipping */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.1); /* Subtle background to see container */
-  border-radius: 0; /* Sharp corners as requested */
-  flex-shrink: 0; /* Prevent logo from shrinking */
-  margin-left: 0; /* Align with left edge */
-}
+/* Logo-container styling moved to AppLayout.css for centralized control */
 
 .actual-logo {
   height: 60px;
@@ -261,7 +245,7 @@
 }
 
 .subtitle {
-  font-size: 2.5rem;
+  font-size: 4rem;
   font-weight: 700;
   color: #B8860B;
   text-align: center;
@@ -279,8 +263,6 @@
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  
-  filter: drop-shadow(2px 2px 0px #8B4513) drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.7));
 }
 
 @keyframes fadeIn {
@@ -327,6 +309,18 @@
 .overview-text p:nth-child(3) {
   color: #2D3748;
   font-weight: 500;
+}
+
+.footer-message {
+  margin-top: 30px;
+  text-align: center;
+  color: #B8860B;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.footer-message em {
+  color: #B8860B;
 }
 
 .navigation-section {
@@ -403,7 +397,7 @@
   /* Main title now uses clamp() for fluid responsive sizing */
   
   .subtitle {
-    font-size: 1.8rem;
+    font-size: 4rem !important;
   }
   
   .hero-image-container {
@@ -442,7 +436,7 @@
   /* Main title now uses clamp() for fluid responsive sizing */
   
   .subtitle {
-    font-size: 1.5rem;
+    font-size: 4rem !important;
   }
   
   .hero-image-container {
@@ -469,27 +463,14 @@
     font-size: 1rem;
   }
   
-  .logo-container {
-    position: static;
-    transform: none;
-    margin-bottom: 15px;
-    min-width: 70px; /* Maintain minimum width on mobile */
-    height: 70px; /* Fixed height to prevent shrinking on mobile */
-    padding: 8px; /* Maintain padding on mobile */
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-  }
+  /* Logo-container styling moved to AppLayout.css for centralized control */
   
   .header-content {
     flex-direction: column;
     align-items: center;
   }
   
-  .actual-logo {
-    width: auto;
-    height: 50px;
-    min-width: 50px; /* Ensure logo doesn't shrink smaller than background on mobile */
-  }
+  /* Logo size simplified - no shrinking needed */
 }
 
 /* Extra small screens - ensure title never clips */
@@ -503,6 +484,10 @@
     letter-spacing: clamp(0.2px, 0.3vw, 1px);
   }
   
+  .subtitle {
+    font-size: 4rem !important; /* Keep consistent with InputPage */
+  }
+  
   .landing-container {
     margin: 0; /* Remove margins to eliminate blue stripes */
   }
@@ -514,16 +499,21 @@
     z-index: 10;
   }
   
-  .logo-container {
-    min-width: 60px;
-    height: 60px; /* Fixed height to prevent shrinking on extra small screens */
-    padding: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-  }
+  /* Logo-container styling moved to AppLayout.css for centralized control */
   
-  .actual-logo {
-    height: 40px;
-    min-width: 40px;
+  /* Logo size simplified - no shrinking needed */
+}
+
+/* Medium screens */
+@media (max-width: 768px) {
+  .subtitle {
+    font-size: 4rem !important;
   }
 }
+
+/* Small screens */
+@media (max-width: 480px) {
+  .subtitle {
+    font-size: 4rem !important;
+  }
+}/* Simplified logo behavior Sat Jul 19 01:00:17 EDT 2025 */

@@ -16,16 +16,16 @@
   box-sizing: border-box;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .nav-map {
-    width: 60px;
-    min-width: 60px;
-    max-width: 60px;
-    flex: 0 0 60px;
-    flex-shrink: 0;
-    flex-grow: 0;
-    margin: 0;
-    padding: 0;
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+    flex: 0 0 60px !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 }
 
@@ -40,17 +40,20 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: background 0.2s;
+  transition: background 0.2s ease-in-out;
 }
 .nav-item:last-child {
   border-bottom: none;
 }
 .nav-item.active {
-  background: #3e4c71;
+  background: #3e4c71 !important;
   color: #fff;
 }
-.nav-item.hovered {
-  background: #D07B47;
+.nav-item.hovered:not(.active) {
+  background: #D07B47 !important;
+}
+.nav-item:hover:not(.active) {
+  background: #D07B47 !important;
 }
 
 .nav-item .icon-bg {
@@ -82,7 +85,7 @@
 .nav-icon {
   width: 100%;
   height: 100%;
-  padding: 8px;
+  padding: 1px;
   object-fit: contain;
   display: block;
   transition: none;
@@ -90,10 +93,15 @@
   image-rendering: crisp-edges;
   -ms-interpolation-mode: nearest-neighbor;
   backface-visibility: hidden;
+  transform: scale(1.2);
+  transform-origin: center;
 }
 
-/* Make fishbowl icon 50% bigger */
+/* Make fishbowl icon match the others */
 .nav-icon.fishbowl-icon {
-  transform: scale(1.5);
+  transform: scale(1.2);
   transform-origin: center;
-} 
+} /* Sync test Sat Jul 19 00:32:43 EDT 2025 */
+/* TEST: Nav 40px Sat Jul 19 00:40:24 EDT 2025 */
+/* FIXED: Removed LandingPage conflicts Sat Jul 19 00:44:51 EDT 2025 */
+/* FORCE RELOAD Sat Jul 19 00:50:08 EDT 2025 */
