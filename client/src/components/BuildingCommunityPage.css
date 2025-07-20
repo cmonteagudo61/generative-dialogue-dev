@@ -1,69 +1,97 @@
-/* Balanced approach: Content to midpoint, pinstripe at midpoint */
-html body .App .main-content {
-  height: calc(100vh - 51px) !important; /* Full height minus header */
-  min-height: calc(100vh - 51px) !important;
-}
-
-html body .App .grid-wrapper {
-  height: calc(50vh - 40px) !important; /* EXACT same calculation as navigation bar height */
-  min-height: calc(50vh - 40px) !important;
-  flex: 0 0 auto !important; /* Don't grow, use fixed height */
-}
-
-/* BuildingCommunity Page - Unique circular diagram layout */
-.buildingcommunity-container {
-  height: 100%; /* Fill all available height */
-  background: #f5f5f5; /* Light grey background matching other pages */
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  margin: 0;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow: hidden; /* Prevent container from scrolling */
-  box-sizing: border-box;
-}
-
-/* Page header */
-.page-header {
+/* Building Community Page - Following LandingPage pattern */
+.building-community-page {
+  min-height: 100vh;
+  background: #f5f5f5; /* Light grey background like other pages */
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 30px;
+  justify-content: flex-start;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 20px 0;
+  box-sizing: border-box;
+  position: relative;
 }
 
-.generative-dialogue-title {
-  font-size: 1.2rem !important;
-  font-weight: 600 !important;
-  color: #E17B43 !important; /* Orange color */
-  text-align: center !important;
-  margin: 0 0 20px 0 !important;
-  padding: 0 !important;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-  letter-spacing: 2px !important;
+.building-community-container {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+/* Header section - similar to LandingPage */
+.building-community-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  padding: 20px 0;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.actual-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.main-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #E17B43; /* Orange color */
+  margin: 0;
+  letter-spacing: 2px;
   text-transform: uppercase;
+}
+
+/* Main content area */
+.building-community-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+/* Hero section with large title */
+.hero-section {
+  text-align: center;
+  margin-bottom: 40px;
 }
 
 .building-title {
-  font-size: 2.5rem !important;
-  font-weight: 700 !important;
-  color: #E17B43 !important; /* Orange color */
-  text-align: center !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-  letter-spacing: 1px !important;
-  text-transform: uppercase;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #E17B43; /* Orange color */
+  margin: 0;
   line-height: 1.1;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Diagram section */
 .diagram-section {
-  flex: 1;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
+  flex: 1;
+  min-height: 500px;
 }
 
 .circular-diagram {
@@ -174,19 +202,87 @@ html body .App .grid-wrapper {
   z-index: 3;
 }
 
+/* Development Footer Navigation - matching LandingPage */
+.dev-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: #e0e0e3;
+  color: #3E4C71;
+  border-top: 1px solid #ccc;
+}
+
+.dev-footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 51px;
+}
+
+.page-info {
+  display: flex;
+  align-items: center;
+}
+
+.page-indicator {
+  font-weight: 600;
+  color: #3E4C71;
+  font-size: 16px;
+  background: linear-gradient(90deg, #3E4C71, #E06D37);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-button {
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.control-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.control-button img {
+  display: block;
+  border-radius: 50%;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .buildingcommunity-container {
-    padding: 15px;
+  .building-community-page {
+    padding: 15px 0;
   }
   
   .building-title {
-    font-size: 2rem !important;
+    font-size: 2.2rem;
   }
   
-  .generative-dialogue-title {
-    font-size: 1rem !important;
-    margin-bottom: 15px !important;
+  .main-title {
+    font-size: 1.4rem;
+  }
+  
+  .actual-logo {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .header-content {
+    gap: 15px;
   }
   
   .circular-diagram {
@@ -243,6 +339,20 @@ html body .App .grid-wrapper {
 }
 
 @media (max-width: 480px) {
+  .building-title {
+    font-size: 1.8rem;
+  }
+  
+  .main-title {
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+  }
+  
+  .actual-logo {
+    width: 50px;
+    height: 50px;
+  }
+  
   .circular-diagram {
     width: 280px;
     height: 280px;
@@ -264,9 +374,5 @@ html body .App .grid-wrapper {
   
   .participation-text {
     font-size: 0.85rem;
-  }
-  
-  .building-title {
-    font-size: 1.6rem !important;
   }
 } 

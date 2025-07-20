@@ -1,6 +1,13 @@
-import React from 'react';
-import AppLayout from './AppLayout';
+import React, { useState } from 'react';
 import './BuildingCommunityPage.css';
+import {
+  directionBackwardOff,
+  directionBackwardOn,
+  directionBackwardHover,
+  directionForwardOff,
+  directionForwardOn,
+  directionForwardHover
+} from '../assets/icons';
 
 const BuildingCommunityPage = ({ 
   canGoBack,
@@ -12,38 +19,205 @@ const BuildingCommunityPage = ({
   totalPages,
   developmentMode
 }) => {
+  const [backButtonState, setBackButtonState] = useState('off');
+  const [forwardButtonState, setForwardButtonState] = useState('off');
 
-  const communityContent = (
-    <div className="buildingcommunity-container">
-      <div className="page-header">
-        <h1 className="generative-dialogue-title">GENERATIVE DIALOGUE</h1>
-        <h2 className="building-title">
-          BUILDING<br/>
-          COMMUNITY/<br/>
-          RELATIONSHIP/<br/>
-          INTERBEING
-        </h2>
-      </div>
-    </div>
-  );
+  const getBackButtonIcon = () => {
+    switch (backButtonState) {
+      case 'on': return directionBackwardOn;
+      case 'hover': return directionBackwardHover;
+      default: return directionBackwardOff;
+    }
+  };
+
+  const getForwardButtonIcon = () => {
+    switch (forwardButtonState) {
+      case 'on': return directionForwardOn;
+      case 'hover': return directionForwardHover;
+      default: return directionForwardOff;
+    }
+  };
+
+  const handleBackClick = () => {
+    if (canGoBack && onBack) {
+      setBackButtonState('on');
+      onBack();
+      setTimeout(() => setBackButtonState('off'), 200);
+    }
+  };
+
+  const handleForwardClick = () => {
+    if (canGoForward && onForward) {
+      setForwardButtonState('on');
+      onForward();
+      setTimeout(() => setForwardButtonState('off'), 200);
+    }
+  };
 
   return (
-    <AppLayout 
-      viewMode="videoconference"
-      onViewModeChange={() => {}}
-      showVideoGrid={false}
-      showBottomContent={false}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-      currentIndex={currentIndex}
-      totalPages={totalPages}
-      developmentMode={developmentMode}
-    >
-      {communityContent}
-    </AppLayout>
+    <div className="building-community-page">
+      <div className="building-community-container">
+        <header className="building-community-header">
+          <div className="header-content">
+            <div className="logo-container">
+              <img 
+                src="/images/EarthLogoSmallTransparent.png" 
+                alt="Generative Dialogue Logo" 
+                className="actual-logo"
+              />
+            </div>
+            <h1 className="main-title">GENERATIVE DIALOGUE</h1>
+          </div>
+        </header>
+        
+        <main className="building-community-content">
+          <div className="hero-section">
+            <h2 className="building-title">
+              BUILDING<br/>
+              COMMUNITY/<br/>
+              RELATIONSHIP/<br/>
+              INTERBEING
+            </h2>
+          </div>
+          
+          <div className="diagram-section">
+            <div className="circular-diagram">
+              <div className="phase-item phase-1">
+                <div className="phase-text">
+                  TENDING/<br/>
+                  EXPLORING
+                </div>
+              </div>
+              
+              <div className="phase-item phase-2">
+                <div className="phase-text">
+                  PRUNING/<br/>
+                  DISCOVERING
+                </div>
+              </div>
+              
+              <div className="phase-item phase-3">
+                <div className="phase-text">
+                  HARVESTING/<br/>
+                  DISCOVERING
+                </div>
+              </div>
+              
+              <div className="phase-item phase-4">
+                <div className="phase-text">
+                  TILLING/CONNECTING<br/>
+                  (PREPARING THE SOIL)
+                </div>
+              </div>
+              
+              <div className="phase-item phase-5">
+                <div className="phase-text">
+                  PLANTING/<br/>
+                  CONNECTING
+                </div>
+              </div>
+              
+              <div className="phase-item phase-6">
+                <div className="phase-text">
+                  WATERING/<br/>
+                  EXPLORING
+                </div>
+              </div>
+              
+              <div className="center-text">
+                <div className="participation-text">
+                  Participation in the<br/>
+                  Emergence of<br/>
+                  Meaning
+                </div>
+              </div>
+              
+              <svg className="connecting-lines" viewBox="0 0 400 400">
+                <circle cx="200" cy="200" r="120" fill="none" stroke="#333" strokeWidth="2"/>
+                <defs>
+                  <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                          refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                  </marker>
+                </defs>
+                <path d="M 200 80 A 120 120 0 0 1 304 136" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+                <path d="M 304 136 A 120 120 0 0 1 304 264" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+                <path d="M 304 264 A 120 120 0 0 1 200 320" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+                <path d="M 200 320 A 120 120 0 0 1 96 264" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+                <path d="M 96 264 A 120 120 0 0 1 96 136" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+                <path d="M 96 136 A 120 120 0 0 1 200 80" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+              </svg>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      {/* Development Navigation Footer */}
+      {developmentMode && (
+        <div className="dev-footer">
+          <div className="dev-footer-content">
+            <div className="page-info">
+              <span className="page-indicator">Building Community ({currentIndex + 1}/{totalPages})</span>
+            </div>
+            <div className="nav-controls">
+              <button 
+                id="back-btn" 
+                className="control-button"
+                onClick={handleBackClick}
+                onMouseEnter={() => canGoBack && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
+                onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
+                disabled={!canGoBack}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  borderRadius: '50%',
+                  boxShadow: 'none',
+                  opacity: !canGoBack ? 0.4 : 1,
+                  cursor: !canGoBack ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <img 
+                  src={getBackButtonIcon()} 
+                  alt="Back" 
+                  style={{width: '34px', height: '34px'}}
+                />
+              </button>
+              <button 
+                id="forward-btn" 
+                className="control-button"
+                onClick={handleForwardClick}
+                onMouseEnter={() => canGoForward && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
+                onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
+                disabled={!canGoForward}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  borderRadius: '50%',
+                  boxShadow: 'none',
+                  overflow: 'hidden',
+                  opacity: !canGoForward ? 0.4 : 1,
+                  cursor: !canGoForward ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <img 
+                  src={getForwardButtonIcon()} 
+                  alt="Forward" 
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
