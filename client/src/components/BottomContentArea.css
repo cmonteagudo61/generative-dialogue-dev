@@ -54,7 +54,7 @@
   overflow: hidden;
   position: relative;
   margin-left: -64px; /* Extend to the left edge */
-  padding-left: 88px; /* Slightly more than 80px nav to avoid text overlap */
+  padding-left: 65px; /* Reduced from 88px to bring tabs much closer to left edge */
   box-sizing: border-box;
   width: calc(100% + 64px); /* Make sure it takes full width */
   background-color: white; /* Ensure white background */
@@ -77,42 +77,47 @@
 .tab-navigation {
   display: flex;
   justify-content: space-between; /* Space between tabs and controls */
-  align-items: center; /* Center align items vertically */
+  align-items: flex-end; /* Bottom justify tabs to container */
   background-color: white; /* White background */
-  padding: 10px 16px 0 16px; /* Add padding to top for spacing after pinstripe */
+  padding: 10px 16px 0 1px; /* Set left padding to 1px for leftmost tab positioning */
   padding-bottom: 0;
   border-bottom: 1px solid #ddd; /* Light border below tabs */
 }
 
 .tab-controls-left {
   display: flex;
-  gap: 6px; /* Space between tabs */
+  gap: 1px; /* Minimal 1px space between tabs */
 }
 
 .tab-controls-right {
   display: flex;
-  gap: 8px; /* Space between transcription controls */
-  align-items: center;
+  gap: clamp(2px, 2vw, 16px); /* Responsive gap: 2px minimum, 16px maximum */
+  align-items: center; /* Keep right controls vertically centered */
+  flex-shrink: 1; /* Allow the control area to shrink */
+  min-width: min-content; /* Don't force minimum width */
 }
 
 .tab-btn {
-  padding: 10px 24px;
-  margin-right: 6px;
+  padding: 3px 12px; /* Reduced from 16px to 12px for narrower tabs */
+  margin-right: 1px; /* Minimal 1px spacing between tabs */
+  margin-top: 0px; /* Restored height by removing negative margins */
+  margin-bottom: 0px; /* Restored height by removing negative margins */
   background-color: #e8e8e8; /* Light grey background */
   border: 1px solid #ccc;
   border-bottom: none;
   border-top: 2px solid #3E4C71; /* Thinner blue pinstripe on top */
   border-left: 2px solid #3E4C71; /* Blue pinstripe on left side */
   border-right: 2px solid #3E4C71; /* Blue pinstripe on right side */
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  border-top-left-radius: 10px; /* Reduced curves for more subtle appearance */
+  border-top-right-radius: 10px; /* Reduced curves for more subtle appearance */
   cursor: pointer;
   position: relative;
   z-index: 1;
   font-weight: 500;
-  font-size: 22px; /* Increased from 20px to 22px */
+  font-size: 23px; /* Increased from 22px (+1pt) */
   color: #555; /* Dark grey text */
   transition: all 0.15s ease;
+  line-height: 0.9; /* Tighter line height for more compact tabs */
 }
 
 .tab-btn:hover:not(.active) {
@@ -123,7 +128,7 @@
   background-color: #3E4C71; /* Dark blue background when active */
   color: white; /* White text when active */
   border-color: #3E4C71;
-  padding-bottom: 11px;
+  padding-bottom: 3px; /* Adjusted to match further increased tab height */
   margin-bottom: -1px;
   font-weight: 600; /* Make text slightly bolder in active tab */
 }
@@ -424,37 +429,44 @@
   border: 1px solid #bbdefb;
 }
 
-/* Bottom control bar */
+/* Bottom control bar - Minimal buffering, no clipping */
 .control-bar {
-  height: 51px; /* Reduced from 64px to 80% (51px) */
+  height: 50px !important; /* Sufficient height to prevent clipping */
   background-color: #e0e0e3; /* Light grey background for footer */
   color: #3E4C71; /* Dark blue text color */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
+  display: flex !important;
+  align-items: center !important; /* Perfect vertical centering */
+  justify-content: space-between !important; /* Maintain layout structure */
+  padding: 5px 20px !important; /* Minimal 5px top/bottom - prevents clipping */
   border-top: none; /* Remove border */
   flex-shrink: 0; /* Prevent shrinking */
   margin: 0; /* Remove any margin */
   position: relative; /* Ensure proper positioning */
+  box-sizing: border-box; /* Include padding in height calculation */
 }
 
 .media-controls {
   display: flex;
+  gap: 8px; /* Add consistent spacing between media control buttons */
 }
 
 .control-button {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important; /* Perfect internal centering */
   background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
   border: none;
   cursor: pointer;
   transition: all 0.2s;
   margin-right: 8px;
+  /* Reset all positioning to rely on flexbox centering */
+  position: static !important; /* Let flexbox handle positioning */
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .control-button:hover {
@@ -494,6 +506,35 @@
   color: #3E4C71;
 }
 
+/* Compact timer styles for desktop */
+.timer-cell-combined {
+  margin: 0 12px;
+  text-align: center;
+  min-width: 160px; /* Desktop width for combined display */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center the timer content vertically */
+}
+
+.timer-label-combined {
+  font-size: 11px; /* Compact size */
+  margin-bottom: 1px; /* Minimal gap but prevents text crowding */
+  color: #666;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.timer-value-combined {
+  font-size: 16px; /* Compact but readable */
+  font-weight: 600;
+  color: #333;
+  font-family: 'Courier New', monospace; /* Monospace for better time alignment */
+  line-height: 1;
+  margin-top: 0; /* No extra margin */
+}
+
 /* Spin animation for loading states */
 @keyframes spin {
   from {
@@ -505,10 +546,10 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 1100px) {
   .tab-area {
     margin-left: -60px; /* Adjust for updated mobile nav width (60px) */
-    padding-left: 68px; /* 60px nav + 8px gap */
+    padding-left: 61px; /* Minimal padding: 60px nav + 1px gap */
     width: calc(100% + 60px);
   }
   
@@ -525,14 +566,32 @@
   .timer-value {
     font-size: 16px; /* Smaller on mobile */
   }
+
+  /* Override compact timer for mobile */
+  .timer-cell-combined {
+    margin: 0 6px !important; /* Tighter spacing on mobile */
+    min-width: 120px !important; /* Smaller minimum width for mobile */
+  }
+  
+  .timer-label-combined {
+    font-size: 10px !important; /* Smaller label on mobile */
+    margin-bottom: 0px !important; /* Tightest spacing for mobile */
+  }
+  
+  .timer-value-combined {
+    font-size: 14px !important; /* Smaller value on mobile but still readable */
+  }
   
   .tab-navigation {
-    padding: 8px 12px 0 12px;
+    padding: 8px 12px 0 1px; /* Set left padding to 1px for mobile */
   }
   
   .tab-btn {
-    padding: 8px 16px;
-    font-size: 18px; /* Increased from 13px to 18px for mobile */
+    padding: 3px 12px !important; /* Increased height by another 1pt for mobile */
+    margin-top: 0px !important; /* Restored height */
+    margin-bottom: 0px !important; /* Restored height */
+    font-size: 23px; /* Match the font size from desktop styling */
+    line-height: 0.9 !important; /* Keep tight line height */
   }
   
   .tab-content {
@@ -545,7 +604,29 @@
   }
   
   .control-bar {
-    padding: 0 16px;
+    padding: 5px 16px 13px 16px !important; /* Perfect bottom buffering for mobile */
+    height: 58px !important; /* Adjusted for optimal bottom padding */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering on mobile */
+    justify-content: space-between !important; /* Maintain layout structure */
+    box-sizing: border-box !important; /* Include padding in height calculation */
+  }
+
+  /* Reset all button positioning on mobile - let flexbox handle it */
+  .control-button {
+    position: static !important; /* Remove all custom positioning */
+    top: auto !important; /* Reset top positioning */
+    margin: 0 !important; /* Remove all margins */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering */
+    justify-content: center !important;
+    flex-shrink: 0 !important; /* Prevent shrinking */
+  }
+
+  #back-btn, #forward-btn {
+    position: static !important; /* Remove all custom positioning */
+    top: auto !important; /* Reset positioning */
+    margin: 0 !important; /* Remove all margins */
   }
   
   .timer-cell {
@@ -559,6 +640,8 @@
   .timer-value {
     font-size: 18px; /* Increased from 14px to 18px for mobile */
   }
+
+
   
   .dialogue-title {
     font-size: 20px; /* Adjusted for mobile */
@@ -577,9 +660,9 @@
   }
 }
 
-/* Transcription control buttons in tab navigation */
+/* Transcription control buttons in tab navigation - match tab height */
 .transcription-control-btn {
-  padding: 8px 16px;
+  padding: 3px 16px; /* Match tab padding for consistent height */
   border: none;
   border-radius: 6px;
   font-size: 16px; /* Increased from 14px to 16px */
@@ -590,12 +673,77 @@
   align-items: center;
   gap: 6px;
   width: 200px; /* Increased width to accommodate longer button text */
-  height: 36px; /* Fixed height for consistency */
+  height: auto; /* Let height be determined by padding */
   justify-content: center;
   text-align: center;
   white-space: nowrap; /* Prevent text wrapping */
   overflow: hidden; /* Hide any overflow */
   box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Desktop view - make all buttons identical and responsive */
+.transcription-control-btn,
+.transcription-status {
+  width: clamp(150px, 20vw, 200px) !important; /* Responsive width: 150px-200px */
+  height: 36px !important;
+  padding: 8px clamp(8px, 1.5vw, 16px) !important; /* Responsive padding */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  font-size: clamp(14px, 1.5vw, 16px) !important; /* Responsive font size */
+  font-weight: 500 !important;
+  box-sizing: border-box !important;
+  background-color: #3E4C71 !important;
+  color: #fff !important;
+  border: none !important;
+  flex-shrink: 1 !important; /* Allow buttons to shrink */
+}
+
+  /* Mobile view - clean simple approach */
+@media (max-width: 1100px) {
+  .tab-controls-right {
+    gap: 2px;
+  }
+  
+  .transcription-control-btn {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .transcription-control-btn .btn-text,
+  .transcription-status .status-text {
+    display: none;
+  }
+
+  .transcription-status {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .transcription-status .status-icon {
+    font-size: 18px;
+  }
+  
+  /* Force the disconnected status to be square like the buttons */
+  .transcription-status.disconnected {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: #3E4C71 !important;
+    color: #fff !important;
+  }
 }
 
 .transcription-control-btn.primary {
@@ -619,14 +767,33 @@
 }
 
 .transcription-control-btn.warning {
-  background-color: #f8f9fa; /* Light background for clear button */
-  color: #495057;
-  border: 1px solid #dee2e6;
+  background-color: #3E4C71; /* Match app's dark blue theme */
+  color: #fff; /* White text for contrast */
+  border: 1px solid #3E4C71;
 }
 
 .transcription-control-btn.warning:hover {
-  background-color: #e9ecef;
+  background-color: #334060; /* Darker blue on hover */
   transform: translateY(-1px);
+}
+
+.transcription-control-btn.warning .btn-icon {
+  color: #fff; /* Make trash icon white for contrast against red */
+  font-weight: bold; /* Make it bolder */
+  font-size: 18px; /* Slightly larger for better visibility */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add shadow for crispness */
+}
+
+.transcription-control-btn.primary .btn-icon {
+  color: #fff; /* Ensure microphone icon is white for contrast */
+  font-weight: bold; /* Make it bold */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add subtle shadow for crispness */
+}
+
+.transcription-control-btn.danger .btn-icon {
+  color: #fff; /* Ensure stop icon is white for contrast */
+  font-weight: bold; /* Make it bold */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add subtle shadow for crispness */
 }
 
 .transcription-status {
@@ -643,6 +810,22 @@
   white-space: nowrap; /* Prevent text wrapping */
   overflow: hidden; /* Hide any overflow */
   box-sizing: border-box; /* Include padding in width calculation */
+  gap: 4px; /* Space between icon and text */
+}
+
+.transcription-status .status-icon {
+  font-size: 16px;
+}
+
+/* Mobile-specific styling for status icon */
+@media (max-width: 1100px) {
+  .transcription-status .status-icon {
+    font-size: 18px; /* Slightly larger on mobile for better visibility */
+  }
+}
+
+.transcription-status .status-text {
+  flex: 1;
 }
 
 .transcription-status.connected {
@@ -651,8 +834,8 @@
 }
 
 .transcription-status.disconnected {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: #3E4C71; /* Match button styling */
+  color: #fff; /* White text for consistency */
 }
 
 .transcription-status.recording {

@@ -43,6 +43,7 @@ const BottomContentArea = ({
   const [isInCall, setIsInCall] = useState(true);
   const [totalTime] = useState('01:30:00');
   const [segmentTime, setSegmentTime] = useState('00:00');
+  const [segmentDuration, setSegmentDuration] = useState(10 * 60); // Default 10 minutes in seconds
   const [voteState, setVoteState] = useState(null); // 'up', 'down', or null
   const [backButtonState, setBackButtonState] = useState('off'); // 'off', 'hover', 'on'
   const [forwardButtonState, setForwardButtonState] = useState('off'); // 'off', 'hover', 'on'
@@ -57,14 +58,46 @@ const BottomContentArea = ({
   const [transcriptionStatus, setTranscriptionStatus] = useState('Disconnected');
   const [transcriptionError] = useState('');
 
-  // Timer effect for segment time
+  // Set segment duration based on current page
+  useEffect(() => {
+    const getSegmentDuration = (page) => {
+      switch (page) {
+        case 'landing':
+        case 'input':
+        case 'permissions':
+          return 5 * 60; // 5 minutes for setup stages
+        case 'videoconference':
+          return 20 * 60; // 20 minutes for main dialogue
+        case 'reflection':
+          return 10 * 60; // 10 minutes for individual reflection
+        case 'summary':
+          return 15 * 60; // 15 minutes for summary discussion
+        default:
+          return 10 * 60; // Default 10 minutes
+      }
+    };
+
+    const duration = getSegmentDuration(currentPage);
+    setSegmentDuration(duration);
+    
+    // Reset segment time to full duration when page changes
+    const minutes = Math.floor(duration / 60);
+    const seconds = duration % 60;
+    setSegmentTime(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+  }, [currentPage]);
+
+  // Timer effect for segment time - countdown
   useEffect(() => {
     const interval = setInterval(() => {
       setSegmentTime(prevTime => {
         const [minutes, seconds] = prevTime.split(':').map(Number);
-        const totalSeconds = minutes * 60 + seconds + 1;
-        const newMinutes = Math.floor(totalSeconds / 60);
-        const newSeconds = totalSeconds % 60;
+        const totalSeconds = minutes * 60 + seconds;
+        
+        // Count down - subtract 1 second
+        const newTotalSeconds = Math.max(0, totalSeconds - 1);
+        const newMinutes = Math.floor(newTotalSeconds / 60);
+        const newSeconds = newTotalSeconds % 60;
+        
         return `${String(newMinutes).padStart(2, '0')}:${String(newSeconds).padStart(2, '0')}`;
       });
     }, 1000);
@@ -223,18 +256,21 @@ const BottomContentArea = ({
               className={`transcription-control-btn ${isRecording ? 'danger' : 'primary'}`}
               onClick={isRecording ? stopRecording : startRecording}
             >
-              {isRecording ? '⏹ Stop Recording' : '🎤 Start Live Transcription'}
+              <span className="btn-icon">{isRecording ? '⏹' : '🎤'}</span>
+              <span className="btn-text">{isRecording ? ' Stop Recording' : ' Start Live Transcription'}</span>
             </button>
             
             <button 
               className="transcription-control-btn warning"
               onClick={clearTranscription}
             >
-              🗑 Clear
+              <span className="btn-icon">🗑</span>
+              <span className="btn-text"> Clear</span>
             </button>
             
             <div className={`transcription-status ${getStatusClass()}`}>
-              {transcriptionError || transcriptionStatus}
+              <span className="status-icon">🚫</span>
+              <span className="status-text">{transcriptionError || transcriptionStatus}</span>
             </div>
           </div>
         </div>
@@ -487,15 +523,13 @@ const BottomContentArea = ({
           </button>
         </div>
         
-        {/* Timer display */}
+        {/* Timer display - Optimized compact format */}
         <div className="timer-display">
-          <div className="timer-cell">
-            <div className="timer-label">TOTAL TIME</div>
-            <div className="timer-value" id="total-time">{totalTime}</div>
-          </div>
-          <div className="timer-cell">
-            <div className="timer-label">SEGMENT TIME</div>
-            <div className="timer-value" id="segment-time">{segmentTime}</div>
+          <div className="timer-cell-combined">
+            <div className="timer-label-combined">TOTAL / SEGMENT TIME</div>
+            <div className="timer-value-combined" id="combined-time">
+              {totalTime.replace(/^0+:/, '').replace(/^0/, '') || totalTime} / {segmentTime}
+            </div>
           </div>
         </div>
         

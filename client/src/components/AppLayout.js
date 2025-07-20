@@ -22,7 +22,7 @@ const getHeaderLabel = (viewMode) => {
     case 'summary':
       return { line1: 'AI WE', line2: 'SUMMARY' };
     default:
-      return { line1: 'THE GATHERED', line2: 'COMMUNITY' };
+      return 'THE GATHERED COMMUNITY';
   }
 };
 
@@ -94,11 +94,18 @@ const AppLayout = ({
                 </div>
               )}
             </div>
+            <div className="participant-counter-mobile">
+              {participantCount != null && (
+                <span className="participant-badge">
+                  {participantCount} {participantCount === 1 ? 'participant' : 'participants'}
+                </span>
+              )}
+            </div>
           </div>
           <div className="participant-counter-fixed">
             {participantCount != null && (
               <span className="participant-badge">
-                {participantCount} {participantCount === 1 ? 'live participant' : 'live participants'}
+                {participantCount} {participantCount === 1 ? 'participant' : 'participants'}
               </span>
             )}
           </div>

@@ -14,7 +14,7 @@
   display: flex;
   width: 100%;
   background-color: #E6DDD2;
-  border-bottom: 2px solid #E06D37;
+  border: none; /* Remove underline for clean look */
   z-index: 20;
   margin: 0;
   padding: 0;
@@ -79,7 +79,16 @@
   background-color: #d2d2d8;
   min-width: 250px; /* Minimum width for title readability */
   flex: 1; /* Grow to fill available space */
-  border-left: 1px solid #c0c0c6;
+  border: none; /* Remove border for clean look */
+  text-decoration: none !important; /* Remove any inherited underlines */
+}
+
+/* Remove underlines from all elements within header-info */
+.header-info *,
+.header-info *::before,
+.header-info *::after {
+  text-decoration: none !important;
+  border-bottom: none !important;
 }
 
 .participant-counter-fixed {
@@ -91,7 +100,7 @@
   background-color: #d2d2d8;
   width: 180px; /* Fixed width for participant counter */
   flex: 0 0 180px; /* Don't grow or shrink */
-  border-left: 1px solid #c0c0c6;
+  border: none; /* Remove border for clean look */
 }
 
 .stage-tab {
@@ -136,6 +145,7 @@
   text-align: center;
   line-height: 1; /* Reduce line height to make container thinner */
   padding: 0; /* Remove any padding */
+  text-decoration: none !important; /* Remove any underlines */
 }
 
 .two-line-title {
@@ -154,6 +164,7 @@
   letter-spacing: 0.4px;
   line-height: 1; /* Reduce line height to make container thinner */
   padding: 0; /* Remove any padding */
+  text-decoration: none !important; /* Remove any underlines */
 }
 
 .main-content {
@@ -247,63 +258,159 @@
   display: inline-block;
 }
 
-@media (max-width: 768px) {
+/* Hide mobile participant counter on desktop */
+.participant-counter-mobile {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  /* Fix mobile layout heights to keep footer visible */
+  .main-content {
+    height: calc(100vh - 100px) !important; /* Adjusted for mobile header height (65px nav + 35px title) */
+    max-height: calc(100vh - 100px) !important;
+  }
+
+  .grid-wrapper {
+    height: calc(50vh - 50px) !important; /* Adjusted for mobile layout spacing */
+    min-height: 250px !important; /* Reduced minimum for mobile */
+  }
+
+  .main-content > *:last-child {
+    /* BottomContentArea - ensure it gets remaining space and stays visible */
+    max-height: calc(100vh - 100px - calc(50vh - 50px)) !important; /* Remaining space calculation for mobile */
+    min-height: 150px !important; /* Reduced minimum for mobile */
+  }
+
   .logo-container {
-    /* Match navigation bar exactly: 80px -> 60px at 768px breakpoint */
-    width: 60px !important;
-    height: 80px !important;
+    /* Keep width aligned with side navigation, but reduce height for space optimization */
+    width: 60px !important; /* Restored to match side nav width */
+    height: 65px !important; /* Kept reduced from 80px */
     flex: 0 0 60px !important;
   }
 
+  .app-logo {
+    /* 30% smaller logo for mobile space optimization */
+    width: 45px !important; /* Reduced from 64px (30% smaller) */
+    height: 45px !important; /* Reduced from 64px (30% smaller) */
+  }
+
+  /* Create a top row for logo + navigation */
+  .header-upper-row::before {
+    content: '';
+    display: flex;
+    height: 65px; /* Reduced from 80px to match smaller logo container */
+    width: 100%;
+    order: -1; /* Place before other content */
+  }
+
+  .logo-container {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 10 !important;
+  }
+
+  /* Create a flex row container for the title row in mobile */
   .header-upper-row {
     display: flex !important; /* Ensure flex layout */
-    flex-direction: row !important; /* Horizontal layout */
-    flex-wrap: nowrap !important; /* Prevent wrapping - keep logo and nav side by side */
-    height: 80px !important; /* Fixed height to match logo */
-    min-height: 80px !important; /* Ensure minimum height */
-    overflow: visible !important; /* Allow navigation to wrap internally */
-    padding: 0 !important; /* Remove padding */
-    margin: 0 !important; /* Remove margins */
-    width: 100% !important; /* Fill full width */
-    box-sizing: border-box !important; /* Include borders in width calculation */
-    align-items: flex-start !important; /* Align to top for proper stacking */
+    flex-direction: column !important; /* Stack vertically: logo+nav row, then title row */
+    flex-wrap: nowrap !important; 
+    height: auto !important; /* Allow height to grow for stacked content */
+    min-height: 100px !important; /* Reduced from 120px to save space */
+    overflow: visible !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    width: 100% !important; 
+    box-sizing: border-box !important; 
+    align-items: stretch !important; /* Stretch children to full width */
   }
 
+
+
+  /* Mobile header layout */
+  .header-upper-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    height: auto !important;
+    min-height: 100px !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Title row contains both title and participant count */
   .header-info {
-    display: none !important; /* Hide the "AI WE SUMMARY" title on mobile */
+    order: 2 !important;
+    height: 35px !important;
+    background-color: #d2d2d8 !important;
+    border: none !important; /* Remove all borders for clean look */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important; /* Title left, participant count right */
+    margin: 0 !important;
+    padding: 0 16px !important;
+    width: 100% !important;
+    text-decoration: none !important; /* Remove any inherited underlines */
   }
 
-  /* Hide or minimize the participant counter that's taking up space */
-  .participant-counter-fixed,
-  [class*="participant-counter-fixed"] {
-    display: none !important; /* Hide completely on mobile to give nav full width */
+  /* Hide the desktop participant counter on mobile */
+  .participant-counter-fixed {
+    display: none !important;
+  }
+
+  /* Show the mobile participant counter */
+  .participant-counter-mobile {
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Remove all borders from desktop CSS in mobile view */
+  .header-info {
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+  }
+
+  .participant-counter-fixed {
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
   }
 
   /* Target the top nav directly with maximum specificity */
   .header-upper-row .top-nav {
-    height: 80px !important; /* Match header and logo height */
-    flex: 1 !important; /* Take remaining space after logo */
+    height: 65px !important; /* Reduced to match smaller logo container */
+    flex: none !important; /* Fixed size, don't grow or shrink */
     flex-wrap: wrap !important; /* Allow internal wrapping for 2x2 grid */
     display: flex !important; 
     padding: 0 !important; 
     margin: 0 !important; 
-    width: calc(100% - 60px) !important; /* Full width minus logo space - updated for 60px logo */
-    max-width: calc(100% - 60px) !important; /* Constraint to remaining space - updated for 60px logo */
-    min-width: auto !important; /* Allow natural sizing */
+    width: calc(100% - 60px) !important; /* Adjusted to match logo container width */
+    max-width: calc(100% - 60px) !important; 
+    min-width: auto !important; 
     box-sizing: border-box !important;
-    order: 1 !important; /* Place nav after logo */
-    justify-content: flex-start !important; /* Align items to start */
-    align-content: flex-start !important; /* Align wrapped rows to start */
+    order: 1 !important; /* Place nav after logo in flex order */
+    justify-content: flex-start !important; 
+    align-content: flex-start !important; 
+    position: absolute !important; /* Position over the pseudo-element */
+    top: 0 !important;
+    right: 0 !important; /* Align to right edge */
+    z-index: 5 !important; /* Below logo but above background */
   }
 
   /* Target navigation buttons with maximum specificity - create 2x2 grid */
   .header-upper-row .top-nav .stage-tab {
     flex: 0 0 50% !important; /* Exactly half width for 2x2 grid */
     width: 50% !important; 
-    height: 40px !important; /* Half the nav height for stacking */
+    height: 32.5px !important; /* Reduced from 40px to match smaller nav height */
     min-width: 50% !important; 
     max-width: 50% !important; 
-    font-size: 14px !important; 
+    font-size: 19px !important; /* Slightly reduced from 21px to fit smaller buttons */
     border: 1px solid #E06D37 !important;
     border-right: none !important; /* Remove right border by default */
     border-bottom: none !important; /* Remove bottom border by default */
@@ -369,7 +476,17 @@
   /* Logo image sizing removed for simplicity - let it scale naturally with container */
 
   .two-line-title div {
-    font-size: 22px; /* Slightly smaller than navigation tabs on mobile */
+    font-size: 19px; /* Match updated navigation button font size */
+  }
+
+  /* Make sure the title text scales appropriately in mobile */
+  .header-info .view-title {
+    font-size: 19px !important; /* Match updated navigation button font size */
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important; /* Force single line */
+    overflow: hidden !important; 
+    text-overflow: ellipsis !important; /* Add ellipsis if text too long */
   }
 
   .participant-badge {
