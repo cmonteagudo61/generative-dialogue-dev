@@ -46,7 +46,9 @@ function App() {
     setCurrentPage('input');
   };
 
-
+  const handleContinueToPermissions = () => {
+    setCurrentPage('permissions');
+  };
 
   const handleInputComplete = () => {
     // After input page, go to permissions page

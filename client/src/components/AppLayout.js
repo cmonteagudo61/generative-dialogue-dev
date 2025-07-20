@@ -51,10 +51,10 @@ const AppLayout = ({
   // Remove experimental debugging behavior - use currentPage for navigation state
   const getCurrentStage = () => {
     // Map currentPage to stage based on application flow
-    if (currentPage <= 2) return 'connect';    // Landing, Permission Setup
-    if (currentPage <= 4) return 'explore';    // Input Page, Navigation Map
-    if (currentPage === 5) return 'discover';  // Individual Reflection
-    return 'harvest';                          // Summary Page
+    if (currentPage === 'videoconference') return null; // Videoconference - no active tabs
+    if (currentPage === 'landing' || currentPage === 'input' || currentPage === 'permissions') return 'connect';
+    if (currentPage === 'reflection') return 'discover';
+    return 'harvest'; // Summary pages and beyond
   };
 
   const activeTab = getCurrentStage();
