@@ -132,20 +132,24 @@ const BuildingCommunityPage = ({
                 </div>
               </div>
               
-              <svg className="connecting-lines" viewBox="0 0 600 600">
-                <defs>
-                  <marker id="arrowhead" markerWidth="12" markerHeight="9" 
-                          refX="10" refY="4.5" orient="auto">
-                    <polygon points="0 0, 12 4.5, 0 9" fill="#333" />
-                  </marker>
-                </defs>
-                {/* Single circular path with arrows at clock positions */}
-                <path d="M 300 140 A 160 160 0 0 1 438 202" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
-                <path d="M 438 202 A 160 160 0 0 1 438 398" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
-                <path d="M 438 398 A 160 160 0 0 1 300 460" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
-                <path d="M 300 460 A 160 160 0 0 1 162 398" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
-                <path d="M 162 398 A 160 160 0 0 1 162 202" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
-                <path d="M 162 202 A 160 160 0 0 1 300 140" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
+              <svg className="connecting-lines" viewBox="0 0 600 600" style={{zIndex: 10}}>
+                {/* Single complete circle */}
+                <circle cx="300" cy="300" r="150" fill="none" stroke="#333" strokeWidth="3"/>
+                
+                {/* Four large arrowheads - rendered AFTER circle to be on top */}
+                <g style={{zIndex: 20}}>
+                  {/* Arrow at 1:30 position (northeast) */}
+                  <polygon points="420,180 440,190 430,210" fill="#333" stroke="none"/>
+                  
+                  {/* Arrow at 4:30 position (southeast) */}
+                  <polygon points="420,420 440,410 430,390" fill="#333" stroke="none"/>
+                  
+                  {/* Arrow at 7:30 position (southwest) */}
+                  <polygon points="180,420 160,410 170,390" fill="#333" stroke="none"/>
+                  
+                  {/* Arrow at 10:30 position (northwest) */}
+                  <polygon points="180,180 160,190 170,210" fill="#333" stroke="none"/>
+                </g>
               </svg>
             </div>
           </div>

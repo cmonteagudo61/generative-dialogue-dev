@@ -126,46 +126,48 @@
   padding: 0 8px;
 }
 
-/* Position each phase around the circle - proper clock positions */
+/* Position each phase around the circle - trigonometric positioning at equal radius */
 .phase-1 {
-  /* 12 o'clock */
-  top: 30px;
+  /* 0 degrees (12 o'clock) */
+  top: 15%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
 }
 
 .phase-2 {
-  /* 2 o'clock */
-  top: 110px;
-  right: 80px;
+  /* 60 degrees (2 o'clock) */
+  top: 33%;
+  left: 80%;
+  transform: translate(-50%, -50%);
 }
 
 .phase-3 {
-  /* 4 o'clock */
-  top: 50%;
-  right: 30px;
-  transform: translateY(-50%);
+  /* 120 degrees (4 o'clock) */
+  top: 67%;
+  left: 80%;
+  transform: translate(-50%, -50%);
 }
 
 .phase-4 {
-  /* 6 o'clock */
-  bottom: 30px;
+  /* 180 degrees (6 o'clock) */
+  top: 85%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   width: 220px; /* Wider for longer text */
 }
 
 .phase-5 {
-  /* 8 o'clock */
-  top: 50%;
-  left: 30px;
-  transform: translateY(-50%);
+  /* 240 degrees (8 o'clock) */
+  top: 67%;
+  left: 20%;
+  transform: translate(-50%, -50%);
 }
 
 .phase-6 {
-  /* 10 o'clock */
-  top: 110px;
-  left: 80px;
+  /* 300 degrees (10 o'clock) */
+  top: 33%;
+  left: 20%;
+  transform: translate(-50%, -50%);
 }
 
 /* Center text */
@@ -320,36 +322,48 @@
     font-size: 1.1rem;
   }
   
-  /* Adjust positions for smaller screen - maintain clock positions */
+  /* Adjust positions for smaller screen - maintain trigonometric positioning */
   .phase-1 {
-    top: 20px;
+    /* 0 degrees */
+    top: 12%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
   
   .phase-2 {
-    top: 85px;
-    right: 60px;
+    /* 60 degrees */
+    top: 30%;
+    left: 78%;
+    transform: translate(-50%, -50%);
   }
   
   .phase-3 {
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
+    /* 120 degrees */
+    top: 70%;
+    left: 78%;
+    transform: translate(-50%, -50%);
   }
   
   .phase-4 {
-    bottom: 20px;
+    /* 180 degrees */
+    top: 88%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 170px; /* Wider for longer text on tablet */
   }
   
   .phase-5 {
-    top: 50%;
-    left: 20px;
-    transform: translateY(-50%);
+    /* 240 degrees */
+    top: 70%;
+    left: 22%;
+    transform: translate(-50%, -50%);
   }
   
   .phase-6 {
-    top: 85px;
-    left: 60px;
+    /* 300 degrees */
+    top: 30%;
+    left: 22%;
+    transform: translate(-50%, -50%);
   }
 }
 
