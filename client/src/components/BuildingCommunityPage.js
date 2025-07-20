@@ -132,23 +132,23 @@ const BuildingCommunityPage = ({
                 </div>
               </div>
               
-              <svg className="connecting-lines" viewBox="0 0 600 600" style={{zIndex: 10}}>
-                {/* Single complete circle */}
+              <svg className="connecting-lines" viewBox="0 0 600 600" style={{zIndex: 1}}>
+                {/* Single complete circle - behind labels */}
                 <circle cx="300" cy="300" r="150" fill="none" stroke="#333" strokeWidth="3"/>
                 
-                {/* Four large arrowheads - rendered AFTER circle to be on top */}
-                <g style={{zIndex: 20}}>
-                  {/* Arrow at 1:30 position (northeast) */}
-                  <polygon points="420,180 440,190 430,210" fill="#333" stroke="none"/>
+                {/* Four equilateral triangular arrowheads at 12, 3, 6, 9 o'clock */}
+                <g style={{zIndex: 5}}>
+                  {/* Arrow at 12 o'clock - pointing clockwise (right) */}
+                  <polygon points="300,140 315,150 300,160" fill="#333" stroke="none"/>
                   
-                  {/* Arrow at 4:30 position (southeast) */}
-                  <polygon points="420,420 440,410 430,390" fill="#333" stroke="none"/>
+                  {/* Arrow at 3 o'clock - pointing clockwise (down) */}
+                  <polygon points="450,310 442.5,290 457.5,290" fill="#333" stroke="none"/>
                   
-                  {/* Arrow at 7:30 position (southwest) */}
-                  <polygon points="180,420 160,410 170,390" fill="#333" stroke="none"/>
+                  {/* Arrow at 6 o'clock - pointing clockwise (left) */}
+                  <polygon points="300,460 285,450 300,440" fill="#333" stroke="none"/>
                   
-                  {/* Arrow at 10:30 position (northwest) */}
-                  <polygon points="180,180 160,190 170,210" fill="#333" stroke="none"/>
+                  {/* Arrow at 9 o'clock - pointing clockwise (up) */}
+                  <polygon points="150,290 142.5,310 157.5,310" fill="#333" stroke="none"/>
                 </g>
               </svg>
             </div>
