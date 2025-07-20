@@ -41,7 +41,7 @@ const BottomContentArea = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [isInCall, setIsInCall] = useState(true);
-  const [totalTime, setTotalTime] = useState('01:30:00');
+  const [totalTime] = useState('01:30:00');
   const [segmentTime, setSegmentTime] = useState('00:00');
   const [voteState, setVoteState] = useState(null); // 'up', 'down', or null
   const [backButtonState, setBackButtonState] = useState('off'); // 'off', 'hover', 'on'
@@ -55,7 +55,7 @@ const BottomContentArea = ({
   // Transcription state
   const [isRecording, setIsRecording] = useState(false);
   const [transcriptionStatus, setTranscriptionStatus] = useState('Disconnected');
-  const [transcriptionError, setTranscriptionError] = useState('');
+  const [transcriptionError] = useState('');
 
   // Timer effect for segment time
   useEffect(() => {

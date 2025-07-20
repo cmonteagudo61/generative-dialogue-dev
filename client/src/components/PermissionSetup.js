@@ -28,7 +28,7 @@ const PermissionSetup = ({
     const mediaStreamRef = useRef(null);
     
     // Use Daily.co video context
-    const { joinRoom, callObject, error: videoError, isConnected } = useVideo();
+    const { joinRoom } = useVideo();
     
     // Navigation state for development
     const [backButtonState, setBackButtonState] = useState('off');

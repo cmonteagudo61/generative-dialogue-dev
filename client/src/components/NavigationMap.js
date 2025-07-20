@@ -58,7 +58,7 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange }) => {
     if (activeSize !== currentSize) {
       setCurrentSize(activeSize);
     }
-  }, [activeSize]);
+  }, [activeSize, currentSize]);
   
   // Get icon based on name and state
   const getIcon = (iconName, isActive, isHovered) => {

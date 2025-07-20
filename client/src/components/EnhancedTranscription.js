@@ -8,6 +8,7 @@ const EnhancedTranscription = () => {
   const [realtimeTranscript, setRealtimeTranscript] = useState('');
   const [finalTranscript, setFinalTranscript] = useState('');
   const [speakerStats, setSpeakerStats] = useState({});
+  // eslint-disable-next-line no-unused-vars
   const [speakerCount, setSpeakerCount] = useState(0);
   const [confidence, setConfidence] = useState(0);
   const [status, setStatus] = useState('Ready to transcribe');

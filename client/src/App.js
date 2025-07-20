@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import './App.css';
 
 // Import components
@@ -9,6 +9,14 @@ import PermissionSetup from './components/PermissionSetup';
 import InputPage from './components/InputPage';
 import IndividualReflectionPage from './components/IndividualReflectionPage';
 import SummaryPage from './components/SummaryPage';
+import WESummaryPage from './components/WESummaryPage';
+import NewInsightsPage from './components/NewInsightsPage';
+import QuestionsPage from './components/QuestionsPage';
+import TalkAboutPage from './components/TalkAboutPage';
+import CanTalkPage from './components/CanTalkPage';
+import EmergingStoryPage from './components/EmergingStoryPage';
+import OurStoryPage from './components/OurStoryPage';
+import BuildingCommunityPage from './components/BuildingCommunityPage';
 import { VideoProvider } from './components/VideoProvider';
 
 function App() {
@@ -38,9 +46,7 @@ function App() {
     setCurrentPage('input');
   };
 
-  const handleContinueToPermissions = () => {
-    setCurrentPage('permissions');
-  };
+
 
   const handleInputComplete = () => {
     // After input page, go to permissions page
@@ -54,7 +60,7 @@ function App() {
   };
 
   const renderCurrentPage = () => {
-    const pages = ['landing', 'input', 'permissions', 'videoconference', 'reflection', 'summary'];
+    const pages = ['landing', 'input', 'permissions', 'videoconference', 'reflection', 'summary', 'we-summary', 'new-insights', 'questions', 'talkabout', 'cantalk', 'emergingstory', 'ourstory', 'buildingcommunity'];
     const currentIndex = pages.indexOf(currentPage);
     
     const navigationProps = {
@@ -82,6 +88,22 @@ function App() {
         return <IndividualReflectionPage {...navigationProps} />;
       case 'summary':
         return <SummaryPage {...navigationProps} />;
+      case 'we-summary':
+        return <WESummaryPage {...navigationProps} />;
+      case 'new-insights':
+        return <NewInsightsPage {...navigationProps} />;
+      case 'questions':
+        return <QuestionsPage {...navigationProps} />;
+      case 'talkabout':
+        return <TalkAboutPage {...navigationProps} />;
+      case 'cantalk':
+        return <CanTalkPage {...navigationProps} />;
+      case 'emergingstory':
+        return <EmergingStoryPage {...navigationProps} />;
+      case 'ourstory':
+        return <OurStoryPage {...navigationProps} />;
+      case 'buildingcommunity':
+        return <BuildingCommunityPage {...navigationProps} />;
       default:
         return <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
     }

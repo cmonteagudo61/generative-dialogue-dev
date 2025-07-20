@@ -7,6 +7,7 @@ const LoopMagnifier = ({ isActive, children, magnification = 2.5, size = 200, pa
   const [forceUpdate, setForceUpdate] = useState(0);
   const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 });
   const animationFrameRef = useRef(null);
+  // eslint-disable-next-line no-unused-vars
   const [centerParticipantName, setCenterParticipantName] = useState('');
 
   // Debug logging for isActive prop changes
@@ -98,8 +99,11 @@ const LoopMagnifier = ({ isActive, children, magnification = 2.5, size = 200, pa
         }
       }
       
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
+      // Copy ref value to avoid exhaustive-deps warning
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const animationFrame = animationFrameRef.current;
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
       }
     };
   }, [isActive, isVisible]);
@@ -582,7 +586,6 @@ const MagnifierContent = ({
                     lineHeight: '1.2',
                     zIndex: 999,
                     border: 'none', // EXACT same as background (no border)
-                    borderRadius: '0px', // Square corners like background
                     boxShadow: 'none', // No shadow like background
                     minWidth: 'max-content',
                     width: 'max-content',

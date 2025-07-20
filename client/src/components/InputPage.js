@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './InputPage.css';
 import {
   directionBackwardOff,
@@ -52,11 +52,7 @@ const InputPage = ({
     }));
   };
 
-  const handleContinue = () => {
-    if (onContinue) {
-      onContinue(parameters);
-    }
-  };
+
 
   // Button icon functions
   const getBackButtonIcon = () => {

@@ -439,7 +439,9 @@ const VideoTileWithFit = ({ participant, getObjectFit, isMock }) => {
             if (el && el.parentElement) {
               const container = el.parentElement;
               const containerRect = container.getBoundingClientRect();
+              // eslint-disable-next-line no-unused-vars
               const videoAspectRatio = el.videoWidth / el.videoHeight;
+              // eslint-disable-next-line no-unused-vars
               const containerAspectRatio = containerRect.width / containerRect.height;
               
               // Always use cover to crop video instead of letterboxing

@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 
 const DAILY_JS_URL = 'https://unpkg.com/@daily-co/daily-js@0.80.0';
-const ROOM_URL = 'https://generativedialogue.daily.co/ReactRoom';
 
 const VideoContext = createContext();
 
@@ -20,7 +19,7 @@ const getMockParticipants = (count, startIndex = 1) => {
 
 export const VideoProvider = ({ children }) => {
   const [participants, setParticipants] = useState([]);
-  const [localParticipant, setLocalParticipant] = useState(null);
+
   const [callObject, setCallObject] = useState(null);
   const [error, setError] = useState(null);
   const [dailyLoaded, setDailyLoaded] = useState(!!window.DailyIframe);
@@ -84,7 +83,7 @@ export const VideoProvider = ({ children }) => {
     const handleParticipants = () => {
       const all = call.participants();
       setParticipants(Object.values(all));
-      setLocalParticipant(Object.values(all).find(p => p.local));
+
     };
     const handleJoinedMeeting = () => {
       console.log('📞 Daily.co: Joined meeting successfully');
@@ -95,7 +94,7 @@ export const VideoProvider = ({ children }) => {
       console.log('📞 Daily.co: Left meeting');
       setIsConnected(false);
       setParticipants([]);
-      setLocalParticipant(null);
+
     };
     const handleError = (e) => {
       console.error('📞 Daily.co error:', e);

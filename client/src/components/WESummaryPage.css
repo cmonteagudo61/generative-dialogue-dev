@@ -10,8 +10,8 @@ html body .App .grid-wrapper {
   flex: 0 0 auto !important; /* Don't grow, use fixed height */
 }
 
-/* Summary Page - Based on Individual Reflection Page styling */
-.summary-container {
+/* WE Summary Page - Based on Summary Page styling */
+.we-summary-container {
   height: 100%; /* Fill all available height */
   background: #f5f5f5; /* Light grey background matching other pages */
   display: flex;
@@ -24,12 +24,11 @@ html body .App .grid-wrapper {
 }
 
 /* Header styling */
-.summary-header {
+.we-summary-header {
   margin-bottom: 5px; /* Minimal spacing to bring summary box very close to title */
   padding: 0; /* Remove any padding */
   width: 100%; /* Match the width of summary content */
   max-width: none; /* Remove any width constraints */
-  /* Removed pinstripe border as requested */
   background: transparent; /* Transparent background for cleaner look */
 }
 
@@ -44,7 +43,7 @@ html body .App .grid-wrapper {
 }
 
 /* Main title - left aligned */
-.summary-container .summary-header .summary-title {
+.we-summary-container .we-summary-header .we-summary-title {
   font-size: 1.5rem !important;
   font-weight: 400 !important;
   color: #4A5A85 !important; /* Default app blue color */
@@ -67,10 +66,10 @@ html body .App .grid-wrapper {
 }
 
 /* Subtitle - right aligned */
-.summary-subtitle {
+.we-summary-container .we-summary-header .we-summary-subtitle {
   font-size: 1.5rem !important;
   font-weight: 400 !important;
-  color: #E17B43 !important; /* Orange color for consistency */
+  color: #E17B43 !important; /* Orange color for "What Divides Us?" */
   text-align: right !important; /* Right align within the flex container */
   margin: 0 !important; /* Remove all margins */
   padding: 0 !important; /* Remove any padding */
@@ -88,123 +87,123 @@ html body .App .grid-wrapper {
   flex-shrink: 0; /* Prevent shrinking */
 }
 
-/* Content area - pinstripe border removed */
-.summary-content {
+/* Content section */
+.we-summary-content {
+  flex: 1; /* Take remaining height */
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0; /* Remove gap, let individual sections handle spacing */
-  width: 100%;
-  max-width: none;
-  flex: 1; /* Take up all available space to fill to the pinstripe */
-  min-height: 0; /* Allow flex to work properly */
-  overflow-y: auto; /* Allow scrolling if content overflows */
-  /* Removed pinstripe border as requested */
-  background: #ffffff;
+  overflow-y: auto; /* Allow scrolling if content is too long */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* Summary text content */
-.summary-text {
-  background: #ffffff;
-  border: none; /* Remove border - parent container has the border */
-  border-bottom: 1px solid #e0e0e0; /* Light separator between sections */
-  border-radius: 0; /* Sharp corners */
-  padding: 20px 20px 0 20px; /* Removed bottom padding from content area */
-  font-size: 16px;
-  line-height: 1.6;
+/* Summary text */
+.we-summary-text {
+  margin-bottom: 20px;
+  flex: 0 0 auto; /* Don't grow or shrink */
+}
+
+.we-summary-text p {
+  font-size: 0.9rem;
+  line-height: 1.5;
   color: #333;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.summary-text p {
   margin: 0;
   text-align: justify;
 }
 
-/* Top Ten Themes section */
+/* Themes section */
 .top-themes {
-  background: #ffffff;
-  border: none; /* Remove border - parent container has the border */
-  border-radius: 0;
-  padding: 20px 20px 0 20px !important; /* Force no bottom padding */
-  margin: 0 !important; /* Force no margin */
-  flex: 1; /* Expand to fill remaining space */
-  min-height: 300px; /* Ensure it takes up space even with little content */
+  flex: 1; /* Take remaining space */
+  display: flex;
+  flex-direction: column;
 }
 
 .themes-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #B8860B; /* Copper/bronze color matching prototype */
-  text-align: center;
-  margin: 0 0 20px 0;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #E17B43; /* Orange color for section title */
+  margin: 0 0 15px 0;
+  text-align: left;
 }
 
-/* Themes list */
 .themes-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
+  flex: 1;
 }
 
-/* Individual theme item */
 .theme-item {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e0e0e0;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
 }
 
 .theme-item:last-child {
   border-bottom: none;
-  padding-bottom: 0;
 }
 
 .theme-label {
-  font-weight: 700;
-  color: #4A5A85; /* Blue color */
-  font-size: 16px;
+  font-weight: 600;
+  color: #4A5A85;
+  font-size: 0.9rem;
+  flex: 0 0 auto;
+  min-width: 70px;
 }
 
 .theme-text {
+  font-size: 0.9rem;
+  line-height: 1.4;
   color: #333;
-  font-size: 14px;
-  line-height: 1.5;
-  margin: 5px 0;
+  flex: 1;
+  margin-right: 12px;
 }
 
 .theme-percentage {
   font-weight: 700;
-  color: #4A5A85; /* Blue color */
-  font-size: 18px;
-  align-self: flex-end;
-  margin-top: 5px;
+  color: #E17B43; /* Orange color for percentages */
+  font-size: 1rem;
+  flex: 0 0 auto;
+  min-width: 45px;
+  text-align: right;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .summary-container {
-    padding: 15px;
+  .we-summary-container {
+    padding: 15px 15px 0 15px;
   }
   
-  /* Hide the "What Connects Us?" subtitle on mobile */
-  .summary-subtitle {
-    display: none;
-  }
-  
-  /* Adjust header titles for mobile - center the main title */
   .header-titles {
-    justify-content: center; /* Center the main title when subtitle is hidden */
-    padding: 10px 15px; /* Reduce padding on mobile */
+    padding: 12px 15px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
   }
   
-  .summary-text, .top-themes {
+  .we-summary-container .we-summary-header .we-summary-title,
+  .we-summary-container .we-summary-header .we-summary-subtitle {
+    font-size: 1.3rem !important;
+    text-align: left !important;
+  }
+  
+  .we-summary-content {
     padding: 15px;
   }
   
-  .themes-title {
-    font-size: 1.25rem;
+  .theme-item {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+  
+  .theme-percentage {
+    align-self: flex-end;
+    margin-top: 4px;
   }
 } 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import NavigationMap from './NavigationMap';
 import BottomContentArea from './BottomContentArea';
 import './AppLayout.css';
@@ -45,7 +45,8 @@ const AppLayout = ({
   canGoForward,
   onBack,
   onForward,
-  currentPage
+  currentPage,
+  showBottomContent = true
 }) => {
   // Remove experimental debugging behavior - use currentPage for navigation state
   const getCurrentStage = () => {
@@ -118,16 +119,18 @@ const AppLayout = ({
         </div>
 
         {/* Bottom content area with tabs and control bar */}
-        <BottomContentArea 
-          participantCount={participantCount} 
-          onLoopToggle={onLoopToggle}
-          developmentMode={developmentMode}
-          canGoBack={canGoBack}
-          canGoForward={canGoForward}
-          onBack={onBack}
-          onForward={onForward}
-          currentPage={currentPage}
-        />
+        {showBottomContent && (
+          <BottomContentArea 
+            participantCount={participantCount} 
+            onLoopToggle={onLoopToggle}
+            developmentMode={developmentMode}
+            canGoBack={canGoBack}
+            canGoForward={canGoForward}
+            onBack={onBack}
+            onForward={onForward}
+            currentPage={currentPage}
+          />
+        )}
       </div>
     </div>
   );

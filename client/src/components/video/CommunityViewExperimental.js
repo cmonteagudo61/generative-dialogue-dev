@@ -50,6 +50,66 @@ const CommunityViewExperimental = ({
     ? participants
     : Object.values(participants);
 
+  // Generate mock participants for testing (ensure we have enough to test)
+  const generateMockParticipants = useCallback((count) => {
+    const firstNames = ["Alex", "Jordan", "Casey", "Morgan", "Taylor", "Riley", "Avery", "Quinn", "Sage", "Cameron"];
+    const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez"];
+    
+    return Array.from({ length: count }, (_, i) => {
+      // Test long names for first 3 participants
+      let userName;
+      if (i === 0) {
+        userName = "Dr. Alexandra Thompson-Williams";
+      } else if (i === 1) {
+        userName = "Professor Christopher Montgomery-Smith III";
+      } else if (i === 2) {
+        userName = "Maria Elena Rodriguez-Gonzalez de la Cruz";
+      } else if (i < 20) {
+        // More realistic test names for first 20
+        userName = `${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}`;
+      } else {
+        userName = `User ${realParticipants.length + i + 1}`;
+      }
+      
+      return {
+        session_id: `mock-${Date.now()}-${i}`,
+        user_name: userName,
+        local: false,
+        tracks: { 
+          // Use deterministic values based on index instead of Math.random()
+          video: { state: (i % 10) > 2 ? 'playable' : 'blocked' }, // ~70% have video
+          audio: { state: (i % 5) > 0 ? 'playable' : 'blocked' }   // ~80% have audio
+        },
+        avatar: randomAvatar(i) // Use the deterministic avatar function
+      };
+    });
+  }, [realParticipants]);
+
+  // FIXED: Properly memoize participantArray to prevent infinite re-renders
+  const participantArray = useMemo(() => {
+    const realParticipants = participants.map((p, index) => ({
+      ...p,
+      session_id: p.session_id || `real-${index}`,
+      identity: p.identity || `User ${index + 1}`,
+      type: 'real'
+    }));
+
+    // For demo/testing: add mock participants based on controlled count
+    const mockCount = Math.max(0, mockParticipantCount - realParticipants.length);
+    const mockParticipants = generateMockParticipants(mockCount);
+    
+    console.log('📜 Scroll Test - Participant Array:', {
+      realCount: realParticipants.length,
+      mockParticipantCount,
+      mockCount,
+      mockGenerated: mockParticipants.length,
+      totalParticipants: realParticipants.length + mockParticipants.length,
+      testingMode: 'SCROLL_TESTING_500_PARTICIPANTS'
+    });
+    
+    return [...realParticipants, ...mockParticipants];
+  }, [participants, mockParticipantCount, generateMockParticipants]);
+
   // FLICKERING FIX: Enhanced stable video ref handler with Daily.co specific optimizations
   const createVideoRef = useCallback((sessionId) => {
     return (el) => {
@@ -139,7 +199,7 @@ const CommunityViewExperimental = ({
           }
        }
     };
-  }, []); // Remove realParticipants dependency to prevent recreation
+  }, [participantArray]); // Include participantArray dependency
 
   // FLICKERING FIX: Move ResizeObserver to useEffect for proper lifecycle management
   useEffect(() => {
@@ -153,6 +213,7 @@ const CommunityViewExperimental = ({
         const resizeObserver = new ResizeObserver((entries) => {
           // Throttle ResizeObserver to prevent excessive calls
           setTimeout(() => {
+            // eslint-disable-next-line no-unused-vars
             for (let _entry of entries) {
               const currentEl = videoRefs.current.get(sessionId);
               if (currentEl) {
@@ -189,9 +250,13 @@ const CommunityViewExperimental = ({
   useEffect(() => {
     return () => {
       // Copy ref values to avoid exhaustive-deps warning
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       const observers = resizeObservers.current;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       const videos = videoRefs.current;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       const tracks = trackStates.current;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       const timers = videoUpdateTimers.current;
       
       // Cleanup all timers first
@@ -221,68 +286,6 @@ const CommunityViewExperimental = ({
 
   // Constants
   const MIN_SIZE = 60;
-
-
-
-  // Generate mock participants for testing (ensure we have enough to test)
-  const generateMockParticipants = (count) => {
-    const firstNames = ["Alex", "Jordan", "Casey", "Morgan", "Taylor", "Riley", "Avery", "Quinn", "Sage", "Cameron"];
-    const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez"];
-    
-    return Array.from({ length: count }, (_, i) => {
-      // Test long names for first 3 participants
-      let userName;
-      if (i === 0) {
-        userName = "Dr. Alexandra Thompson-Williams";
-      } else if (i === 1) {
-        userName = "Professor Christopher Montgomery-Smith III";
-      } else if (i === 2) {
-        userName = "Maria Elena Rodriguez-Gonzalez de la Cruz";
-      } else if (i < 20) {
-        // More realistic test names for first 20
-        userName = `${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}`;
-      } else {
-        userName = `User ${realParticipants.length + i + 1}`;
-      }
-      
-      return {
-        session_id: `mock-${Date.now()}-${i}`,
-        user_name: userName,
-        local: false,
-        tracks: { 
-          // Use deterministic values based on index instead of Math.random()
-          video: { state: (i % 10) > 2 ? 'playable' : 'blocked' }, // ~70% have video
-          audio: { state: (i % 5) > 0 ? 'playable' : 'blocked' }   // ~80% have audio
-        },
-        avatar: randomAvatar(i) // Use the deterministic avatar function
-      };
-    });
-  };
-
-  // FIXED: Properly memoize participantArray to prevent infinite re-renders
-  const participantArray = useMemo(() => {
-    const realParticipants = participants.map((p, index) => ({
-      ...p,
-      session_id: p.session_id || `real-${index}`,
-      identity: p.identity || `User ${index + 1}`,
-      type: 'real'
-    }));
-
-    // For demo/testing: add mock participants based on controlled count
-    const mockCount = Math.max(0, mockParticipantCount - realParticipants.length);
-    const mockParticipants = generateMockParticipants(mockCount);
-    
-    console.log('📜 Scroll Test - Participant Array:', {
-      realCount: realParticipants.length,
-      mockParticipantCount,
-      mockCount,
-      mockGenerated: mockParticipants.length,
-      totalParticipants: realParticipants.length + mockParticipants.length,
-      testingMode: 'SCROLL_TESTING_500_PARTICIPANTS'
-    });
-    
-    return [...realParticipants, ...mockParticipants];
-  }, [participants, mockParticipantCount]);
 
   // Send participant array to magnifier when ready
   useEffect(() => {
@@ -416,6 +419,7 @@ const CommunityViewExperimental = ({
     let resizeObserver;
     if (scrollWrapperRef.current && typeof ResizeObserver !== 'undefined') {
       resizeObserver = new ResizeObserver((entries) => {
+        // eslint-disable-next-line no-unused-vars
         for (let _entry of entries) {
           // Trigger resize when the scroll wrapper size changes
           throttledResize();
