@@ -132,20 +132,20 @@ const BuildingCommunityPage = ({
                 </div>
               </div>
               
-              <svg className="connecting-lines" viewBox="0 0 400 400">
-                <circle cx="200" cy="200" r="120" fill="none" stroke="#333" strokeWidth="2"/>
+              <svg className="connecting-lines" viewBox="0 0 600 600">
+                <circle cx="300" cy="300" r="160" fill="none" stroke="#333" strokeWidth="3"/>
                 <defs>
-                  <marker id="arrowhead" markerWidth="10" markerHeight="7" 
-                          refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                  <marker id="arrowhead" markerWidth="12" markerHeight="9" 
+                          refX="10" refY="4.5" orient="auto">
+                    <polygon points="0 0, 12 4.5, 0 9" fill="#333" />
                   </marker>
                 </defs>
-                <path d="M 200 80 A 120 120 0 0 1 304 136" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
-                <path d="M 304 136 A 120 120 0 0 1 304 264" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
-                <path d="M 304 264 A 120 120 0 0 1 200 320" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
-                <path d="M 200 320 A 120 120 0 0 1 96 264" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
-                <path d="M 96 264 A 120 120 0 0 1 96 136" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
-                <path d="M 96 136 A 120 120 0 0 1 200 80" fill="none" stroke="#333" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+                <path d="M 300 140 A 160 160 0 0 1 438 202" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
+                <path d="M 438 202 A 160 160 0 0 1 438 398" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
+                <path d="M 438 398 A 160 160 0 0 1 300 460" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
+                <path d="M 300 460 A 160 160 0 0 1 162 398" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
+                <path d="M 162 398 A 160 160 0 0 1 162 202" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
+                <path d="M 162 202 A 160 160 0 0 1 300 140" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
               </svg>
             </div>
           </div>
