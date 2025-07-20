@@ -126,37 +126,46 @@
   padding: 0 8px;
 }
 
-/* Position each phase around the circle - expanded positions */
+/* Position each phase around the circle - proper clock positions */
 .phase-1 {
+  /* 12 o'clock */
   top: 30px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .phase-2 {
-  top: 120px;
-  right: 30px;
+  /* 2 o'clock */
+  top: 110px;
+  right: 80px;
 }
 
 .phase-3 {
-  bottom: 120px;
+  /* 4 o'clock */
+  top: 50%;
   right: 30px;
+  transform: translateY(-50%);
 }
 
 .phase-4 {
+  /* 6 o'clock */
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
+  width: 220px; /* Wider for longer text */
 }
 
 .phase-5 {
-  bottom: 120px;
+  /* 8 o'clock */
+  top: 50%;
   left: 30px;
+  transform: translateY(-50%);
 }
 
 .phase-6 {
-  top: 120px;
-  left: 30px;
+  /* 10 o'clock */
+  top: 110px;
+  left: 80px;
 }
 
 /* Center text */
@@ -311,33 +320,36 @@
     font-size: 1.1rem;
   }
   
-  /* Adjust positions for smaller screen */
+  /* Adjust positions for smaller screen - maintain clock positions */
   .phase-1 {
-    top: 25px;
+    top: 20px;
   }
   
   .phase-2 {
-    top: 95px;
-    right: 25px;
+    top: 85px;
+    right: 60px;
   }
   
   .phase-3 {
-    bottom: 95px;
-    right: 25px;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
   }
   
   .phase-4 {
-    bottom: 25px;
+    bottom: 20px;
+    width: 170px; /* Wider for longer text on tablet */
   }
   
   .phase-5 {
-    bottom: 95px;
-    left: 25px;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
   }
   
   .phase-6 {
-    top: 95px;
-    left: 25px;
+    top: 85px;
+    left: 60px;
   }
 }
 
@@ -364,6 +376,10 @@
   .phase-item {
     width: 120px;
     height: 55px;
+  }
+  
+  .phase-4 {
+    width: 140px; /* Extra width for 6 o'clock position on mobile */
   }
   
   .phase-text {

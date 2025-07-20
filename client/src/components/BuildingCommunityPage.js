@@ -133,13 +133,13 @@ const BuildingCommunityPage = ({
               </div>
               
               <svg className="connecting-lines" viewBox="0 0 600 600">
-                <circle cx="300" cy="300" r="160" fill="none" stroke="#333" strokeWidth="3"/>
                 <defs>
                   <marker id="arrowhead" markerWidth="12" markerHeight="9" 
                           refX="10" refY="4.5" orient="auto">
                     <polygon points="0 0, 12 4.5, 0 9" fill="#333" />
                   </marker>
                 </defs>
+                {/* Single circular path with arrows at clock positions */}
                 <path d="M 300 140 A 160 160 0 0 1 438 202" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
                 <path d="M 438 202 A 160 160 0 0 1 438 398" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
                 <path d="M 438 398 A 160 160 0 0 1 300 460" fill="none" stroke="#333" strokeWidth="3" markerEnd="url(#arrowhead)"/>
