@@ -47,6 +47,8 @@ const BottomContentArea = ({
   const [voteState, setVoteState] = useState(null); // 'up', 'down', or null
   const [backButtonState, setBackButtonState] = useState('off'); // 'off', 'hover', 'on'
   const [forwardButtonState, setForwardButtonState] = useState('off'); // 'off', 'hover', 'on'
+  const [thumbsUpButtonState, setThumbsUpButtonState] = useState('off'); // 'off', 'hover', 'on'
+  const [thumbsDownButtonState, setThumbsDownButtonState] = useState('off'); // 'off', 'hover', 'on'
   const [personHover, setPersonHover] = useState(false);
   const [isMicrophoneHover, setIsMicrophoneHover] = useState(false);
   const [isCameraHover, setIsCameraHover] = useState(false);
@@ -202,6 +204,26 @@ const BottomContentArea = ({
     }
   };
 
+  const handleThumbsUpClick = () => {
+    console.log('Thumbs up clicked');
+    const newThumbsUpState = thumbsUpButtonState === 'on' ? 'off' : 'on';
+    setThumbsUpButtonState(newThumbsUpState);
+    
+    if (newThumbsUpState === 'on') {
+      setThumbsDownButtonState('off'); // Turn off thumbs down when thumbs up is on
+    }
+  };
+
+  const handleThumbsDownClick = () => {
+    console.log('Thumbs down clicked');
+    const newThumbsDownState = thumbsDownButtonState === 'on' ? 'off' : 'on';
+    setThumbsDownButtonState(newThumbsDownState);
+    
+    if (newThumbsDownState === 'on') {
+      setThumbsUpButtonState('off'); // Turn off thumbs up when thumbs down is on
+    }
+  };
+
   const getBackButtonIcon = () => {
     switch (backButtonState) {
       case 'on': return directionBackwardOn;
@@ -215,6 +237,22 @@ const BottomContentArea = ({
       case 'on': return directionForwardOn;
       case 'hover': return directionForwardHover;
       default: return directionForwardOff;
+    }
+  };
+
+  const getThumbsUpButtonIcon = () => {
+    switch (thumbsUpButtonState) {
+      case 'on': return thumbsUpOn;
+      case 'hover': return thumbsUpHover;
+      default: return thumbsUpOff;
+    }
+  };
+
+  const getThumbsDownButtonIcon = () => {
+    switch (thumbsDownButtonState) {
+      case 'on': return thumbsDownOn;
+      case 'hover': return thumbsDownHover;
+      default: return thumbsDownOff;
     }
   };
 
@@ -410,8 +448,8 @@ const BottomContentArea = ({
       
       {/* Control bar */}
       <div className="control-bar">
-        {/* Media controls */}
-        <div style={{display: 'flex'}}>
+        {/* Media controls - Left group */}
+        <div className="media-controls">
           <button 
             id="camera-btn" 
             className="control-button"
@@ -533,8 +571,65 @@ const BottomContentArea = ({
           </div>
         </div>
         
-        {/* Navigation controls */}
-        <div style={{display: 'flex'}}>
+        {/* Navigation controls - Right group */}
+        <div className="navigation-controls"  style={{display: 'flex'}}>
+          {/* Voting controls */}
+          <button 
+            id="thumbs-up-btn" 
+            className={`control-button ${thumbsUpButtonState === 'on' ? 'active' : ''}`}
+            onClick={handleThumbsUpClick}
+            onMouseEnter={() => setThumbsUpButtonState(thumbsUpButtonState === 'on' ? 'on' : 'hover')}
+            onMouseLeave={() => setThumbsUpButtonState(thumbsUpButtonState === 'on' ? 'on' : 'off')}
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              outline: 'none',
+              borderRadius: '50%',
+              boxShadow: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <img 
+              src={getThumbsUpButtonIcon()} 
+              alt="Thumbs Up" 
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                display: 'block'
+              }}
+            />
+          </button>
+          
+          <button 
+            id="thumbs-down-btn" 
+            className={`control-button ${thumbsDownButtonState === 'on' ? 'active' : ''}`}
+            onClick={handleThumbsDownClick}
+            onMouseEnter={() => setThumbsDownButtonState(thumbsDownButtonState === 'on' ? 'on' : 'hover')}
+            onMouseLeave={() => setThumbsDownButtonState(thumbsDownButtonState === 'on' ? 'on' : 'off')}
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              outline: 'none',
+              borderRadius: '50%',
+              boxShadow: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <img 
+              src={getThumbsDownButtonIcon()} 
+              alt="Thumbs Down" 
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                display: 'block'
+              }}
+            />
+          </button>
+          
           <button 
             id="back-btn" 
             className="control-button"
@@ -549,7 +644,8 @@ const BottomContentArea = ({
               borderRadius: '50%',
               boxShadow: 'none',
               opacity: (developmentMode && !canGoBack) ? 0.4 : 1,
-              cursor: (developmentMode && !canGoBack) ? 'not-allowed' : 'pointer'
+              cursor: (developmentMode && !canGoBack) ? 'not-allowed' : 'pointer',
+              marginLeft: '8px'
             }}
           >
             <img 

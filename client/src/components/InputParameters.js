@@ -12,6 +12,7 @@ import {
 function InputParameters({ onBack, onForward, canGoBack, canGoForward, developmentMode }) {
   const [backButtonState, setBackButtonState] = useState('off');
   const [forwardButtonState, setForwardButtonState] = useState('off');
+  const [isMobile, setIsMobile] = useState(false);
   
   const [formData, setFormData] = useState({
     host: 'Kathleen Smith',
@@ -43,6 +44,18 @@ function InputParameters({ onBack, onForward, canGoBack, canGoForward, developme
   useEffect(() => {
     localStorage.setItem('dialogueParameters', JSON.stringify(formData));
   }, [formData]);
+
+  // Check for mobile view
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 1100);
+    };
+    
+    checkMobile(); // Check on mount
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -100,10 +113,39 @@ function InputParameters({ onBack, onForward, canGoBack, canGoForward, developme
   };
 
   return (
-    <div className="input-parameters-page">
-      <div className="input-parameters-container">
-        {/* Header Section - Same as Landing Page */}
-        <header className="input-parameters-header">
+    <div 
+      className="input-parameters-page"
+      style={{
+        height: isMobile ? '100vh' : 'auto',
+        display: isMobile ? 'flex' : 'block',
+        flexDirection: isMobile ? 'column' : 'unset',
+        backgroundColor: isMobile ? '#f0f0f0' : 'transparent'
+      }}
+    >
+      <div 
+        className="input-parameters-container"
+        style={{
+          flex: isMobile ? '1' : 'unset',
+          overflow: isMobile ? 'auto' : 'visible',
+          padding: isMobile ? '10px' : 'auto'
+        }}
+      >
+                  {/* Mobile Mode Indicator */}
+          {isMobile && (
+            <div style={{
+              backgroundColor: 'orange',
+              color: 'white',
+              padding: '10px',
+              textAlign: 'center',
+              fontWeight: 'bold',
+              margin: '10px 0'
+            }}>
+              📱 MOBILE MODE - CONTENT SCROLLS, FOOTER STAYS FIXED
+            </div>
+          )}
+          
+          {/* Header Section - Same as Landing Page */}
+          <header className="input-parameters-header">
           <div className="header-content">
             <div className="logo-container">
               <img 
@@ -131,7 +173,15 @@ function InputParameters({ onBack, onForward, canGoBack, canGoForward, developme
             <h2 className="parameters-title">Input Parameters</h2>
           </div>
 
-          <form onSubmit={handleSubmit} className="parameters-form">
+          <form 
+            onSubmit={handleSubmit} 
+            className="parameters-form"
+            style={{
+              minHeight: isMobile ? '120vh' : 'auto',
+              border: isMobile ? '2px dashed #ccc' : 'none',
+              padding: isMobile ? '20px' : '0'
+            }}
+          >
             <div className="form-row">
               <div className="form-group">
                 <label>Host</label>
@@ -343,7 +393,81 @@ function InputParameters({ onBack, onForward, canGoBack, canGoForward, developme
             </div>
           </div>
         </div>
+              )}
+
+      {/* Fixed Mobile Footer - stays at bottom while content scrolls */}
+      {isMobile && (
+        <div 
+          style={{
+            backgroundColor: '#e0e0e3',
+            borderTop: '1px solid #ccc',
+            padding: '15px 20px',
+            flexShrink: 0
+          }}
+        >
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <span style={{ 
+              fontWeight: '600',
+              color: '#3E4C71',
+              fontSize: '16px'
+            }}>
+              Input Parameters (2/4)
+            </span>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {canGoBack && (
+                <button 
+                  onClick={handleBackClick}
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    backgroundColor: 'rgba(62, 76, 113, 0.1)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <img 
+                    src={getBackButtonIcon()} 
+                    alt="Back" 
+                    style={{ width: '24px', height: '24px' }}
+                  />
+                </button>
+              )}
+              
+              {canGoForward && (
+                <button 
+                  onClick={handleForwardClick}
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    backgroundColor: 'rgba(62, 76, 113, 0.1)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <img 
+                    src={getForwardButtonIcon()} 
+                    alt="Forward" 
+                    style={{ width: '24px', height: '24px' }}
+                  />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
+
     </div>
   );
 }

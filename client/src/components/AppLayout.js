@@ -18,9 +18,9 @@ const getHeaderLabel = (viewMode) => {
     case 'fishbowl':
       return 'FISHBOWL';
     case 'reflection':
-      return { line1: 'INDIVIDUAL', line2: 'REFLECTION' };
+      return 'INDIVIDUAL REFLECTION';
     case 'summary':
-      return { line1: 'AI WE', line2: 'SUMMARY' };
+      return 'AI WE SUMMARY';
     default:
       return 'THE GATHERED COMMUNITY';
   }
@@ -60,7 +60,7 @@ const AppLayout = ({
   const activeTab = getCurrentStage();
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${viewMode === 'reflection' ? 'reflection-mode' : ''}`}>
       {/* Header section: logo, nav, title and participant count */}
       <header className="header-section">
         <div className="header-upper-row">

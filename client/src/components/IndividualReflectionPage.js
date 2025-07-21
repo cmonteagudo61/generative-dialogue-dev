@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import AppLayout from './AppLayout';
+import { useVideo } from './VideoProvider';
 import './IndividualReflectionPage.css';
 
-const IndividualReflectionPage = ({ 
+  const IndividualReflectionPage = ({ 
   canGoBack,
   canGoForward, 
   onBack,
@@ -12,6 +13,13 @@ const IndividualReflectionPage = ({
   totalPages,
   developmentMode
 }) => {
+  // Get participant count from VideoProvider
+  const { realParticipants } = useVideo();
+  const participantCount = useMemo(() => {
+    // For demo purposes, show a fixed count if no real participants
+    return realParticipants.length > 0 ? realParticipants.length : 1093;
+  }, [realParticipants]);
+
   // State for individual responses
   const [responses, setResponses] = useState({
     question1: '',
@@ -63,7 +71,8 @@ const IndividualReflectionPage = ({
 
   return (
     <AppLayout
-      viewMode="self" // Changed from "reflection" to "self" to show Individual button as active
+      viewMode="reflection" // Display "INDIVIDUAL REFLECTION" as single line header
+      participantCount={participantCount}
       canGoBack={canGoBack}
       canGoForward={canGoForward}
       onBack={onBack}

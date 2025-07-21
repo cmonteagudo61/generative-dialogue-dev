@@ -240,6 +240,20 @@
   min-width: 0; /* Allow shrinking and proper width calculations */
 }
 
+/* Special styling for reflection mode to allow scrolling */
+.reflection-mode .view-content {
+  overflow-y: auto !important;
+  height: auto !important;
+  max-height: calc(100vh - 82px) !important; /* Full height minus header */
+  background-color: transparent !important; /* Remove dark background */
+}
+
+.reflection-mode .viewing-area {
+  overflow-y: auto !important;
+  height: auto !important;
+  max-height: calc(100vh - 82px) !important; /* Full height minus header */
+}
+
 .participant-counter {
   display: flex;
   align-items: center;

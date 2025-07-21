@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import AppLayout from './AppLayout';
+import { useVideo } from './VideoProvider';
 import './EmergingStoryPage.css';
 
 const EmergingStoryPage = ({ 
@@ -12,12 +13,18 @@ const EmergingStoryPage = ({
   totalPages,
   developmentMode
 }) => {
+  // Get participant count from VideoProvider
+  const { realParticipants } = useVideo();
+  const participantCount = useMemo(() => {
+    // For demo purposes, show a fixed count if no real participants
+    return realParticipants.length > 0 ? realParticipants.length : 1093;
+  }, [realParticipants]);
 
   const summaryContent = (
     <div className="emergingstory-container">
       <div className="emergingstory-header">
         <div className="header-titles">
-          <h1 className="emergingstory-title">AI WE Summary:</h1>
+          <h1 className="emergingstory-title">AI WE Summary</h1>
           <h2 className="emergingstory-subtitle">What is The Emerging Story Coming Out of THIS Dialogue?</h2>
         </div>
       </div>
@@ -91,6 +98,7 @@ const EmergingStoryPage = ({
   return (
     <AppLayout 
       viewMode="reflection"
+      participantCount={participantCount}
       onViewModeChange={() => {}}
       showVideoGrid={false}
       canGoBack={canGoBack}

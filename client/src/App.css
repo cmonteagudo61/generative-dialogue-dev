@@ -1,7 +1,7 @@
 .App {
   text-align: center;
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh; /* Allow app to expand beyond viewport */
   margin: 0;
   padding: 0;
 }

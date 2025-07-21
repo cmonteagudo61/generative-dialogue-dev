@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import AppLayout from './AppLayout';
+import { useVideo } from './VideoProvider';
 import './OurStoryPage.css';
 
 const OurStoryPage = ({ 
@@ -12,12 +13,18 @@ const OurStoryPage = ({
   totalPages,
   developmentMode
 }) => {
+  // Get participant count from VideoProvider
+  const { realParticipants } = useVideo();
+  const participantCount = useMemo(() => {
+    // For demo purposes, show a fixed count if no real participants
+    return realParticipants.length > 0 ? realParticipants.length : 1093;
+  }, [realParticipants]);
 
   const summaryContent = (
     <div className="ourstory-container">
       <div className="ourstory-header">
         <div className="header-titles">
-          <h1 className="ourstory-title">AI WE Summary:</h1>
+          <h1 className="ourstory-title">AI WE Summary</h1>
           <h2 className="ourstory-subtitle">What is OUR Emerging Story Over Time?</h2>
         </div>
       </div>
@@ -64,6 +71,7 @@ const OurStoryPage = ({
   return (
     <AppLayout 
       viewMode="reflection"
+      participantCount={participantCount}
       onViewModeChange={() => {}}
       showVideoGrid={false}
       canGoBack={canGoBack}

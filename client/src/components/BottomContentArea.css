@@ -429,25 +429,29 @@
   border: 1px solid #bbdefb;
 }
 
-/* Bottom control bar - Minimal buffering, no clipping */
+/* Standardized control bar - copied from simple footer pages */
 .control-bar {
   height: 50px !important; /* Sufficient height to prevent clipping */
   background-color: #e0e0e3; /* Light grey background for footer */
   color: #3E4C71; /* Dark blue text color */
   display: flex !important;
   align-items: center !important; /* Perfect vertical centering */
-  justify-content: space-between !important; /* Maintain layout structure */
+  justify-content: space-between !important; /* Three-group layout for complex footer */
   padding: 5px 20px !important; /* Minimal 5px top/bottom - prevents clipping */
   border-top: none; /* Remove border */
   flex-shrink: 0; /* Prevent shrinking */
   margin: 0; /* Remove any margin */
-  position: relative; /* Ensure proper positioning */
   box-sizing: border-box; /* Include padding in height calculation */
 }
 
 .media-controls {
   display: flex;
   gap: 8px; /* Add consistent spacing between media control buttons */
+}
+
+.navigation-controls {
+  display: flex;
+  gap: 8px; /* Consistent spacing between navigation buttons */
 }
 
 .control-button {
@@ -608,7 +612,7 @@
     height: 58px !important; /* Adjusted for optimal bottom padding */
     display: flex !important;
     align-items: center !important; /* Force vertical centering on mobile */
-    justify-content: space-between !important; /* Maintain layout structure */
+    justify-content: space-between !important; /* Three-group layout for complex footer */
     box-sizing: border-box !important; /* Include padding in height calculation */
   }
 
@@ -623,7 +627,7 @@
     flex-shrink: 0 !important; /* Prevent shrinking */
   }
 
-  #back-btn, #forward-btn {
+  #back-btn, #forward-btn, #thumbs-up-btn, #thumbs-down-btn {
     position: static !important; /* Remove all custom positioning */
     top: auto !important; /* Reset positioning */
     margin: 0 !important; /* Remove all margins */
@@ -682,8 +686,7 @@
 }
 
 /* Desktop view - make all buttons identical and responsive */
-.transcription-control-btn,
-.transcription-status {
+.transcription-control-btn:not(.primary):not(.warning):not(.danger) {
   width: clamp(150px, 20vw, 200px) !important; /* Responsive width: 150px-200px */
   height: 36px !important;
   padding: 8px clamp(8px, 1.5vw, 16px) !important; /* Responsive padding */
@@ -698,6 +701,39 @@
   color: #fff !important;
   border: none !important;
   flex-shrink: 1 !important; /* Allow buttons to shrink */
+}
+
+/* Transcription status with grey background and blue border to match buttons */
+.transcription-status {
+  width: clamp(150px, 20vw, 200px) !important; /* Responsive width: 150px-200px */
+  height: 36px !important;
+  padding: 8px clamp(8px, 1.5vw, 16px) !important; /* Responsive padding */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  font-size: clamp(14px, 1.5vw, 16px) !important; /* Responsive font size */
+  font-weight: 500 !important;
+  box-sizing: border-box !important;
+  background-color: #f5f5f5 !important; /* Default grey background to match buttons */
+  color: #3E4C71 !important; /* Default blue text to match buttons */
+  border: 2px solid #3E4C71 !important; /* Default blue pinstripe stroke to match buttons */
+  flex-shrink: 1 !important; /* Allow buttons to shrink */
+}
+
+/* Ensure base layout styles still apply to all buttons */
+.transcription-control-btn {
+  width: clamp(150px, 20vw, 200px) !important;
+  height: 36px !important;
+  padding: 8px clamp(8px, 1.5vw, 16px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  font-size: clamp(14px, 1.5vw, 16px) !important;
+  font-weight: 500 !important;
+  box-sizing: border-box !important;
+  flex-shrink: 1 !important;
 }
 
   /* Mobile view - clean simple approach */
@@ -741,59 +777,83 @@
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background-color: #3E4C71 !important;
-    color: #fff !important;
+    background-color: #f5f5f5 !important; /* Grey background to match buttons */
+    color: #3E4C71 !important; /* Blue text to match buttons */
+    border: 2px solid #3E4C71 !important; /* Blue border to match buttons */
   }
 }
 
 .transcription-control-btn.primary {
-  background-color: #3E4C71; /* Match app's dark blue */
-  color: white;
+  background-color: #f5f5f5 !important; /* Default grey background */
+  color: #3E4C71 !important; /* Default blue text */
+  border: 2px solid #3E4C71 !important; /* Default blue pinstripe stroke */
 }
 
 .transcription-control-btn.primary:hover {
-  background-color: #334060; /* Darker shade for hover */
+  background-color: #e8e8e8 !important; /* Slightly darker grey on hover */
   transform: translateY(-1px);
 }
 
 .transcription-control-btn.danger {
-  background-color: #E06D37; /* Match app's orange for stop button */
-  color: white;
+  background-color: #f5f5f5 !important; /* Default grey background */
+  color: #3E4C71 !important; /* Default blue text */
+  border: 2px solid #3E4C71 !important; /* Default blue pinstripe stroke */
 }
 
 .transcription-control-btn.danger:hover {
-  background-color: #CC5A2B; /* Darker orange for hover */
+  background-color: #e8e8e8 !important; /* Slightly darker grey on hover */
   transform: translateY(-1px);
 }
 
 .transcription-control-btn.warning {
-  background-color: #3E4C71; /* Match app's dark blue theme */
-  color: #fff; /* White text for contrast */
-  border: 1px solid #3E4C71;
+  background-color: #f5f5f5 !important; /* Default grey background */
+  color: #3E4C71 !important; /* Default blue text */
+  border: 2px solid #3E4C71 !important; /* Default blue pinstripe stroke */
 }
 
 .transcription-control-btn.warning:hover {
-  background-color: #334060; /* Darker blue on hover */
+  background-color: #e8e8e8 !important; /* Slightly darker grey on hover */
   transform: translateY(-1px);
 }
 
 .transcription-control-btn.warning .btn-icon {
-  color: #fff; /* Make trash icon white for contrast against red */
+  color: #3E4C71 !important; /* Make trash icon blue to match text */
   font-weight: bold; /* Make it bolder */
   font-size: 18px; /* Slightly larger for better visibility */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add shadow for crispness */
+  text-shadow: none !important; /* Remove shadow for clean look on grey background */
+  display: inline-flex; /* Use flexbox for perfect centering */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  width: auto !important; /* Override any fixed width */
+  height: auto !important; /* Override any fixed height */
+  filter: none !important; /* Remove any filters that affect emoji */
+  line-height: 1; /* Remove line height issues */
 }
 
 .transcription-control-btn.primary .btn-icon {
-  color: #fff; /* Ensure microphone icon is white for contrast */
+  color: #3E4C71 !important; /* Make microphone icon blue to match text */
   font-weight: bold; /* Make it bold */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add subtle shadow for crispness */
+  text-shadow: none !important; /* Remove shadow for clean look on grey background */
+  display: inline-flex; /* Use flexbox for perfect centering */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  width: auto !important; /* Override any fixed width */
+  height: auto !important; /* Override any fixed height */
+  filter: none !important; /* Remove any filters that affect emoji */
+  line-height: 1; /* Remove line height issues */
 }
 
 .transcription-control-btn.danger .btn-icon {
-  color: #fff; /* Ensure stop icon is white for contrast */
+  color: #3E4C71 !important; /* Make stop icon blue to match text */
   font-weight: bold; /* Make it bold */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add subtle shadow for crispness */
+  text-shadow: none !important; /* Remove shadow for clean look on grey background */
+  display: inline-flex; /* Use flexbox for perfect centering */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  width: auto !important; /* Override any fixed width */
+  height: auto !important; /* Override any fixed height */
+  filter: none !important; /* Remove any filters that affect emoji */
+  line-height: 1; /* Remove line height issues */
 }
 
 .transcription-status {
@@ -829,18 +889,21 @@
 }
 
 .transcription-status.connected {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: #d4edda !important; /* Light green background for connected state */
+  color: #155724 !important; /* Dark green text */
+  border: 2px solid #3E4C71 !important; /* Blue border to match buttons */
 }
 
 .transcription-status.disconnected {
-  background-color: #3E4C71; /* Match button styling */
-  color: #fff; /* White text for consistency */
+  background-color: #f5f5f5 !important; /* Grey background to match buttons */
+  color: #3E4C71 !important; /* Blue text to match buttons */
+  border: 2px solid #3E4C71 !important; /* Blue border to match buttons */
 }
 
 .transcription-status.recording {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: #fff3cd !important; /* Light yellow background for recording state */
+  color: #856404 !important; /* Dark yellow text */
+  border: 2px solid #3E4C71 !important; /* Blue border to match buttons */
 }
 
 /* Enhanced styling for forward/backward buttons - let SVG handle the styling */
@@ -866,6 +929,33 @@
 
 #back-btn.active, 
 #forward-btn.active {
+  border: none !important; /* No border when active */
+  background-color: rgba(62, 76, 113, 0.2) !important; /* Light blue background when active */
+}
+
+/* Voting buttons styling - match back/forward button behavior */
+#thumbs-up-btn, #thumbs-down-btn {
+  position: relative;
+  /* Remove all borders and backgrounds - let the SVG handle the visual design */
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#thumbs-up-btn:not(.active):not(:hover), 
+#thumbs-down-btn:not(.active):not(:hover) {
+  border: none !important; /* No border - SVG has its own stroke */
+  background-color: transparent !important; /* Transparent background */
+}
+
+#thumbs-up-btn:hover:not(.active), 
+#thumbs-down-btn:hover:not(.active) {
+  border: none !important; /* No border on hover */
+  background-color: rgba(224, 109, 55, 0.1) !important; /* Light orange background on hover */
+}
+
+#thumbs-up-btn.active, 
+#thumbs-down-btn.active {
   border: none !important; /* No border when active */
   background-color: rgba(62, 76, 113, 0.2) !important; /* Light blue background when active */
 } /* Added blue pinstripes to tabs Sat Jul 19 01:10:32 EDT 2025 */

@@ -12,23 +12,23 @@
 }
 
 /* Development Footer Navigation */
-.permission-setup .dev-footer {
+.permission-setup .control-bar {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 1000;
-    background-color: #e0e0e3; /* Match the video conference footer */
+    height: 50px !important; /* Match complex footer exactly */
+    background-color: #e0e0e3;
     color: #3E4C71;
-    border-top: 1px solid #ccc;
-}
-
-.permission-setup .dev-footer-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    height: 51px; /* Match the control-bar height */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important; /* Position nav controls on the right */
+    padding: 5px 20px !important; /* Match complex footer padding */
+    border-top: none;
+    flex-shrink: 0;
+    margin: 0;
+    box-sizing: border-box; /* Include padding in height calculation */
 }
 
 .permission-setup .page-info {
@@ -46,57 +46,7 @@
     background-clip: text;
 }
 
-.permission-setup .nav-controls {
-    display: flex;
-    gap: 0;
-    align-items: center;
-}
 
-/* Control button styling - matching BottomContentArea exactly */
-.permission-setup .control-button {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-right: 8px;
-}
-
-.permission-setup .control-button:hover {
-    background-color: rgba(224, 109, 55, 0.15);
-}
-
-/* Enhanced styling for forward/backward buttons - matching BottomContentArea */
-.permission-setup #back-btn, 
-.permission-setup #forward-btn {
-    position: relative;
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-.permission-setup #back-btn:not(.active):not(:hover), 
-.permission-setup #forward-btn:not(.active):not(:hover) {
-    border: none !important;
-    background-color: transparent !important;
-}
-
-.permission-setup #back-btn:hover:not(.active), 
-.permission-setup #forward-btn:hover:not(.active) {
-    border: none !important;
-    background-color: rgba(224, 109, 55, 0.1) !important;
-}
-
-.permission-setup #back-btn.active, 
-.permission-setup #forward-btn.active {
-    border: none !important;
-    background-color: rgba(62, 76, 113, 0.2) !important;
-}
 
 /* Content container */
 .permission-setup .setup-container {
@@ -117,10 +67,33 @@
 }
 
 
-.logo {
-    width: 60px;
-    height: 60px;
-    object-fit: contain;
+/* Force logo container to always stay centered with square background */
+.permission-setup .setup-container .logo-container {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 80px !important; /* Square container slightly larger than logo */
+    height: 80px !important; /* Square container */
+    margin: 0 auto 20px auto !important; /* Center the square container */
+    flex-shrink: 0 !important;
+    position: relative !important; /* Force positioning context */
+    background: #3E4C71 !important; /* Match app's standard blue */
+    padding: 0 !important; /* No padding */
+}
+
+/* Force logo to be perfectly square */
+.permission-setup .setup-container .logo-container .logo {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    min-height: 60px !important;
+    max-width: 60px !important;
+    max-height: 60px !important;
+    object-fit: cover !important; /* Fill the entire square, crop if needed */
+    object-position: center !important; /* Center the cropped area */
+    flex-shrink: 0 !important;
+    display: block !important;
+    margin: 0 auto !important;
 }
 
 .permission-setup h1 {
@@ -263,7 +236,38 @@
     .setup-container {
         width: 95%;
         padding: 20px;
-        margin: 10px auto;
+        margin: 10px auto; /* Keep auto centering */
+        text-align: center; /* Ensure text centering is maintained */
+        align-items: center; /* Ensure flex centering is maintained */
+        display: flex; /* Force flex display */
+        flex-direction: column; /* Maintain column layout */
+    }
+    
+    /* Override logo positioning for tablet */
+    .permission-setup .setup-container .logo-container {
+        justify-content: center !important;
+        align-items: center !important;
+        width: 80px !important; /* Square container */
+        height: 80px !important; /* Square container */
+        margin: 0 auto 20px auto !important; /* Center the square container */
+        display: flex !important;
+        flex-shrink: 0 !important;
+        position: relative !important;
+        background: #3E4C71 !important; /* Match app's standard blue */
+        padding: 0 !important; /* No padding */
+    }
+    
+    .permission-setup .setup-container .logo-container .logo {
+        width: 60px !important;
+        height: 60px !important;
+        min-width: 60px !important;
+        min-height: 60px !important;
+        max-width: 60px !important;
+        max-height: 60px !important;
+        object-fit: contain !important;
+        display: block !important;
+        flex-shrink: 0 !important;
+        margin: 0 auto !important;
     }
     
     .video-preview {
@@ -291,9 +295,91 @@
         padding: 15px;
         margin: 5px auto; /* Keep horizontal centering */
         border-radius: 5px;
+        text-align: center; /* Ensure text centering is maintained */
+        align-items: center; /* Ensure flex centering is maintained */
+        display: flex; /* Force flex display */
+        flex-direction: column; /* Maintain column layout */
+    }
+    
+    /* Override logo positioning for mobile */
+    .permission-setup .setup-container .logo-container {
+        justify-content: center !important;
+        align-items: center !important;
+        width: 80px !important; /* Square container */
+        height: 80px !important; /* Square container */
+        margin: 0 auto 20px auto !important; /* Center the square container */
+        display: flex !important;
+        flex-shrink: 0 !important;
+        position: relative !important;
+        background: #3E4C71 !important; /* Match app's standard blue */
+        padding: 0 !important; /* No padding */
+    }
+    
+    .permission-setup .setup-container .logo-container .logo {
+        width: 60px !important;
+        height: 60px !important;
+        min-width: 60px !important;
+        min-height: 60px !important;
+        max-width: 60px !important;
+        max-height: 60px !important;
+        object-fit: contain !important;
+        display: block !important;
+        flex-shrink: 0 !important;
+        margin: 0 auto !important;
     }
     
     .video-preview {
         height: 200px;
     }
+}
+
+.permission-setup .control-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important; /* Perfect internal centering */
+  background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: 8px;
+  /* Reset all positioning to rely on flexbox centering */
+  position: static !important; /* Let flexbox handle positioning */
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.permission-setup .control-button:hover {
+  background-color: rgba(224, 109, 55, 0.15);
+}
+
+.permission-setup .control-button.active {
+  background-color: #E06D37;
+  color: white;
+}
+
+/* Mobile responsive - exact match to BottomContentArea */
+@media (max-width: 1100px) {
+  .permission-setup .control-bar {
+    padding: 5px 16px 13px 16px !important; /* Perfect bottom buffering for mobile */
+    height: 58px !important; /* Adjusted for optimal bottom padding */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering on mobile */
+    justify-content: flex-end !important; /* Position nav controls on the right */
+    box-sizing: border-box !important; /* Include padding in height calculation */
+  }
+
+  /* Reset all button positioning on mobile - let flexbox handle it */
+  .permission-setup .control-button {
+    position: static !important; /* Remove all custom positioning */
+    top: auto !important; /* Reset top positioning */
+    margin: 0 !important; /* Remove all margins */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering */
+    justify-content: center !important;
+    flex-shrink: 0 !important; /* Prevent shrinking */
+  }
 }

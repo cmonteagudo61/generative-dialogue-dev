@@ -158,66 +158,64 @@ const BuildingCommunityPage = ({
 
       {/* Development Navigation Footer */}
       {developmentMode && (
-        <div className="dev-footer">
-          <div className="dev-footer-content">
-            <div className="page-info">
-              <span className="page-indicator">Building Community ({currentIndex + 1}/{totalPages})</span>
-            </div>
-            <div className="nav-controls">
-              <button 
-                id="back-btn" 
-                className="control-button"
-                onClick={handleBackClick}
-                onMouseEnter={() => canGoBack && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
-                onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
-                disabled={!canGoBack}
+        <div className="control-bar">
+          <div className="page-info">
+            <span className="page-indicator">Building Community ({currentIndex + 1}/{totalPages})</span>
+          </div>
+          <div className="nav-controls">
+            <button 
+              id="back-btn" 
+              className="control-button"
+              onClick={handleBackClick}
+              onMouseEnter={() => canGoBack && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
+              onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
+              disabled={!canGoBack}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                outline: 'none',
+                borderRadius: '50%',
+                boxShadow: 'none',
+                opacity: !canGoBack ? 0.4 : 1,
+                cursor: !canGoBack ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <img 
+                src={getBackButtonIcon()} 
+                alt="Back" 
+                style={{width: '34px', height: '34px'}}
+              />
+            </button>
+            <button 
+              id="forward-btn" 
+              className="control-button"
+              onClick={handleForwardClick}
+              onMouseEnter={() => canGoForward && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
+              onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
+              disabled={!canGoForward}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                outline: 'none',
+                borderRadius: '50%',
+                boxShadow: 'none',
+                overflow: 'hidden',
+                opacity: !canGoForward ? 0.4 : 1,
+                cursor: !canGoForward ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <img 
+                src={getForwardButtonIcon()} 
+                alt="Forward" 
                 style={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  outline: 'none',
+                  width: '34px',
+                  height: '34px',
                   borderRadius: '50%',
-                  boxShadow: 'none',
-                  opacity: !canGoBack ? 0.4 : 1,
-                  cursor: !canGoBack ? 'not-allowed' : 'pointer'
+                  objectFit: 'cover',
+                  display: 'block'
                 }}
-              >
-                <img 
-                  src={getBackButtonIcon()} 
-                  alt="Back" 
-                  style={{width: '34px', height: '34px'}}
-                />
-              </button>
-              <button 
-                id="forward-btn" 
-                className="control-button"
-                onClick={handleForwardClick}
-                onMouseEnter={() => canGoForward && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
-                onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
-                disabled={!canGoForward}
-                style={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  borderRadius: '50%',
-                  boxShadow: 'none',
-                  overflow: 'hidden',
-                  opacity: !canGoForward ? 0.4 : 1,
-                  cursor: !canGoForward ? 'not-allowed' : 'pointer'
-                }}
-              >
-                <img 
-                  src={getForwardButtonIcon()} 
-                  alt="Forward" 
-                  style={{
-                    width: '34px',
-                    height: '34px',
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    display: 'block'
-                  }}
-                />
-              </button>
-            </div>
+              />
+            </button>
           </div>
         </div>
       )}

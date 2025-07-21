@@ -13,24 +13,52 @@
   position: relative;
 }
 
-/* Development Footer Navigation */
-.dev-footer {
+/* Navigation footer - use exact BottomContentArea control-bar styling */
+.landing-page .control-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  background-color: #e0e0e3; /* Match the video conference footer */
-  color: #3E4C71;
-  border-top: 1px solid #ccc;
+  height: 50px !important; /* Sufficient height to prevent clipping */
+  background-color: #e0e0e3; /* Light grey background for footer */
+  color: #3E4C71; /* Dark blue text color */
+  display: flex !important;
+  align-items: center !important; /* Perfect vertical centering */
+  justify-content: flex-end !important; /* Position nav controls on the right */
+  padding: 5px 20px !important; /* Minimal 5px top/bottom - prevents clipping */
+  border-top: none; /* Remove border */
+  flex-shrink: 0; /* Prevent shrinking */
+  margin: 0; /* Remove any margin */
+  box-sizing: border-box; /* Include padding in height calculation */
 }
 
-.dev-footer-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  height: 51px; /* Match the control-bar height */
+.landing-page .control-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important; /* Perfect internal centering */
+  background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: 8px;
+  /* Reset all positioning to rely on flexbox centering */
+  position: static !important; /* Let flexbox handle positioning */
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.landing-page .control-button:hover {
+  background-color: rgba(224, 109, 55, 0.15);
+}
+
+.landing-page .control-button.active {
+  background-color: #E06D37;
+  color: white;
 }
 
 .page-info {
@@ -48,56 +76,9 @@
   background-clip: text;
 }
 
-.nav-controls {
-  display: flex;
-  gap: 0;
-  align-items: center;
-}
 
-/* Control button styling - matching BottomContentArea exactly */
-.control-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-right: 8px;
-}
 
-.control-button:hover {
-  background-color: rgba(224, 109, 55, 0.15);
-}
 
-/* Enhanced styling for forward/backward buttons - matching BottomContentArea */
-#back-btn, #forward-btn {
-  position: relative;
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-#back-btn:not(.active):not(:hover), 
-#forward-btn:not(.active):not(:hover) {
-  border: none !important;
-  background-color: transparent !important;
-}
-
-#back-btn:hover:not(.active), 
-#forward-btn:hover:not(.active) {
-  border: none !important;
-  background-color: rgba(224, 109, 55, 0.1) !important;
-}
-
-#back-btn.active, 
-#forward-btn.active {
-  border: none !important;
-  background-color: rgba(62, 76, 113, 0.2) !important;
-}
 
 .dev-continue-option {
   margin-top: 20px;
@@ -265,6 +246,27 @@
   -webkit-text-fill-color: transparent;
 }
 
+.hero-subtitle {
+  font-size: 2.8rem; /* 30% smaller than the original 4rem */
+  font-weight: 700;
+  color: #B8860B;
+  text-align: center;
+  margin: 0;
+  font-family: 'Arial Black', 'Arial', sans-serif;
+  
+  /* Copper/Bronze styling similar to main title but lighter */
+  text-shadow: 
+    1px 1px 0px #DAA520,
+    2px 2px 0px #B8860B,
+    3px 3px 0px #A0522D,
+    4px 4px 6px rgba(0, 0, 0, 0.7);
+  
+  background: linear-gradient(45deg, #FFD700 0%, #DAA520 50%, #B8860B 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -400,6 +402,10 @@
     font-size: 4rem !important;
   }
   
+  .hero-subtitle {
+    font-size: 2.8rem !important; /* 30% smaller than 4rem */
+  }
+  
   .hero-image-container {
     height: 40vh;
     min-height: 300px;
@@ -437,6 +443,10 @@
   
   .subtitle {
     font-size: 4rem !important;
+  }
+  
+  .hero-subtitle {
+    font-size: 2.8rem !important; /* 30% smaller than 4rem */
   }
   
   .hero-image-container {
@@ -517,3 +527,28 @@
     font-size: 4rem !important;
   }
 }/* Simplified logo behavior Sat Jul 19 01:00:17 EDT 2025 */
+
+/* Mobile responsive - exact match to BottomContentArea */
+@media (max-width: 1100px) {
+  .landing-page .control-bar {
+    padding: 5px 16px 13px 16px !important; /* Perfect bottom buffering for mobile */
+    height: 58px !important; /* Adjusted for optimal bottom padding */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering on mobile */
+    justify-content: flex-end !important; /* Maintain layout structure */
+    box-sizing: border-box !important; /* Include padding in height calculation */
+  }
+
+  /* Reset all button positioning on mobile - let flexbox handle it */
+  .landing-page .control-button {
+    position: static !important; /* Remove all custom positioning */
+    top: auto !important; /* Reset top positioning */
+    margin: 0 !important; /* Remove all margins */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering */
+    justify-content: center !important;
+    flex-shrink: 0 !important; /* Prevent shrinking */
+  }
+}
+
+

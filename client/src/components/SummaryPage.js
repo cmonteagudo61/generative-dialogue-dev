@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import AppLayout from './AppLayout';
+import { useVideo } from './VideoProvider';
 import './SummaryPage.css';
 
 const SummaryPage = ({ 
@@ -12,6 +13,12 @@ const SummaryPage = ({
   totalPages,
   developmentMode
 }) => {
+  // Get participant count from VideoProvider
+  const { realParticipants } = useVideo();
+  const participantCount = useMemo(() => {
+    // For demo purposes, show a fixed count if no real participants
+    return realParticipants.length > 0 ? realParticipants.length : 1093;
+  }, [realParticipants]);
 
   const summaryContent = (
     <div className="summary-container">
@@ -91,6 +98,7 @@ const SummaryPage = ({
   return (
     <AppLayout
       viewMode="summary"
+      participantCount={participantCount}
       canGoBack={canGoBack}
       canGoForward={canGoForward}
       onBack={onBack}

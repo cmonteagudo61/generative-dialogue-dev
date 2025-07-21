@@ -217,32 +217,32 @@
   z-index: 3;
 }
 
-/* Development Footer Navigation - matching LandingPage */
-.dev-footer {
+/* Standardized footer using exact simple footer control-bar styling */
+.building-community-page .control-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  background-color: #e0e0e3;
-  color: #3E4C71;
-  border-top: 1px solid #ccc;
+  height: 50px !important; /* Sufficient height to prevent clipping */
+  background-color: #e0e0e3; /* Light grey background for footer */
+  color: #3E4C71; /* Dark blue text color */
+  display: flex !important;
+  align-items: center !important; /* Perfect vertical centering */
+  justify-content: space-between !important; /* Position nav controls on the right */
+  padding: 5px 20px !important; /* Minimal 5px top/bottom - prevents clipping */
+  border-top: none; /* Remove border */
+  flex-shrink: 0; /* Prevent shrinking */
+  margin: 0; /* Remove any margin */
+  box-sizing: border-box; /* Include padding in height calculation */
 }
 
-.dev-footer-content {
+.building-community-page .page-info {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  height: 51px;
 }
 
-.page-info {
-  display: flex;
-  align-items: center;
-}
-
-.page-indicator {
+.building-community-page .page-indicator {
   font-weight: 600;
   color: #3E4C71;
   font-size: 16px;
@@ -252,29 +252,37 @@
   background-clip: text;
 }
 
-.nav-controls {
+.building-community-page .nav-controls {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 0; /* No gap - buttons handle their own spacing */
 }
 
-.control-button {
-  padding: 0;
-  margin: 0;
-  background: none;
+.building-community-page .control-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important; /* Perfect internal centering */
+  background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s;
+  margin-right: 8px;
+  /* Reset all positioning to rely on flexbox centering */
+  position: static !important; /* Let flexbox handle positioning */
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
-.control-button:disabled {
-  cursor: not-allowed;
+.building-community-page .control-button:hover {
+  background-color: rgba(224, 109, 55, 0.15);
+}
+
+.building-community-page .control-button:disabled {
   opacity: 0.4;
-}
-
-.control-button img {
-  display: block;
-  border-radius: 50%;
+  cursor: not-allowed;
 }
 
 /* Responsive adjustments */
@@ -408,5 +416,28 @@
   
   .participation-text {
     font-size: 1rem;
+  }
+} 
+
+/* Mobile responsive - exact match to standardized footer */
+@media (max-width: 1100px) {
+  .building-community-page .control-bar {
+    padding: 5px 16px 13px 16px !important; /* Perfect bottom buffering for mobile */
+    height: 58px !important; /* Adjusted for optimal bottom padding */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering on mobile */
+    justify-content: space-between !important; /* Maintain layout structure */
+    box-sizing: border-box !important; /* Include padding in height calculation */
+  }
+
+  /* Reset all button positioning on mobile - let flexbox handle it */
+  .building-community-page .control-button {
+    position: static !important; /* Remove all custom positioning */
+    top: auto !important; /* Reset top positioning */
+    margin: 0 !important; /* Remove all margins */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering */
+    justify-content: center !important;
+    flex-shrink: 0 !important; /* Prevent shrinking */
   }
 } 

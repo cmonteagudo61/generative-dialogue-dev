@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './InputPage.css';
 import {
   directionBackwardOff,
@@ -35,6 +35,19 @@ const InputPage = ({
 
   const [backButtonState, setBackButtonState] = useState('off');
   const [forwardButtonState, setForwardButtonState] = useState('off');
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check for mobile view
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 1100);
+    };
+    
+    checkMobile(); // Check on mount
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleParameterChange = (field, value) => {
     setParameters(prev => ({
@@ -51,8 +64,6 @@ const InputPage = ({
         : [...prev.catalystPreferences, preference]
     }));
   };
-
-
 
   // Button icon functions
   const getBackButtonIcon = () => {
@@ -88,41 +99,41 @@ const InputPage = ({
   };
 
   return (
-    <div className="input-page">
-      <div className="input-container">
-        {/* Header - matching landing page */}
-        <header className="input-header">
-          <div className="header-content">
-            <div className="logo-container">
-              <img 
-                src="/images/EarthLogoSmallTransparent.png" 
-                alt="Generative Dialogue Logo" 
-                className="actual-logo"
-              />
-            </div>
-            <div className="title-section">
-              <h1 className="main-title">CONFIGURE YOUR DIALOGUE</h1>
-            </div>
+    <div className="input-page-container">
+      {/* Fixed Header */}
+      <header className="input-header">
+        <div className="header-content">
+          <div className="logo-container">
+            <img 
+              src="/images/EarthLogoSmallTransparent.png" 
+              alt="Generative Dialogue Logo" 
+              className="actual-logo"
+            />
           </div>
-        </header>
-
-        {/* Hero Section - exact same as landing page */}
-        <div className="hero-image-container">
-          <img 
-            src="/images/global-faces-sphere.jpg" 
-            alt="Global sphere made of diverse human faces representing worldwide connection" 
-            className="hero-image"
-          />
-          <div className="hero-overlay">
-            <h2 className="hero-subtitle">For A New Global WE</h2>
+          <div className="title-section">
+            <h1 className="main-title">CONFIGURE YOUR DIALOGUE</h1>
           </div>
         </div>
+      </header>
 
+      {/* Fixed Hero Banner */}
+      <div className="hero-image-container fixed-hero">
+        <img 
+          src="/images/global-faces-sphere.jpg" 
+          alt="Global sphere made of diverse human faces representing worldwide connection" 
+          className="hero-image"
+        />
+        <div className="hero-overlay">
+          <h2 className="hero-subtitle">For A New Global WE</h2>
+        </div>
+      </div>
+
+      {/* Scrollable Content Area */}
+      <div className="scrollable-content">
+        <h2 className="section-title">INPUT PARAMETERS</h2>
+        
         <main className="input-main">
-          {/* Input Parameters Section */}
           <div className="parameters-section">
-            <h2 className="section-title">INPUT PARAMETERS</h2>
-            
             <div className="input-grid">
               <div className="input-row">
                 <div className="input-group">
@@ -145,19 +156,19 @@ const InputPage = ({
                     placeholder="Gathering Size"
                   />
                 </div>
+              </div>
+
+              <div className="input-row">
                 <div className="input-group">
                   <input
                     id="availableTime"
                     type="text"
-                    value={parameters.availableTime ? parameters.availableTime + ' minutes' : ''}
-                    onChange={(e) => handleParameterChange('availableTime', e.target.value.replace(' minutes', ''))}
+                    value={parameters.availableTime}
+                    onChange={(e) => handleParameterChange('availableTime', e.target.value)}
                     className="input-field"
                     placeholder="Available Time (in minutes)"
                   />
                 </div>
-              </div>
-
-              <div className="input-row">
                 <div className="input-group">
                   <input
                     id="diversity"
@@ -168,6 +179,9 @@ const InputPage = ({
                     placeholder="Diversity of the Group"
                   />
                 </div>
+              </div>
+
+              <div className="input-row">
                 <div className="input-group">
                   <input
                     id="familiarity"
@@ -223,85 +237,99 @@ const InputPage = ({
                   { id: 'poetry', label: 'Poetry' },
                   { id: 'quotesReadings', label: 'Quotes/Readings' },
                   { id: 'music', label: 'Music' },
-                  { id: 'bodyBreathWork', label: 'Body/Breath Work' }
-                ].map((option) => (
-                  <div key={option.id} className="catalyst-option">
-                    <label className="catalyst-label">
-                      <input
-                        type="checkbox"
-                        checked={parameters.catalystPreferences.includes(option.id)}
-                        onChange={() => handleCatalystPreferenceChange(option.id)}
-                        className="catalyst-checkbox"
-                      />
-                      <span className="catalyst-text">{option.label}</span>
-                    </label>
-                  </div>
+                  { id: 'bodyBreathWork', label: 'Body/Breath Work' },
+                  { id: 'movementDance', label: 'Movement/Dance' },
+                  { id: 'visualArt', label: 'Visual Art' },
+                  { id: 'storytelling', label: 'Storytelling' },
+                  { id: 'nature', label: 'Nature' },
+                  { id: 'ritual', label: 'Ritual' }
+                ].map(catalyst => (
+                  <label key={catalyst.id} className="catalyst-option">
+                    <input
+                      type="checkbox"
+                      checked={parameters.catalystPreferences.includes(catalyst.id)}
+                      onChange={() => handleCatalystPreferenceChange(catalyst.id)}
+                    />
+                    {catalyst.label}
+                  </label>
                 ))}
+              </div>
+            </div>
+
+            {/* Additional content for scrolling demonstration */}
+            <div className="additional-content">
+              <div style={{ padding: '30px', textAlign: 'center' }}>
+                <h3 style={{ color: '#3E4C71', marginBottom: '20px' }}>Ready to Continue?</h3>
+                <p style={{ color: '#6B7280', fontSize: '16px', lineHeight: '1.6' }}>
+                  Once you've filled in all the parameters above, you can proceed to set up your device permissions 
+                  and start your generative dialogue session.
+                </p>
               </div>
             </div>
           </div>
         </main>
-        
-        {/* Control Bar Footer - matching other pages exactly */}
-        <div className="control-bar">
-          <div className="media-controls">
-            {/* Empty div for left alignment */}
-          </div>
-          
-          <div className="navigation-controls" style={{display: 'flex'}}>
-            <button 
-              className="control-button"
-              onClick={handleBackClick}
-              onMouseEnter={() => canGoBack && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
-              onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
-              disabled={!canGoBack}
-              style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                outline: 'none',
-                borderRadius: '50%',
-                boxShadow: 'none',
-                opacity: !canGoBack ? 0.4 : 1,
-                cursor: !canGoBack ? 'not-allowed' : 'pointer'
-              }}
-            >
-              <img 
-                src={getBackButtonIcon()} 
-                alt="Back" 
-                style={{width: '34px', height: '34px'}}
-              />
-            </button>
-            <button 
-              className="control-button"
-              onClick={handleForwardClick}
-              onMouseEnter={() => canGoForward && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
-              onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
-              disabled={!canGoForward}
-              style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                outline: 'none',
-                borderRadius: '50%',
-                boxShadow: 'none',
-                overflow: 'hidden',
-                opacity: !canGoForward ? 0.4 : 1,
-                cursor: !canGoForward ? 'not-allowed' : 'pointer'
-              }}
-            >
-              <img 
-                src={getForwardButtonIcon()} 
-                alt="Forward" 
+
+        {/* Navigation Controls - Exact copy of complex footer control-bar */}
+        {developmentMode && (
+          <div className="control-bar">
+            {/* Navigation controls - exact copy from BottomContentArea */}
+            <div style={{display: 'flex'}}>
+              <button 
+                id="back-btn" 
+                className="control-button"
+                onClick={handleBackClick}
+                onMouseEnter={() => (!developmentMode || canGoBack) && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
+                onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
+                disabled={developmentMode && !canGoBack}
                 style={{
-                  width: '34px',
-                  height: '34px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  outline: 'none',
                   borderRadius: '50%',
-                  objectFit: 'cover',
-                  display: 'block'
+                  boxShadow: 'none',
+                  opacity: (developmentMode && !canGoBack) ? 0.4 : 1,
+                  cursor: (developmentMode && !canGoBack) ? 'not-allowed' : 'pointer'
                 }}
-              />
-            </button>
+              >
+                <img 
+                  src={getBackButtonIcon()} 
+                  alt="Back" 
+                  style={{width: '34px', height: '34px'}}
+                />
+              </button>
+              <button 
+                id="forward-btn" 
+                className="control-button"
+                onClick={handleForwardClick}
+                onMouseEnter={() => (!developmentMode || canGoForward) && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
+                onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
+                disabled={developmentMode && !canGoForward}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  borderRadius: '50%',
+                  boxShadow: 'none',
+                  overflow: 'hidden',
+                  opacity: (developmentMode && !canGoForward) ? 0.4 : 1,
+                  cursor: (developmentMode && !canGoForward) ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <img 
+                  src={getForwardButtonIcon()} 
+                  alt="Forward" 
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }}
+                />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
