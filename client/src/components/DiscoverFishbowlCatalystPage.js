@@ -79,6 +79,7 @@ const DiscoverFishbowlCatalystPageInner = ({
       dialogueQuestion="What unexpected connections do you notice emerging from our collective exploration of community resilience?"
       dialogueTimeframe="15 minutes"
       dialogueFormat="FISHBOWL dialogue"
+      isDialogueActive={true}
       isFishbowlCatalyst={true}
     >
       <VideoGrid 

@@ -79,6 +79,7 @@ const DiscoverKivaDialoguePageInner = ({
       dialogueQuestion="What unexpected connections do you notice emerging from our collective exploration of community resilience?"
       dialogueTimeframe="30 minutes"
       dialogueFormat="KIVA breakout groups"
+      isDialogueActive={true}
       isKivaDialogue={true}
     >
       <VideoGrid 
