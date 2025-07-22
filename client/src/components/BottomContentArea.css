@@ -53,7 +53,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Let child content sections handle their own scrolling */
+  height: 100%; /* Ensure it has a defined height for proper scrolling */
+  min-height: 0; /* Allow flex shrinking */
   position: relative;
   margin-left: -64px; /* Extend to the left edge */
   padding-left: 65px; /* Reduced from 88px to bring tabs much closer to left edge */
@@ -139,6 +140,7 @@
 
 .tab-content {
   flex: 1;
+  height: 0; /* Force the flex item to constrain its height */
   overflow-y: auto; /* Allow scrolling when content exceeds available space */
   overflow-x: hidden; /* Prevent horizontal scrolling */
   background-color: white;
@@ -162,9 +164,10 @@
   text-align: left !important;
   align-self: flex-start;
   font-size: 18px; /* Increased base content font size */
-  padding: 0; /* Remove padding to let individual content handle spacing */
+  padding: 16px; /* Add padding back for proper content spacing */
   box-sizing: border-box; /* Include padding in height calculations */
   min-height: 0; /* Allow flex item to shrink below content size */
+  height: 100%; /* Ensure content section takes full available height */
 }
 
 /* Ensure all content within sections is left-aligned */
@@ -201,9 +204,8 @@
   max-width: 800px;
   margin: 0;
   text-align: left !important;
-  padding: 16px; /* Add proper padding for dialogue content */
-  flex: 1; /* Allow it to take available space */
-  overflow-y: auto; /* Enable scrolling for long dialogue content */
+  padding: 0; /* Remove padding since parent content-section now has padding */
+  /* Remove flex and overflow properties to let parent handle scrolling */
 }
 
 .dialogue-section p,

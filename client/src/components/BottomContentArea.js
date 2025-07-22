@@ -816,6 +816,37 @@ const BottomContentArea = ({
                 <div className="guiding-question">
                   <strong>Guiding Question:</strong> What personal experiences have shaped your perspective on this topic?
                 </div>
+                
+                {/* Add more content to test scrolling */}
+                <div className="dialogue-instructions">
+                  <h4>Additional Context</h4>
+                  <p>As we move through this dialogue process, we invite you to bring your full presence and authentic voice. This is a space for deep listening and meaningful exchange.</p>
+                  
+                  <p>The dialogue methodology we're using has been developed through years of research and practice in collective intelligence and community building. Each stage builds on the previous one, creating layers of connection and understanding.</p>
+                  
+                  <h4>What to Expect</h4>
+                  <ol>
+                    <li><strong>Connect:</strong> Begin with one-to-one conversations that establish trust and personal connection</li>
+                    <li><strong>Explore:</strong> Move to small group conversations that allow deeper exploration of themes</li>
+                    <li><strong>Discover:</strong> Engage in larger group witnessing and collective meaning-making</li>
+                    <li><strong>Harvest:</strong> Reflect individually and collectively on insights and next steps</li>
+                  </ol>
+                  
+                  <h4>Guidelines for Engagement</h4>
+                  <p>Please remember these key principles throughout our dialogue:</p>
+                  <ul>
+                    <li>Listen with curiosity rather than judgment</li>
+                    <li>Speak from personal experience when possible</li>
+                    <li>Allow for pauses and silence</li>
+                    <li>Notice what wants to emerge rather than pushing an agenda</li>
+                    <li>Trust the process and the collective wisdom of the group</li>
+                  </ul>
+                  
+                  <h4>Technical Notes</h4>
+                  <p>This platform includes AI-powered transcription and analysis to help capture and synthesize the collective insights that emerge. All content is handled with respect for privacy and the sacred nature of authentic dialogue.</p>
+                  
+                  <p>If you experience any technical difficulties, please use the chat or audio functions to let us know. Our hosts are here to support both the technical and relational aspects of this gathering.</p>
+                </div>
               </div>
             </div>
           )}
