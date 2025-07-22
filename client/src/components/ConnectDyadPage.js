@@ -21,7 +21,7 @@ const getLayoutFromView = (activeView) => {
     case 'fishbowl':
       return 'fishbowl';
     default:
-      return 'dyad'; // Default to dyad for this page
+      return 'community'; // Default to community for this catalyst page
   }
 };
 
@@ -35,12 +35,10 @@ const ConnectDyadPageInner = ({
   totalPages,
   developmentMode
 }) => {
-  // Start with dyad view for Connect stage
-  const [activeView, setActiveView] = useState('2'); // Dyad view
-  // Pre-select 2 participants for dyad demo
-  const [selectedParticipants, setSelectedParticipants] = useState([
-    'mock-1', 'mock-2'
-  ]);
+  // Start with community view for Connect Catalyst - everyone is still gathered together
+  const [activeView, setActiveView] = useState('all'); // Community view
+  // No pre-selected participants needed for community view during catalyst
+  const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [isLoopActive, setIsLoopActive] = useState(false);
   const { participants, realParticipants, error } = useVideo();
   const layout = getLayoutFromView(activeView);
@@ -49,7 +47,7 @@ const ConnectDyadPageInner = ({
   const handleViewChange = (newView) => setActiveView(newView);
   
   const handleParticipantSelect = (participant) => {
-    // Toggle selection for dyads
+    // Toggle selection for any mode
     setSelectedParticipants(prev => 
       prev.includes(participant.session_id) 
         ? prev.filter(id => id !== participant.session_id)
