@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './EnhancedTranscription.css';
 
-const EnhancedTranscription = () => {
+const EnhancedTranscription = ({ 
+  isRecording: parentIsRecording, 
+  startRecording: parentStartRecording, 
+  stopRecording: parentStopRecording, 
+  clearTranscription: parentClearTranscription, 
+  getStatusClass: parentGetStatusClass 
+}) => {
   // State management
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
