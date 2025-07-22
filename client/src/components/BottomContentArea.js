@@ -3045,6 +3045,7 @@ const BottomContentArea = ({
             onClick={toggleCamera}
             onMouseEnter={() => {
               setIsCameraHover(true);
+              setShowCameraTooltip(true); // Debug: show immediately
               showTooltipWithDelay(setShowCameraTooltip, cameraTooltipTimeout);
             }}
             onMouseLeave={() => {
@@ -3304,18 +3305,19 @@ const BottomContentArea = ({
       {showCameraTooltip && (
         <div style={{
           position: 'absolute',
-          bottom: '80px',
+          bottom: '60px',
           left: '20px',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          backgroundColor: 'rgba(255, 0, 0, 0.9)', // Debug: bright red background
           color: 'white',
-          padding: '8px 12px',
+          padding: '12px 16px',
           borderRadius: '6px',
-          fontSize: '12px',
-          fontWeight: '500',
+          fontSize: '14px',
+          fontWeight: '600',
           whiteSpace: 'nowrap',
-          zIndex: 1000,
+          zIndex: 9999,
           pointerEvents: 'none',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+          border: '2px solid yellow' // Debug: bright border
         }}>
           {isCameraOff ? 'Turn camera on' : 'Turn camera off'}
           <div style={{
@@ -3327,7 +3329,7 @@ const BottomContentArea = ({
             height: 0,
             borderLeft: '6px solid transparent',
             borderRight: '6px solid transparent',
-            borderTop: '6px solid rgba(0, 0, 0, 0.8)'
+            borderTop: '6px solid rgba(255, 0, 0, 0.9)'
           }} />
         </div>
       )}
