@@ -71,13 +71,37 @@ const BottomContentArea = ({
   const [transcriptionStatus, setTranscriptionStatus] = useState('Disconnected');
   const [transcriptionError] = useState('');
 
+  // Function to parse timeframe string to seconds
+  const parseTimeframeToSeconds = (timeframe) => {
+    if (!timeframe) return 1200; // Default 20 minutes
+    
+    const match = timeframe.match(/(\d+)\s*(minute|min)/i);
+    if (match) {
+      return parseInt(match[1]) * 60; // Convert minutes to seconds
+    }
+    
+    // If no match, try to extract any number and assume it's minutes
+    const numberMatch = timeframe.match(/(\d+)/);
+    if (numberMatch) {
+      return parseInt(numberMatch[1]) * 60;
+    }
+    
+    return 1200; // Default fallback to 20 minutes
+  };
+
   // Dialogue-specific state
   const [liveTranscript, setLiveTranscript] = useState('');
   const [formattedTranscript, setFormattedTranscript] = useState([]);
-  const [dialogueTimeRemaining, setDialogueTimeRemaining] = useState(1200); // 20 minutes
+  const [dialogueTimeRemaining, setDialogueTimeRemaining] = useState(() => parseTimeframeToSeconds(dialogueTimeframe));
   const [isEditingTranscript, setIsEditingTranscript] = useState(false);
   const [editableTranscript, setEditableTranscript] = useState([]);
   const [transcriptSubmitted, setTranscriptSubmitted] = useState(false);
+
+  // Update timer when timeframe prop changes
+  useEffect(() => {
+    const newTimeInSeconds = parseTimeframeToSeconds(dialogueTimeframe);
+    setDialogueTimeRemaining(newTimeInSeconds);
+  }, [dialogueTimeframe]);
 
   // Summary review state
   const [participantVotes, setParticipantVotes] = useState({
@@ -97,8 +121,6 @@ const BottomContentArea = ({
     'Casey': null
   });
   const [kivaSummarySubmitted, setKivaSummarySubmitted] = useState(false);
-
-
 
   // Set segment duration based on current page
   useEffect(() => {
