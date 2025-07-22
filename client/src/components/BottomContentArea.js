@@ -3515,7 +3515,7 @@ const BottomContentArea = ({
           maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
           textAlign: 'center'
         }}>
-          {isLoopActive ? '🔄 Disable audio loop' : '🔄 Enable audio loop'}
+          🔍 Toggle loop magnifier
           <div style={{
             position: 'absolute',
             bottom: '-6px',
