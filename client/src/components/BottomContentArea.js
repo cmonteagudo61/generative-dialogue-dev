@@ -115,9 +115,27 @@ const BottomContentArea = ({
     
     const rect = button.getBoundingClientRect();
     const buttonCenter = rect.left + rect.width / 2;
+    const viewportWidth = window.innerWidth;
+    
+    // Estimate tooltip width (adjust based on content)
+    const tooltipWidth = 200; // Approximate tooltip width
+    const halfTooltipWidth = tooltipWidth / 2;
+    
+    // Calculate ideal left position (button center)
+    let leftPosition = buttonCenter;
+    
+    // Check if tooltip would go off the left edge
+    if (leftPosition - halfTooltipWidth < 10) {
+      leftPosition = halfTooltipWidth + 10; // 10px margin from edge
+    }
+    
+    // Check if tooltip would go off the right edge
+    if (leftPosition + halfTooltipWidth > viewportWidth - 10) {
+      leftPosition = viewportWidth - halfTooltipWidth - 10; // 10px margin from edge
+    }
     
     const position = {
-      left: `${buttonCenter}px`,
+      left: `${leftPosition}px`,
       bottom: window.innerWidth <= 768 ? '60px' : '50px' // Closer to the button
     };
     
@@ -125,7 +143,8 @@ const BottomContentArea = ({
   };
 
   // Smart device detection - use touch capability, not just window width
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const [forceMobileMode, setForceMobileMode] = useState(false);
+  const isTouchDevice = forceMobileMode || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   const isSmallScreen = window.innerWidth <= 768;
   
   // Universal event handlers that work on both desktop and mobile
@@ -3142,6 +3161,17 @@ const BottomContentArea = ({
           <div>📱 Touch Device: {isTouchDevice ? 'YES' : 'NO'}</div>
           <div>📏 Small Screen: {isSmallScreen ? 'YES' : 'NO'}</div>
           <div>🎯 Event Mode: {isTouchDevice ? 'TOUCH' : 'HOVER'}</div>
+          <div style={{
+            padding: '4px 0',
+            borderTop: '1px solid #444',
+            marginTop: '4px',
+            cursor: 'pointer',
+            textAlign: 'center',
+            backgroundColor: forceMobileMode ? '#2563eb' : 'transparent',
+            borderRadius: '2px'
+          }} onClick={() => setForceMobileMode(!forceMobileMode)}>
+            {forceMobileMode ? '📱 FORCE MOBILE ON' : '🖱️ FORCE MOBILE OFF'}
+          </div>
           <div>📷 Camera: {showCameraTooltip ? 'ON' : 'OFF'}</div>
           <div>🎤 Mic: {showMicTooltip ? 'ON' : 'OFF'}</div>
           <div>👤 Person: {showPersonTooltip ? 'ON' : 'OFF'}</div>

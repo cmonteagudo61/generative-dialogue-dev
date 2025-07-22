@@ -131,26 +131,37 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .footer-navigation {
-    padding: 10px 15px;
+    padding: 8px 15px; /* Reduced padding to save space */
+    max-height: 20vh; /* Prevent footer from taking too much space */
+    overflow: visible; /* Ensure content isn't clipped */
   }
 
   .footer-nav-content {
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row; /* Keep horizontal layout on mobile */
+    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping if needed */
   }
 
   .page-indicators {
-    order: 2;
-    gap: 10px;
+    order: 1;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+    min-width: 0; /* Allow shrinking */
   }
 
   .nav-controls {
-    order: 1;
+    order: 2;
+    flex-shrink: 0; /* Prevent navigation controls from shrinking */
+    gap: 8px;
   }
 
   .dev-indicator {
     order: 3;
     font-size: 8px;
+    display: none; /* Hide on very small screens to save space */
   }
 
   .page-label {
@@ -158,28 +169,62 @@
   }
 
   .page-indicator {
+    padding: 4px 6px; /* Smaller padding */
+  }
+
+  /* Ensure navigation buttons are always visible */
+  .control-button {
+    min-width: 32px;
+    min-height: 32px;
     padding: 6px;
+  }
+
+  .nav-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .current-page-info {
+    min-width: 60px; /* Smaller but still readable */
   }
 }
 
 @media (max-width: 480px) {
+  .footer-navigation {
+    padding: 6px 10px; /* Even more compact */
+  }
+
   .page-indicators {
-    gap: 8px;
+    gap: 4px;
   }
 
   .nav-controls {
-    gap: 10px;
+    gap: 6px;
   }
 
   .current-page-info {
-    min-width: 80px;
+    min-width: 50px;
   }
 
   .page-counter {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .page-name {
-    font-size: 9px;
+    font-size: 8px;
+  }
+
+  /* Stack vertically only on very small screens if needed */
+  .footer-nav-content {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .page-indicators {
+    order: 2;
+  }
+
+  .nav-controls {
+    order: 1;
   }
 } 
