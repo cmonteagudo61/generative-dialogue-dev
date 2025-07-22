@@ -124,41 +124,45 @@ const BottomContentArea = ({
     return position;
   };
 
+  // Smart device detection - use touch capability, not just window width
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isSmallScreen = window.innerWidth <= 768;
+  
   // Universal event handlers that work on both desktop and mobile
   const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef) => ({
     // Desktop hover events
     onMouseEnter: () => {
-      console.log('🖱️ HOVER START - Width:', window.innerWidth, 'Desktop?', window.innerWidth > 768);
-      if (window.innerWidth > 768) { // Only on desktop
+      console.log('🖱️ HOVER START - Width:', window.innerWidth, 'Touch device?', isTouchDevice, 'Small screen?', isSmallScreen);
+      if (!isTouchDevice) { // Desktop/laptop with mouse - always use hover
         console.log('🖱️ DESKTOP: Starting 2s delay for tooltip');
         showTooltipWithDelay(setTooltip, timeoutRef);
       } else {
-        console.log('🖱️ MOBILE: Ignoring hover (use touch instead)');
+        console.log('🖱️ TOUCH DEVICE: Ignoring hover (use touch instead)');
       }
     },
     onMouseLeave: () => {
       console.log('🖱️ HOVER END - Width:', window.innerWidth);
-      if (window.innerWidth > 768) { // Only on desktop
+      if (!isTouchDevice) { // Desktop/laptop with mouse
         console.log('🖱️ DESKTOP: Hiding tooltip immediately');
         hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
       }
     },
-    // Mobile touch events
+    // Mobile/tablet touch events
     onTouchStart: () => {
-      console.log('👆 TOUCH START - Width:', window.innerWidth);
-      if (window.innerWidth <= 768) { // Only on mobile
-        console.log('👆 MOBILE: Starting 1s press timeout');
+      console.log('👆 TOUCH START - Touch device?', isTouchDevice);
+      if (isTouchDevice) { // Only on actual touch devices
+        console.log('👆 TOUCH DEVICE: Starting 1s press timeout');
         pressTimeoutRef.current = setTimeout(() => {
-          console.log('👆 MOBILE: Long press detected, showing tooltip');
+          console.log('👆 TOUCH DEVICE: Long press detected, showing tooltip');
           showTooltipImmediately(setTooltip);
         }, 1000);
       }
     },
     onTouchEnd: () => {
       console.log('👆 TOUCH END');
-      if (window.innerWidth <= 768) { // Only on mobile
+      if (isTouchDevice) { // Only on actual touch devices
         clearTimeout(pressTimeoutRef.current);
-        // Hide tooltip after 3 seconds on mobile
+        // Hide tooltip after 3 seconds on touch devices
         setTimeout(() => {
           hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
         }, 3000);
@@ -166,7 +170,7 @@ const BottomContentArea = ({
     },
     onTouchCancel: () => {
       console.log('👆 TOUCH CANCEL');
-      if (window.innerWidth <= 768) { // Only on mobile
+      if (isTouchDevice) { // Only on actual touch devices
         hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
       }
     }
@@ -174,16 +178,6 @@ const BottomContentArea = ({
 
   // Cleanup timeouts on unmount
   useEffect(() => {
-    // Test: Show camera tooltip immediately to verify rendering
-    console.log('🧪 TEST: Showing camera tooltip immediately on mount');
-    setShowCameraTooltip(true);
-    
-    // Hide it after 3 seconds
-    setTimeout(() => {
-      console.log('🧪 TEST: Hiding camera tooltip');
-      setShowCameraTooltip(false);
-    }, 3000);
-    
     return () => {
       clearTimeout(micTooltipTimeout.current);
       clearTimeout(cameraTooltipTimeout.current);
@@ -3145,8 +3139,9 @@ const BottomContentArea = ({
           fontFamily: 'monospace'
         }}>
           <div>🖥️ Width: {window.innerWidth}px</div>
-          <div>📱 Device: {window.innerWidth <= 768 ? 'MOBILE' : 'DESKTOP'}</div>
-          <div>👆 Touch: {'ontouchstart' in window ? 'YES' : 'NO'}</div>
+          <div>📱 Touch Device: {isTouchDevice ? 'YES' : 'NO'}</div>
+          <div>📏 Small Screen: {isSmallScreen ? 'YES' : 'NO'}</div>
+          <div>🎯 Event Mode: {isTouchDevice ? 'TOUCH' : 'HOVER'}</div>
           <div>📷 Camera: {showCameraTooltip ? 'ON' : 'OFF'}</div>
           <div>🎤 Mic: {showMicTooltip ? 'ON' : 'OFF'}</div>
           <div>👤 Person: {showPersonTooltip ? 'ON' : 'OFF'}</div>
