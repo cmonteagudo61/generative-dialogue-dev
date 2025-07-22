@@ -68,12 +68,12 @@
   padding: 0 20px;
 }
 
-/* Fixed Hero Banner - Larger size like original */
+/* Fixed Hero Banner - Slightly less than half browser height */
 .fixed-hero {
   position: relative;
   width: 100%;
-  height: 50vh; /* Restore larger original size */
-  min-height: 400px; /* Restore minimum height */
+  height: 45vh; /* Reduced from 50vh - slightly less than half browser height */
+  min-height: 400px; /* Keep substantial minimum height */
   overflow: hidden;
   grid-row: 2;
 }

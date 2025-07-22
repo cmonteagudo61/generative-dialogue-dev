@@ -64,11 +64,11 @@
   line-height: 1.1;
 }
 
-/* Fixed Hero Banner - Match LandingPage larger size */
+/* Fixed Hero Banner - Match LandingPage size */
 .fixed-hero {
   position: relative;
   width: 100%;
-  height: 50vh; /* Match LandingPage larger size */
+  height: 45vh; /* Match LandingPage - slightly less than half browser height */
   min-height: 400px; /* Match LandingPage minimum height */
   overflow: hidden;
   grid-row: 2;
