@@ -524,7 +524,7 @@
   
   .input-row {
     flex-direction: column;
-    gap: 20px;
+    gap: 15px; /* Slightly more space on mobile for easier touch */
   }
   
   .input-group {
@@ -534,6 +534,13 @@
   .input-group-wide {
     flex: 1;
     max-width: 100%;
+  }
+  
+  /* Mobile input fields - keep them usable on touch devices */
+  .input-field {
+    height: 48px; /* Slightly taller for mobile touch targets */
+    padding: 12px 15px; /* More padding for easier touch */
+    font-size: 16px; /* Prevent zoom on iOS */
   }
   
   .fixed-hero {
@@ -546,9 +553,20 @@
   }
   
   .section-title {
-    font-size: 20px;
-    padding: 12px 20px;
+    font-size: 18px; /* Keep readable on mobile */
+    padding: 10px 15px; /* More compact on mobile */
     margin: 0 !important;
+  }
+  
+  /* Mobile catalyst options - keep usable */
+  .catalyst-option {
+    font-size: 15px; /* Slightly larger for mobile readability */
+    gap: 12px; /* More space for easier touch */
+  }
+  
+  .catalyst-option input[type="checkbox"] {
+    width: 20px; /* Larger touch targets on mobile */
+    height: 20px;
   }
 }
 
