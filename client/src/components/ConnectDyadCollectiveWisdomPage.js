@@ -21,11 +21,11 @@ const getLayoutFromView = (activeView) => {
     case 'fishbowl':
       return 'fishbowl';
     default:
-      return 'dyad'; // Default to dyad for this page
+      return 'community'; // Default to community for collective wisdom viewing
   }
 };
 
-const DyadSummaryReviewPageInner = ({ 
+const ConnectDyadCollectiveWisdomPageInner = ({ 
   canGoBack,
   canGoForward, 
   onBack,
@@ -35,13 +35,11 @@ const DyadSummaryReviewPageInner = ({
   totalPages,
   developmentMode
 }) => {
-  // Start with dyad view for Connect stage - use local state like working ConnectDyadPage
-  const [activeView, setActiveView] = useState('2'); // Dyad view
-  // Pre-select 2 participants for dyad demo
-  const [selectedParticipants, setSelectedParticipants] = useState([
-    'mock-1', 'mock-2'
-  ]);
+  // Start with community view for CONNECT stage collective wisdom - everyone comes back together
+  const [activeView, setActiveView] = useState('all'); // Community view
+  const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [isLoopActive, setIsLoopActive] = useState(false);
+  
   const { participants, realParticipants, error } = useVideo();
   const layout = getLayoutFromView(activeView);
   const participantCount = useMemo(() => realParticipants.length, [realParticipants]);
@@ -49,7 +47,6 @@ const DyadSummaryReviewPageInner = ({
   const handleViewChange = (newView) => setActiveView(newView);
   
   const handleParticipantSelect = (participant) => {
-    // Toggle selection for dyads
     setSelectedParticipants(prev => 
       prev.includes(participant.session_id) 
         ? prev.filter(id => id !== participant.session_id)
@@ -58,9 +55,7 @@ const DyadSummaryReviewPageInner = ({
   };
 
   const handleLoopToggle = (isActive) => {
-    console.log('🔄 Loop toggle called:', { isActive, currentState: isLoopActive });
     setIsLoopActive(isActive);
-    console.log('✅ Loop state updated to:', isActive);
   };
 
   return (
@@ -76,12 +71,12 @@ const DyadSummaryReviewPageInner = ({
       onBack={onBack}
       onForward={onForward}
       currentPage={currentPage}
-      activeStage="connect" // Explicitly set CONNECT stage as active
-      defaultActiveTab="summary" // Set Summary tab as active for this page
+      activeStage="connect" // CONNECT stage is active
+      defaultActiveTab="we" // WE tab is active
       dialogueQuestion="What brought us together today and what do we hope to discover through our connection?"
       dialogueTimeframe="15 minutes"
       dialogueFormat="DYAD connection pairs"
-      isSummaryReview={true}
+      isCollectiveWisdom={true}
     >
       <VideoGrid 
         participants={participants} 
@@ -96,9 +91,6 @@ const DyadSummaryReviewPageInner = ({
   );
 };
 
-const DyadSummaryReviewPage = (props) => {
-  return <DyadSummaryReviewPageInner {...props} />;
-};
+const ConnectDyadCollectiveWisdomPage = (props) => <ConnectDyadCollectiveWisdomPageInner {...props} />;
 
-export default DyadSummaryReviewPage;
- 
+export default ConnectDyadCollectiveWisdomPage; 

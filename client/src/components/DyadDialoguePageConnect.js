@@ -78,6 +78,10 @@ const DyadDialoguePageConnectInner = ({
       currentPage={currentPage}
       activeStage="connect" // Explicitly set CONNECT stage as active
       defaultActiveTab="dialogue" // Set Dialogue tab as active for this page
+      dialogueQuestion="What brought us together today and what do we hope to discover through our connection?"
+      dialogueTimeframe="15 minutes"
+      dialogueFormat="DYAD connection pairs"
+      isDialogueActive={true}
     >
       <VideoGrid 
         participants={participants} 

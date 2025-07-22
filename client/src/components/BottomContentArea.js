@@ -365,6 +365,67 @@ const BottomContentArea = ({
     ]
   };
 
+  // CONNECT stage data (One-to-one connection wisdom)
+  const connectVoicesFromField = [
+    {
+      speaker: "Marcus",
+      quote: "What surprised me was how quickly we moved past small talk to something real. There's something about being witnessed by just one other person that creates safety."
+    },
+    {
+      speaker: "Elena",  
+      quote: "In my dyad, we discovered we both carry this sense of wanting to contribute but not knowing where we fit. It was such a relief to name that together."
+    },
+    {
+      speaker: "David",
+      quote: "I realized I've been so focused on speaking my truth that I forgot how powerful it is to really hear someone else's. The quality of listening changed everything."
+    },
+    {
+      speaker: "Fatima",
+      quote: "My partner and I found ourselves talking about things we'd never shared with our own families. There's something about this container that makes vulnerability feel possible."
+    },
+    {
+      speaker: "James",
+      quote: "What struck me is that we didn't need to agree on everything to feel deeply connected. Our differences became doorways rather than walls."
+    },
+    {
+      speaker: "Aisha",
+      quote: "I learned that connection isn't about finding someone just like you - it's about being seen and held exactly as you are."
+    }
+  ];
+
+  const connectCollectiveWisdom = {
+    title: "The Foundation of All Dialogue: What CONNECTION Teaches Us",
+    
+    narrative: "Through hundreds of dyad conversations, a powerful truth emerges: authentic human connection is both simpler and more profound than we often realize. When we create sacred space for two people to truly see and hear each other, we discover that beneath our surface differences lie shared longings for belonging, meaning, and the courage to be fully ourselves. These one-to-one connections become the bedrock upon which all larger collective wisdom is built.",
+
+    choiceQuotes: [
+      {
+        quote: "Real connection happens not when we find someone who thinks like us, but when we're brave enough to be seen exactly as we are.",
+        attribution: "Synthesis from 47 dyad conversations"
+      },
+      {
+        quote: "The quality of our listening determines the depth of our connection, and the depth of our connection determines the wisdom that can emerge.",
+        attribution: "Pattern across dyad reflections"
+      }
+    ],
+
+    sentimentAnalysis: {
+      overall: "Deeply Moved and Hopeful",
+      vulnerability: 85,
+      safety: 92,
+      authenticity: 88,
+      hope: 79
+    },
+
+    emergingWisdom: [
+      "True dialogue begins with the courage to be vulnerable with one other person",
+      "Connection is less about agreement and more about mutual witnessing and holding",
+      "Sacred containers for conversation can be created through intention and presence alone",
+      "The skills learned in dyad connection become the foundation for all larger group wisdom",
+      "Individual healing and collective healing are intimately connected through authentic relationship"
+    ]
+  };
+
   // DISCOVER stage data (Jazz ensemble analogy - listening for themes, variations, overtones)
   const fishbowlTranscript = [
     {
@@ -1935,6 +1996,185 @@ const BottomContentArea = ({
                           lineHeight: '1.5'
                         }}>
                           {collectiveWisdom.emergingWisdom.map((wisdom, index) => (
+                            <li key={index} style={{marginBottom: '6px', color: '#333'}}>
+                              {wisdom}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : currentPage === 'connect-dyad-collective-wisdom' && isCollectiveWisdom ? (
+                /* CONNECT Stage Collective Wisdom */
+                <div className="dialogue-section">
+                  <div style={{marginBottom: '30px'}}>
+                    <h3 className="dialogue-title" style={{color: '#2E5BBA', marginBottom: '15px'}}>
+                      What Are WE Learning Through Connection?
+                    </h3>
+                    <p style={{fontSize: '14px', lineHeight: '1.5', color: '#555', marginBottom: '20px'}}>
+                      After experiencing authentic one-to-one connection in dyads, we come back together to discover 
+                      the collective wisdom that emerges. Here are voices from dyad conversations followed by AI-compiled 
+                      insights about the nature of human connection itself.
+                    </p>
+                  </div>
+
+                  {/* Voices from the Field */}
+                  <div style={{marginBottom: '30px'}}>
+                    <h4 style={{color: '#2E5BBA', marginBottom: '15px', fontSize: '18px'}}>
+                      🎤 Voices from Dyad Connections
+                    </h4>
+                    <p style={{fontSize: '14px', color: '#666', marginBottom: '15px', fontStyle: 'italic'}}>
+                      Participants share what they discovered about connection through their one-to-one conversations:
+                    </p>
+                    
+                    <div style={{
+                      display: 'grid',
+                      gap: '12px',
+                      marginBottom: '20px'
+                    }}>
+                      {connectVoicesFromField.map((voice, index) => (
+                        <div key={index} style={{
+                          backgroundColor: '#f8f9fa',
+                          border: '1px solid #e9ecef',
+                          borderRadius: '6px',
+                          padding: '12px'
+                        }}>
+                          <div style={{
+                            fontWeight: '600',
+                            color: '#2E5BBA',
+                            fontSize: '14px',
+                            marginBottom: '6px'
+                          }}>
+                            {voice.speaker}
+                          </div>
+                          <div style={{
+                            fontSize: '14px',
+                            lineHeight: '1.4',
+                            fontStyle: 'italic',
+                            color: '#333'
+                          }}>
+                            "{voice.quote}"
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* AI-Generated Collective Wisdom */}
+                  <div>
+                    <h4 style={{color: '#2E5BBA', marginBottom: '15px', fontSize: '18px'}}>
+                      🧠 AI-Compiled Collective Wisdom
+                    </h4>
+                    <p style={{fontSize: '14px', color: '#666', marginBottom: '20px', fontStyle: 'italic'}}>
+                      Drawing from all dyad conversations, here's what emerges about the nature of human connection:
+                    </p>
+
+                    <div style={{
+                      backgroundColor: '#f8f9fa',
+                      border: '1px solid #e9ecef', 
+                      borderRadius: '6px',
+                      padding: '20px',
+                      marginBottom: '20px'
+                    }}>
+                      <h5 style={{color: '#2E5BBA', marginBottom: '10px', fontSize: '16px'}}>
+                        {connectCollectiveWisdom.title}
+                      </h5>
+                      <p style={{
+                        fontSize: '14px',
+                        lineHeight: '1.5',
+                        margin: 0,
+                        color: '#333'
+                      }}>
+                        {connectCollectiveWisdom.narrative}
+                      </p>
+                    </div>
+
+                    {/* Choice Quotes */}
+                    <div style={{marginBottom: '20px'}}>
+                      <h5 style={{color: '#333', marginBottom: '12px', fontSize: '16px'}}>
+                        Wisdom Quotes from Connection
+                      </h5>
+                      <div style={{display: 'grid', gap: '10px'}}>
+                        {connectCollectiveWisdom.choiceQuotes.map((quote, index) => (
+                          <div key={index} style={{
+                            backgroundColor: '#fff',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            padding: '12px'
+                          }}>
+                            <div style={{
+                              fontSize: '14px',
+                              lineHeight: '1.4',
+                              fontStyle: 'italic',
+                              marginBottom: '6px',
+                              color: '#333'
+                            }}>
+                              "{quote.quote}"
+                            </div>
+                            <div style={{
+                              fontSize: '12px',
+                              color: '#666',
+                              textAlign: 'right'
+                            }}>
+                              — {quote.attribution}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Sentiment Analysis */}
+                    <div style={{marginBottom: '20px'}}>
+                      <h5 style={{color: '#333', marginBottom: '12px', fontSize: '16px'}}>
+                        Connection Quality Analysis
+                      </h5>
+                      <div style={{
+                        backgroundColor: '#fff',
+                        border: '1px solid #ddd',
+                        borderRadius: '4px',
+                        padding: '15px'
+                      }}>
+                        <div style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          marginBottom: '10px',
+                          color: '#2E5BBA'
+                        }}>
+                          Overall Tone: {connectCollectiveWisdom.sentimentAnalysis.overall}
+                        </div>
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(2, 1fr)',
+                          gap: '8px',
+                          fontSize: '13px'
+                        }}>
+                          <div>🤗 Vulnerability: {connectCollectiveWisdom.sentimentAnalysis.vulnerability}%</div>
+                          <div>🛡️ Safety: {connectCollectiveWisdom.sentimentAnalysis.safety}%</div>
+                          <div>✨ Authenticity: {connectCollectiveWisdom.sentimentAnalysis.authenticity}%</div>
+                          <div>🌱 Hope: {connectCollectiveWisdom.sentimentAnalysis.hope}%</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Emerging Wisdom */}
+                    <div>
+                      <h5 style={{color: '#333', marginBottom: '12px', fontSize: '16px'}}>
+                        Emerging Wisdom About Connection
+                      </h5>
+                      <div style={{
+                        backgroundColor: '#fff3cd',
+                        border: '1px solid #ffc107',
+                        borderRadius: '4px',
+                        padding: '15px'
+                      }}>
+                        <ul style={{
+                          margin: 0,
+                          paddingLeft: '20px',
+                          fontSize: '14px',
+                          lineHeight: '1.5'
+                        }}>
+                          {connectCollectiveWisdom.emergingWisdom.map((wisdom, index) => (
                             <li key={index} style={{marginBottom: '6px', color: '#333'}}>
                               {wisdom}
                             </li>

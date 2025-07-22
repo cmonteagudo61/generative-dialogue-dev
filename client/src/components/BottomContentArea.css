@@ -4,7 +4,9 @@
   flex-direction: column;
   flex: 1; /* Take available space from parent container */
   height: 100%; /* Fill parent container completely */
-  overflow: hidden;
+  max-height: 100%; /* Don't exceed parent container */
+  overflow-y: auto; /* Allow vertical scrolling when content exceeds container */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
   position: relative;
   background-color: white;
   margin: 0; /* Remove any margin */
@@ -51,7 +53,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden; /* Let child content sections handle their own scrolling */
   position: relative;
   margin-left: -64px; /* Extend to the left edge */
   padding-left: 65px; /* Reduced from 88px to bring tabs much closer to left edge */
@@ -137,7 +139,8 @@
 
 .tab-content {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* Allow scrolling when content exceeds available space */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
   background-color: white;
   border-top: 1px solid #ccc;
   padding: 20px 20px 20px 8px; /* Reduced left padding from 20px to 8px */
@@ -147,16 +150,21 @@
   flex-direction: column;
   align-items: flex-start;
   font-size: 18px; /* Added base font size for content */
+  min-height: 0; /* Allow flex item to shrink below content size */
 }
 
 /* Content sections */
 .content-section {
-  height: 100%;
-  overflow-y: auto;
+  flex: 1; /* Take available space */
+  overflow-y: auto; /* Enable scrolling for content */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
   width: 100%;
   text-align: left !important;
   align-self: flex-start;
   font-size: 18px; /* Increased base content font size */
+  padding: 0; /* Remove padding to let individual content handle spacing */
+  box-sizing: border-box; /* Include padding in height calculations */
+  min-height: 0; /* Allow flex item to shrink below content size */
 }
 
 /* Ensure all content within sections is left-aligned */
@@ -183,15 +191,19 @@
 .dialogue-tab-content {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1; /* Take available space */
   padding: 0; /* Remove default padding to let EnhancedTranscription manage spacing */
-  overflow: hidden; /* Let the inner component handle scrolling */
+  overflow-y: auto; /* Allow scrolling for dialogue content */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 .dialogue-section {
   max-width: 800px;
   margin: 0;
   text-align: left !important;
+  padding: 16px; /* Add proper padding for dialogue content */
+  flex: 1; /* Allow it to take available space */
+  overflow-y: auto; /* Enable scrolling for long dialogue content */
 }
 
 .dialogue-section p,

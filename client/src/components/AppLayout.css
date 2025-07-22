@@ -1,9 +1,9 @@
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh; /* Keep exact viewport height to prevent footer clipping */
   max-width: 100%;
-  overflow: hidden;
+  overflow: hidden; /* Prevent body scrolling - let internal areas handle it */
   position: relative;
   margin: 0;
   padding: 0;
@@ -171,8 +171,8 @@
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  overflow: hidden;
-  height: calc(100vh - 82px); /* Total height minus header (80px + 2px border) */
+  overflow: hidden; /* Let child components handle their own scrolling */
+  height: calc(100vh - 82px); /* Exact height to fit within viewport */
   max-height: calc(100vh - 82px); /* Ensure it never exceeds this */
   margin: 0;
   padding: 0;
@@ -185,7 +185,8 @@
   flex: 0 0 auto; /* Don't grow/shrink, use explicit height */
   height: calc(50vh - 40px); /* Keep video grid to half viewport height for text area below */
   min-height: 300px; /* Ensure minimum usable height */
-  overflow: hidden; /* Keep the navigation container boundary */
+  max-height: calc(50vh - 40px); /* Ensure it doesn't exceed allocated space */
+  overflow: visible; /* Allow content to be visible */
   width: 100%; /* Ensure full width responsiveness */
   position: relative; /* For precise alignment */
   margin: 0; /* Remove all margins */
@@ -199,7 +200,8 @@
   flex: 1; /* Take remaining space after grid-wrapper */
   min-height: 200px; /* Ensure minimum height for usability */
   max-height: calc(100vh - 82px - calc(50vh - 40px)); /* Exact remaining space: total - header - grid */
-  overflow: hidden; /* Prevent overflow beyond container */
+  overflow-y: auto; /* Allow scrolling when content exceeds container */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
   display: flex !important;
   flex-direction: column !important;
 }
@@ -286,6 +288,7 @@
 
   .grid-wrapper {
     height: calc(50vh - 50px) !important; /* Adjusted for mobile layout spacing */
+    max-height: calc(50vh - 50px) !important; /* Prevent exceeding allocated space */
     min-height: 250px !important; /* Reduced minimum for mobile */
   }
 
