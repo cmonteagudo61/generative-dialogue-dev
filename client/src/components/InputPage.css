@@ -64,11 +64,12 @@
   line-height: 1.1;
 }
 
-/* Fixed Hero Banner */
+/* Fixed Hero Banner - Match LandingPage larger size */
 .fixed-hero {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 50vh; /* Match LandingPage larger size */
+  min-height: 400px; /* Match LandingPage minimum height */
   overflow: hidden;
   grid-row: 2;
 }
@@ -105,7 +106,7 @@
 }
 
 .hero-subtitle {
-  font-size: 3rem;
+  font-size: 2.8rem; /* Match LandingPage size */
   font-weight: 700;
   color: #B8860B;
   text-align: center;
@@ -486,6 +487,15 @@
     letter-spacing: 0.5px;
     line-height: 1.2;
   }
+  
+  .fixed-hero {
+    height: 40vh; /* Match LandingPage mobile size */
+    min-height: 300px; /* Match LandingPage mobile minimum */
+  }
+  
+  .hero-subtitle {
+    font-size: 2.5rem; /* Match LandingPage mobile size */
+  }
 }
 
 @media (max-width: 600px) {
@@ -526,11 +536,12 @@
   }
   
   .fixed-hero {
-    height: 160px;
+    height: 35vh; /* Match LandingPage mobile size */
+    min-height: 250px; /* Match LandingPage mobile minimum */
   }
   
   .hero-subtitle {
-    font-size: 2.5rem;
+    font-size: 2.2rem; /* Match LandingPage mobile size */
   }
   
   .section-title {

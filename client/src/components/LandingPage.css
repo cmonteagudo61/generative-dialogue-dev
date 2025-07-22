@@ -68,11 +68,12 @@
   padding: 0 20px;
 }
 
-/* Fixed Hero Banner - Match InputPage exactly */
+/* Fixed Hero Banner - Larger size like original */
 .fixed-hero {
   position: relative;
   width: 100%;
-  height: 200px; /* Match InputPage exactly */
+  height: 50vh; /* Restore larger original size */
+  min-height: 400px; /* Restore minimum height */
   overflow: hidden;
   grid-row: 2;
 }
@@ -110,7 +111,7 @@
 }
 
 .hero-subtitle {
-  font-size: 3rem; /* Adjust for smaller hero banner */
+  font-size: 2.8rem; /* Restore original size for larger banner */
   font-weight: 700;
   color: #B8860B;
   text-align: center;
@@ -347,7 +348,8 @@
   }
   
   .fixed-hero {
-    height: 160px; /* Scale down for mobile */
+    height: 40vh; /* Scale down for mobile but keep substantial */
+    min-height: 300px; /* Reduce minimum for mobile */
   }
   
   .hero-subtitle {
@@ -383,7 +385,8 @@
   }
   
   .fixed-hero {
-    height: 160px; /* Smaller for mobile */
+    height: 35vh; /* Smaller for mobile */
+    min-height: 250px; /* Reduce minimum further */
   }
   
   .hero-subtitle {
