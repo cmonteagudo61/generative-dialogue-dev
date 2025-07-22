@@ -20,10 +20,16 @@ const EnhancedTranscription = ({
   const [status, setStatus] = useState('Ready to transcribe');
   const [error, setError] = useState('');
 
+  // Add debugging to make sure this component is actually rendering
+  console.log('🎯 ENHANCED TRANSCRIPTION COMPONENT IS RENDERING!');
+
   // Tooltip state for middle control buttons
   const [showMicTooltip, setShowMicTooltip] = useState(false);
   const [showUploadTooltip, setShowUploadTooltip] = useState(false);
   const [showClearTooltip, setShowClearTooltip] = useState(false);
+
+  // Force mobile mode for testing
+  const [forceMobileMode, setForceMobileMode] = useState(false);
 
   // Tooltip timeout refs
   const micTooltipTimeout = useRef(null);
@@ -35,7 +41,7 @@ const EnhancedTranscription = ({
   const uploadPressTimeout = useRef(null);
   const clearPressTimeout = useRef(null);
 
-  // Auto-hide timeout refs for mobile tooltips
+  // Auto-hide timeout refs for mobile
   const micAutoHideTimeout = useRef(null);
   const uploadAutoHideTimeout = useRef(null);
   const clearAutoHideTimeout = useRef(null);
@@ -93,7 +99,6 @@ const EnhancedTranscription = ({
   };
 
   // Device detection and tooltip positioning
-  const [forceMobileMode, setForceMobileMode] = useState(false);
   const isTouchDevice = forceMobileMode || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   const isSmallScreen = window.innerWidth <= 768;
 
@@ -144,59 +149,65 @@ const EnhancedTranscription = ({
     };
   };
 
-  // Universal event handlers for tooltips
-  const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef) => ({
-    // Desktop hover events
-    onMouseEnter: () => {
-      console.log('🖱️ TRANSCRIPTION HOVER START - Touch device?', isTouchDevice);
-      if (!isTouchDevice) {
-        console.log('🖱️ TRANSCRIPTION: Starting 2s delay for tooltip');
-        showTooltipWithDelay(setTooltip, timeoutRef);
-      } else {
-        console.log('🖱️ TRANSCRIPTION: Ignoring hover (use touch instead)');
+  // Universal event handlers that work on both desktop and mobile
+  const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef) => {
+    console.log('🔧 CREATING TOOLTIP HANDLERS - Touch device?', isTouchDevice);
+    
+    const handlers = {
+      // Desktop hover events
+      onMouseEnter: () => {
+        console.log('🖱️ TRANSCRIPTION HOVER START - Width:', window.innerWidth, 'Touch device?', isTouchDevice);
+        if (!isTouchDevice) { // Desktop/laptop with mouse - always use hover
+          console.log('🖱️ TRANSCRIPTION DESKTOP: Starting 2s delay for tooltip');
+          showTooltipWithDelay(setTooltip, timeoutRef);
+        } else {
+          console.log('🖱️ TRANSCRIPTION TOUCH DEVICE: Ignoring hover (use touch instead)');
+        }
+      },
+      onMouseLeave: () => {
+        console.log('🖱️ TRANSCRIPTION HOVER END');
+        if (!isTouchDevice) { // Desktop
+          hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
+        }
+      },
+      // Mobile touch events
+      onTouchStart: () => {
+        console.log('👆 TRANSCRIPTION TOUCH START');
+        if (isTouchDevice) {
+          console.log('👆 TRANSCRIPTION MOBILE: Starting 1s long-press detection');
+          clearTimeout(pressTimeoutRef.current);
+          clearTimeout(autoHideTimeoutRef.current);
+          pressTimeoutRef.current = setTimeout(() => {
+            console.log('👆 TRANSCRIPTION MOBILE: Long-press detected! Showing tooltip');
+            setTooltip(true);
+            // Auto-hide after 4 seconds
+            autoHideTimeoutRef.current = setTimeout(() => {
+              console.log('⏰ TRANSCRIPTION MOBILE: Auto-hiding tooltip after 4s');
+              setTooltip(false);
+            }, 4000);
+          }, 1000);
+        }
+      },
+      onTouchEnd: () => {
+        console.log('👆 TRANSCRIPTION TOUCH END');
+        if (isTouchDevice) {
+          clearTimeout(pressTimeoutRef.current);
+          // Let auto-hide timeout continue if tooltip is showing
+        }
+      },
+      onTouchCancel: () => {
+        console.log('👆 TRANSCRIPTION TOUCH CANCEL');
+        if (isTouchDevice) {
+          clearTimeout(pressTimeoutRef.current);
+          clearTimeout(autoHideTimeoutRef.current);
+          setTooltip(false);
+        }
       }
-    },
-    onMouseLeave: () => {
-      console.log('🖱️ TRANSCRIPTION HOVER END');
-      if (!isTouchDevice) {
-        console.log('🖱️ TRANSCRIPTION: Hiding tooltip immediately');
-        hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
-      }
-    },
-    // Mobile/tablet touch events
-    onTouchStart: () => {
-      console.log('👆 TRANSCRIPTION TOUCH START - Touch device?', isTouchDevice);
-      if (isTouchDevice) {
-        // Clear any existing timeouts
-        clearTimeout(pressTimeoutRef.current);
-        clearTimeout(autoHideTimeoutRef.current);
-        
-        console.log('👆 TRANSCRIPTION: Starting 1s press timeout');
-        pressTimeoutRef.current = setTimeout(() => {
-          console.log('👆 TRANSCRIPTION: Long press detected, showing tooltip');
-          showTooltipImmediately(setTooltip);
-          
-          // Auto-hide after 4 seconds on mobile
-          autoHideTimeoutRef.current = setTimeout(() => {
-            console.log('👆 TRANSCRIPTION: Auto-hiding tooltip after 4s');
-            hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
-          }, 4000);
-        }, 1000);
-      }
-    },
-    onTouchEnd: () => {
-      console.log('👆 TRANSCRIPTION TOUCH END');
-      if (isTouchDevice) {
-        clearTimeout(pressTimeoutRef.current);
-      }
-    },
-    onTouchCancel: () => {
-      console.log('👆 TRANSCRIPTION TOUCH CANCEL');
-      if (isTouchDevice) {
-        hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
-      }
-    }
-  });
+    };
+    
+    console.log('🔧 CREATED HANDLERS:', Object.keys(handlers));
+    return handlers;
+  };
 
   // Start real-time transcription
   const startRealTimeTranscription = async () => {
@@ -394,52 +405,145 @@ const EnhancedTranscription = ({
 
   return (
     <div className="enhanced-transcription">
+      {/* BRIGHT VISUAL INDICATOR - Component is visible! */}
+      <div style={{
+        backgroundColor: '#ff4444',
+        color: 'white',
+        padding: '15px',
+        textAlign: 'center',
+        fontSize: '18px',
+        fontWeight: 'bold',
+        border: '3px solid #ffffff',
+        borderRadius: '10px',
+        marginBottom: '20px',
+        boxShadow: '0 4px 12px rgba(255, 68, 68, 0.5)'
+      }}>
+        🎯 ENHANCED TRANSCRIPTION COMPONENT IS VISIBLE! 
+        <br/>You should see hover tooltips on the 3 buttons below this message.
+      </div>
       {/* Controls Section */}
       <div className="transcription-controls">
-        <div className="control-group">
-          <button 
-            id="transcription-mic-btn"
-            className={`btn ${isRecording ? 'btn-danger' : 'btn-primary'}`}
-            onClick={(e) => {
-              hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout);
-              isRecording ? stopRealTimeTranscription() : startRealTimeTranscription();
-            }}
-            disabled={isTranscribing}
-            {...createTooltipHandlers(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout)}
-          >
-            {isRecording ? '⏹ Stop Recording' : '🎤 Start Live Transcription'}
-          </button>
+        <h3>Transcription Controls</h3>
+        
+        {/* MAKE BUTTONS EXTRA VISIBLE FOR DEBUGGING */}
+        <div style={{
+          backgroundColor: '#f0f8ff', 
+          padding: '20px', 
+          border: '2px solid #007bff', 
+          borderRadius: '8px',
+          marginBottom: '20px'
+        }}>
+          <h4 style={{color: '#007bff', margin: '0 0 15px 0'}}>
+            🎯 CONTROL BUTTONS - Hover over these for tooltips:
+          </h4>
           
-          <label 
-            id="transcription-upload-btn"
-            className="btn btn-success"
-            {...createTooltipHandlers(setShowUploadTooltip, uploadTooltipTimeout, uploadPressTimeout, uploadAutoHideTimeout)}
-          >
-            📁 Upload Audio File
-            <input 
-              type="file" 
-              accept="audio/*" 
-              onChange={(e) => {
-                hideTooltipImmediately(setShowUploadTooltip, uploadTooltipTimeout, uploadPressTimeout, uploadAutoHideTimeout);
-                handleFileUpload(e);
+          <div className="control-group" style={{display: 'flex', gap: '15px', flexWrap: 'wrap'}}>
+            {/* TEMPORARY TEST BUTTONS FOR DEBUGGING */}
+            <div style={{
+              backgroundColor: '#ffffcc',
+              padding: '10px',
+              border: '1px solid #ffcc00',
+              borderRadius: '4px',
+              marginBottom: '10px'
+            }}>
+              <strong>🧪 DEBUG TESTS:</strong><br/>
+              <button 
+                style={{margin: '5px', padding: '5px 10px', fontSize: '12px'}}
+                onClick={() => {
+                  console.log('🧪 FORCE MIC TOOLTIP');
+                  setShowMicTooltip(!showMicTooltip);
+                }}
+              >
+                {showMicTooltip ? 'Hide' : 'Show'} Mic Tooltip
+              </button>
+              <button 
+                style={{margin: '5px', padding: '5px 10px', fontSize: '12px'}}
+                onClick={() => {
+                  console.log('🧪 FORCE UPLOAD TOOLTIP');
+                  setShowUploadTooltip(!showUploadTooltip);
+                }}
+              >
+                {showUploadTooltip ? 'Hide' : 'Show'} Upload Tooltip
+              </button>
+              <button 
+                style={{margin: '5px', padding: '5px 10px', fontSize: '12px'}}
+                onClick={() => {
+                  console.log('🧪 FORCE CLEAR TOOLTIP');
+                  setShowClearTooltip(!showClearTooltip);
+                }}
+              >
+                {showClearTooltip ? 'Hide' : 'Show'} Clear Tooltip
+              </button>
+            </div>
+
+            <button 
+              id="transcription-mic-btn"
+              className={`btn ${isRecording ? 'btn-danger' : 'btn-primary'}`}
+              onClick={(e) => {
+                console.log('🔥 MIC BUTTON CLICKED!');
+                hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout);
+                isRecording ? stopRealTimeTranscription() : startRealTimeTranscription();
               }}
-              style={{ display: 'none' }}
-              disabled={isRecording || isTranscribing}
-            />
-          </label>
-          
-          <button 
-            id="transcription-clear-btn"
-            className="btn btn-warning"
-            onClick={(e) => {
-              hideTooltipImmediately(setShowClearTooltip, clearTooltipTimeout, clearPressTimeout, clearAutoHideTimeout);
-              clearTranscripts();
-            }}
-            disabled={isRecording || isTranscribing}
-            {...createTooltipHandlers(setShowClearTooltip, clearTooltipTimeout, clearPressTimeout, clearAutoHideTimeout)}
-          >
-            🗑 Clear
-          </button>
+              disabled={isTranscribing}
+              style={{
+                padding: '12px 20px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                border: '3px solid #000',
+                borderRadius: '8px'
+              }}
+              {...createTooltipHandlers(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout)}
+            >
+              {isRecording ? '⏹ Stop Recording' : '🎤 Start Live Transcription'}
+            </button>
+            
+            <label 
+              id="transcription-upload-btn"
+              className="btn btn-success"
+              style={{
+                padding: '12px 20px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                border: '3px solid #000',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'inline-block'
+              }}
+              {...createTooltipHandlers(setShowUploadTooltip, uploadTooltipTimeout, uploadPressTimeout, uploadAutoHideTimeout)}
+            >
+              📁 Upload Audio File
+              <input 
+                type="file" 
+                accept="audio/*" 
+                onChange={(e) => {
+                  console.log('🔥 UPLOAD BUTTON USED!');
+                  hideTooltipImmediately(setShowUploadTooltip, uploadTooltipTimeout, uploadPressTimeout, uploadAutoHideTimeout);
+                  handleFileUpload(e);
+                }}
+                style={{display: 'none'}} 
+              />
+            </label>
+            
+            <button 
+              id="transcription-clear-btn"
+              className="btn btn-warning"
+              onClick={(e) => {
+                console.log('🔥 CLEAR BUTTON CLICKED!');
+                hideTooltipImmediately(setShowClearTooltip, clearTooltipTimeout, clearPressTimeout, clearAutoHideTimeout);
+                clearTranscripts();
+              }}
+              style={{
+                padding: '12px 20px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                border: '3px solid #000',
+                borderRadius: '8px'
+              }}
+              {...createTooltipHandlers(setShowClearTooltip, clearTooltipTimeout, clearPressTimeout, clearAutoHideTimeout)}
+            >
+              🗑 Clear All Transcriptions
+            </button>
+          </div>
         </div>
         
         {/* Status and Stats */}
