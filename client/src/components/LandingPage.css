@@ -1,130 +1,25 @@
-.landing-page {
-  min-height: 100vh;
+/* Landing Page Styles - CSS Grid Layout for Fixed Header/Hero */
+
+/* Main Container - CSS Grid Layout */
+.landing-page-container {
+  display: grid;
+  grid-template-rows: auto auto 1fr; /* header, hero, scrollable-content */
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
   background: linear-gradient(180deg, #E6F3FF 0%, #B8D4F0 30%, #87CEEB 70%, #F0F8FF 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 20px 0;
-  box-sizing: border-box;
-  position: relative;
 }
 
-/* Navigation footer - use exact BottomContentArea control-bar styling */
-.landing-page .control-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  height: 50px !important; /* Sufficient height to prevent clipping */
-  background-color: #e0e0e3; /* Light grey background for footer */
-  color: #3E4C71; /* Dark blue text color */
-  display: flex !important;
-  align-items: center !important; /* Perfect vertical centering */
-  justify-content: flex-end !important; /* Position nav controls on the right */
-  padding: 5px 20px !important; /* Minimal 5px top/bottom - prevents clipping */
-  border-top: none; /* Remove border */
-  flex-shrink: 0; /* Prevent shrinking */
-  margin: 0; /* Remove any margin */
-  box-sizing: border-box; /* Include padding in height calculation */
-}
-
-.landing-page .control-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important; /* Perfect internal centering */
-  background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-right: 8px;
-  /* Reset all positioning to rely on flexbox centering */
-  position: static !important; /* Let flexbox handle positioning */
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  flex-shrink: 0; /* Prevent shrinking */
-}
-
-.landing-page .control-button:hover {
-  background-color: rgba(224, 109, 55, 0.15);
-}
-
-.landing-page .control-button.active {
-  background-color: #E06D37;
-  color: white;
-}
-
-.page-info {
-  display: flex;
-  align-items: center;
-}
-
-.page-indicator {
-  font-weight: 600;
-  color: #3E4C71;
-  font-size: 16px;
-  background: linear-gradient(90deg, #3E4C71, #E06D37);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-
-
-
-
-.dev-continue-option {
-  margin-top: 20px;
-  padding: 12px;
-  background: rgba(62, 76, 113, 0.1);
-  border-radius: 8px;
-  text-align: center;
-}
-
-.dev-continue-option p {
-  color: #3E4C71;
-  font-size: 14px;
-  margin: 0;
-  font-style: italic;
-}
-
-.landing-container {
-  max-width: 100%;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-  overflow: visible;
-  animation: fadeInUp 0.8s ease-out;
-  margin: 0; /* Remove margins to eliminate blue stripes */
-  min-height: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* Fixed Header */
 .landing-header {
-  text-align: center;
-  padding: 40px 40px 20px 40px; /* Increase top padding to prevent clipping */
-  background: transparent;
-  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px 40px 20px 40px;
+  border-bottom: none;
+  z-index: 9999;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  grid-row: 1;
+  animation: fadeInUp 0.8s ease-out;
 }
 
 .header-content {
@@ -137,6 +32,11 @@
   margin: 0 auto;
   min-height: 80px; /* Ensure minimum height to prevent clipping */
   padding-top: 10px; /* Additional top padding for logo breathing room */
+}
+
+.title-section {
+  flex: 1;
+  text-align: center;
 }
 
 /* Logo-container styling moved to AppLayout.css for centralized control */
@@ -170,27 +70,18 @@
   -webkit-text-fill-color: transparent;
   
   /* Center the title in the available space */
-  flex: 1;
   text-align: center;
   padding: 0 20px;
 }
 
-
-
-.landing-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: visible;
-}
-
-.hero-image-container {
+/* Fixed Hero Banner */
+.fixed-hero {
   position: relative;
   width: 100%;
   height: 50vh;
   min-height: 400px;
   overflow: hidden;
+  grid-row: 2;
 }
 
 .hero-image {
@@ -225,27 +116,6 @@
   animation: fadeIn 1s ease-out 0.5s both;
 }
 
-.subtitle {
-  font-size: 4rem;
-  font-weight: 700;
-  color: #B8860B;
-  text-align: center;
-  margin: 0;
-  font-family: 'Arial Black', 'Arial', sans-serif;
-  
-  /* Copper/Bronze styling similar to main title but lighter */
-  text-shadow: 
-    1px 1px 0px #DAA520,
-    2px 2px 0px #B8860B,
-    3px 3px 0px #A0522D,
-    4px 4px 6px rgba(0, 0, 0, 0.7);
-  
-  background: linear-gradient(45deg, #FFD700 0%, #DAA520 50%, #B8860B 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
 .hero-subtitle {
   font-size: 2.8rem; /* 30% smaller than the original 4rem */
   font-weight: 700;
@@ -267,15 +137,44 @@
   -webkit-text-fill-color: transparent;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Scrollable Content Area */
+.scrollable-content {
+  grid-row: 3;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0;
+  /* Custom scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #B8860B rgba(255, 255, 255, 0.9);
+}
+
+.scrollable-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+  background: #B8860B;
+  border-radius: 4px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: #A0522D;
+}
+
+/* Main Content */
+.landing-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .content-section {
@@ -325,212 +224,216 @@
   color: #B8860B;
 }
 
-.navigation-section {
-  text-align: center;
-  padding: 30px 20px;
-  margin-top: auto;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 0 0 20px 20px;
-}
-
-.continue-button {
-  background: linear-gradient(135deg, #DAA520 0%, #B8860B 50%, #CD853F 100%);
-  border: none;
-  color: white;
-  padding: 16px 32px;
-  font-size: 1.2rem;
-  font-weight: 600;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(184, 134, 11, 0.3);
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.continue-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(184, 134, 11, 0.4);
-  background: linear-gradient(135deg, #FFD700 0%, #DAA520 50%, #B8860B 100%);
-}
-
-.continue-button:active {
-  transform: translateY(-1px);
-}
-
-.arrow-right {
-  font-size: 1.5rem;
-  transition: transform 0.3s ease;
-}
-
-.continue-button:hover .arrow-right {
-  transform: translateX(5px);
-}
-
-.landing-footer {
-  text-align: center;
-  padding: 30px 40px;
-  background: rgba(184, 134, 11, 0.1);
-  border-top: 1px solid rgba(184, 134, 11, 0.2);
-}
-
-.landing-footer p {
+/* Control Bar Footer */
+.landing-page-container .control-bar {
+  height: 50px !important; /* Match complex footer exactly */
+  background-color: #e0e0e3;
+  color: #3E4C71;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important; /* Position nav controls on the right */
+  padding: 5px 20px !important; /* Match complex footer padding */
+  border-top: none;
+  flex-shrink: 0;
   margin: 0;
-  color: #B8860B;
-  font-style: italic;
-  font-size: 1.1rem;
-  font-weight: 500;
+  margin-top: auto;
+  box-sizing: border-box; /* Include padding in height calculation */
+}
+
+.landing-page-container .control-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important; /* Perfect internal centering */
+  background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: 8px;
+  /* Reset all positioning to rely on flexbox centering */
+  position: static !important; /* Let flexbox handle positioning */
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.landing-page-container .control-button:hover {
+  background-color: rgba(224, 109, 55, 0.15);
+}
+
+.landing-page-container .control-button.active {
+  background-color: #E06D37;
+  color: white;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .landing-header {
+    padding: 30px 40px 15px;
+  }
+  
+  .content-section {
+    padding: 30px 40px;
+  }
+  
+  .header-content {
+    gap: 20px;
+  }
+  
+  .main-title {
+    font-size: clamp(1.2rem, 5vw, 3rem);
+    letter-spacing: clamp(0.2px, 0.3vw, 2px);
+  }
+}
+
+@media (max-width: 900px) {
+  .landing-header {
+    padding: 20px 20px 15px;
+  }
+  
+  .header-content {
+    gap: 15px;
+  }
+  
+  .actual-logo {
+    height: 50px;
+    min-width: 50px;
+  }
+  
+  .main-title {
+    font-size: clamp(1.1rem, 5vw, 2.5rem);
+    letter-spacing: clamp(0.2px, 0.3vw, 1.5px);
+  }
+}
+
 @media (max-width: 768px) {
-  .landing-page {
-    padding: 10px 5px;
+  .landing-header {
+    padding: 15px 15px 10px;
   }
   
-  .landing-container {
-    margin: 0; /* Remove margins to eliminate blue stripes */
-    border-radius: 15px;
+  .header-content {
+    gap: 10px;
   }
   
-  /* Main title now uses clamp() for fluid responsive sizing */
-  
-  .subtitle {
-    font-size: 4rem !important;
+  .actual-logo {
+    height: 45px;
+    min-width: 45px;
   }
   
-  .hero-subtitle {
-    font-size: 2.8rem !important; /* 30% smaller than 4rem */
+  .main-title {
+    font-size: clamp(1rem, 5vw, 2rem);
+    letter-spacing: clamp(0.2px, 0.3vw, 1px);
+    line-height: 1.2;
   }
   
-  .hero-image-container {
+  .fixed-hero {
     height: 40vh;
     min-height: 300px;
   }
   
-  .hero-overlay {
-    padding: 20px;
+  .hero-subtitle {
+    font-size: 2.5rem;
   }
   
   .content-section {
     padding: 30px 20px;
   }
-  
-  .continue-button {
-    padding: 14px 28px;
-    font-size: 1rem;
-  }
 }
 
-@media (max-width: 480px) {
-  .landing-page {
-    padding: 10px;
+@media (max-width: 600px) {
+  .header-content {
+    flex-direction: column;
+    gap: 10px;
+    min-height: auto;
+    padding: 5px 0;
   }
   
-  .landing-container {
-    margin: 0;
-    border-radius: 10px;
+  .logo-container {
+    align-self: flex-start;
   }
   
-  .landing-header {
-    padding: 20px 15px 15px 15px;
+  .title-section {
+    text-align: center;
+    width: 100%;
   }
   
-  /* Main title now uses clamp() for fluid responsive sizing */
-  
-  .subtitle {
-    font-size: 4rem !important;
+  .main-title {
+    font-size: clamp(1rem, 6vw, 1.8rem);
+    letter-spacing: clamp(0.2px, 0.3vw, 0.5px);
+    line-height: 1.3;
   }
   
-  .hero-subtitle {
-    font-size: 2.8rem !important; /* 30% smaller than 4rem */
-  }
-  
-  .hero-image-container {
+  .fixed-hero {
     height: 35vh;
     min-height: 250px;
   }
   
-  .hero-overlay {
-    padding: 15px;
+  .hero-subtitle {
+    font-size: 2.2rem;
   }
   
   .content-section {
     padding: 20px 15px;
   }
   
-  .navigation-section {
-    padding: 25px 15px;
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-  }
-  
   .overview-text {
     font-size: 1rem;
   }
-  
-  /* Logo-container styling moved to AppLayout.css for centralized control */
-  
-  .header-content {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  /* Logo size simplified - no shrinking needed */
 }
 
-/* Extra small screens - ensure title never clips */
-@media (max-width: 360px) {
-  .landing-page {
-    padding: 5px 2px;
+@media (max-width: 480px) {
+  .landing-header {
+    padding: 15px 15px 10px;
+  }
+  
+  .actual-logo {
+    height: 40px;
+    min-width: 40px;
   }
   
   .main-title {
-    font-size: clamp(1.2rem, 10vw, 2rem); /* Even more aggressive scaling for very narrow screens */
-    letter-spacing: clamp(0.2px, 0.3vw, 1px);
+    font-size: clamp(0.9rem, 6vw, 1.5rem);
+    letter-spacing: clamp(0.2px, 0.3vw, 0.5px);
+    line-height: 1.3;
   }
   
-  .subtitle {
-    font-size: 4rem !important; /* Keep consistent with InputPage */
+  .content-section {
+    padding: 15px 15px;
   }
   
-  .landing-container {
-    margin: 0; /* Remove margins to eliminate blue stripes */
-  }
-  
-  .navigation-section {
-    padding: 20px 10px;
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-  }
-  
-  /* Logo-container styling moved to AppLayout.css for centralized control */
-  
-  /* Logo size simplified - no shrinking needed */
-}
-
-/* Medium screens */
-@media (max-width: 768px) {
-  .subtitle {
-    font-size: 4rem !important;
+  .hero-subtitle {
+    font-size: 2rem;
   }
 }
-
-/* Small screens */
-@media (max-width: 480px) {
-  .subtitle {
-    font-size: 4rem !important;
-  }
-}/* Simplified logo behavior Sat Jul 19 01:00:17 EDT 2025 */
 
 /* Mobile responsive - exact match to BottomContentArea */
 @media (max-width: 1100px) {
-  .landing-page .control-bar {
+  .landing-page-container .control-bar {
     padding: 5px 16px 13px 16px !important; /* Perfect bottom buffering for mobile */
     height: 58px !important; /* Adjusted for optimal bottom padding */
     display: flex !important;
@@ -540,7 +443,7 @@
   }
 
   /* Reset all button positioning on mobile - let flexbox handle it */
-  .landing-page .control-button {
+  .landing-page-container .control-button {
     position: static !important; /* Remove all custom positioning */
     top: auto !important; /* Reset top positioning */
     margin: 0 !important; /* Remove all margins */
