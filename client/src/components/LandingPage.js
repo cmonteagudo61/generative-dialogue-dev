@@ -114,69 +114,69 @@ const LandingPage = ({
             </div>
           </div>
         </main>
-
-        {/* Development Navigation Footer - Fixed within scrollable area */}
-        {developmentMode && (
-          <div className="control-bar">
-            {/* Navigation controls - exact copy from BottomContentArea */}
-            <div style={{display: 'flex'}}>
-              <button 
-                id="back-btn" 
-                className="control-button"
-                onClick={handleBackClick}
-                onMouseEnter={() => (!developmentMode || canGoBack) && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
-                onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
-                disabled={developmentMode && !canGoBack}
-                style={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  borderRadius: '50%',
-                  boxShadow: 'none',
-                  opacity: (developmentMode && !canGoBack) ? 0.4 : 1,
-                  cursor: (developmentMode && !canGoBack) ? 'not-allowed' : 'pointer'
-                }}
-              >
-                <img 
-                  src={getBackButtonIcon()} 
-                  alt="Back" 
-                  style={{width: '34px', height: '34px'}}
-                />
-              </button>
-              <button 
-                id="forward-btn" 
-                className="control-button"
-                onClick={handleForwardClick}
-                onMouseEnter={() => (!developmentMode || canGoForward) && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
-                onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
-                disabled={developmentMode && !canGoForward}
-                style={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  borderRadius: '50%',
-                  boxShadow: 'none',
-                  overflow: 'hidden',
-                  opacity: (developmentMode && !canGoForward) ? 0.4 : 1,
-                  cursor: (developmentMode && !canGoForward) ? 'not-allowed' : 'pointer'
-                }}
-              >
-                <img 
-                  src={getForwardButtonIcon()} 
-                  alt="Forward" 
-                  style={{
-                    width: '34px',
-                    height: '34px',
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    display: 'block'
-                  }}
-                />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Fixed Footer - Outside scrollable area */}
+      {developmentMode && (
+        <div className="control-bar">
+          {/* Navigation controls - exact copy from BottomContentArea */}
+          <div style={{display: 'flex'}}>
+            <button 
+              id="back-btn" 
+              className="control-button"
+              onClick={handleBackClick}
+              onMouseEnter={() => (!developmentMode || canGoBack) && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
+              onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
+              disabled={developmentMode && !canGoBack}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                outline: 'none',
+                borderRadius: '50%',
+                boxShadow: 'none',
+                opacity: (developmentMode && !canGoBack) ? 0.4 : 1,
+                cursor: (developmentMode && !canGoBack) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <img 
+                src={getBackButtonIcon()} 
+                alt="Back" 
+                style={{width: '34px', height: '34px'}}
+              />
+            </button>
+            <button 
+              id="forward-btn" 
+              className="control-button"
+              onClick={handleForwardClick}
+              onMouseEnter={() => (!developmentMode || canGoForward) && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
+              onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
+              disabled={developmentMode && !canGoForward}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                outline: 'none',
+                borderRadius: '50%',
+                boxShadow: 'none',
+                overflow: 'hidden',
+                opacity: (developmentMode && !canGoForward) ? 0.4 : 1,
+                cursor: (developmentMode && !canGoForward) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <img 
+                src={getForwardButtonIcon()} 
+                alt="Forward" 
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  display: 'block'
+                }}
+              />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
