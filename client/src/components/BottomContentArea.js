@@ -3037,6 +3037,21 @@ const BottomContentArea = ({
       
       {/* Control bar */}
       <div className="control-bar">
+        {/* Debug State Display */}
+        <div style={{
+          position: 'fixed',
+          top: '10px',
+          right: '10px',
+          background: 'rgba(0,0,0,0.8)',
+          color: 'white',
+          padding: '8px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          zIndex: 99999
+        }}>
+          🐛 Debug: Camera={showCameraTooltip ? 'ON' : 'OFF'} | Mic={showMicTooltip ? 'ON' : 'OFF'}
+        </div>
+        
         {/* Media controls - Left group */}
         <div className="media-controls">
           <button 
@@ -3044,11 +3059,13 @@ const BottomContentArea = ({
             className="control-button"
             onClick={toggleCamera}
             onMouseEnter={() => {
+              console.log('🐛 Camera hover ENTER'); // Debug log
               setIsCameraHover(true);
               setShowCameraTooltip(true); // Debug: show immediately
               showTooltipWithDelay(setShowCameraTooltip, cameraTooltipTimeout);
             }}
             onMouseLeave={() => {
+              console.log('🐛 Camera hover LEAVE'); // Debug log
               setIsCameraHover(false);
               hideTooltipImmediately(setShowCameraTooltip, cameraTooltipTimeout);
             }}
@@ -3304,33 +3321,23 @@ const BottomContentArea = ({
       {/* Tooltips */}
       {showCameraTooltip && (
         <div style={{
-          position: 'absolute',
-          bottom: '60px',
-          left: '20px',
+          position: 'fixed', // Changed from absolute to fixed
+          top: '50%', // Center of screen
+          left: '50%', // Center of screen
+          transform: 'translate(-50%, -50%)', // Center the tooltip itself
           backgroundColor: 'rgba(255, 0, 0, 0.9)', // Debug: bright red background
           color: 'white',
-          padding: '12px 16px',
+          padding: '20px 30px', // Even bigger for visibility
           borderRadius: '6px',
-          fontSize: '14px',
+          fontSize: '18px', // Larger font
           fontWeight: '600',
           whiteSpace: 'nowrap',
-          zIndex: 9999,
+          zIndex: 99999, // Even higher z-index
           pointerEvents: 'none',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-          border: '2px solid yellow' // Debug: bright border
+          border: '4px solid yellow' // Thicker border
         }}>
-          {isCameraOff ? 'Turn camera on' : 'Turn camera off'}
-          <div style={{
-            position: 'absolute',
-            top: '100%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 0,
-            height: 0,
-            borderLeft: '6px solid transparent',
-            borderRight: '6px solid transparent',
-            borderTop: '6px solid rgba(255, 0, 0, 0.9)'
-          }} />
+          🐛 TOOLTIP TEST: {isCameraOff ? 'Turn camera on' : 'Turn camera off'}
         </div>
       )}
 
