@@ -1801,13 +1801,32 @@ const BottomContentArea = ({
                 </div>
               ) : (
                 /* Enhanced Real-time Transcription for other pages */
-                <EnhancedTranscription 
-                  isRecording={isRecording}
-                  startRecording={startRecording}
-                  stopRecording={stopRecording}
-                  clearTranscription={clearTranscription}
-                  getStatusClass={getStatusClass}
-                />
+                <div>
+                  {/* Debug info to help user understand when this is visible */}
+                  <div style={{
+                    backgroundColor: '#e3f2fd',
+                    border: '2px solid #2196F3',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '20px',
+                    fontSize: '14px'
+                  }}>
+                    <strong style={{color: '#1976D2'}}>🔧 ENHANCED TRANSCRIPTION DEBUG</strong><br/>
+                    Current Page: <code>{currentPage}</code><br/>
+                    Dialogue Active: <code>{isDialogueActive ? 'true' : 'false'}</code><br/>
+                    Kiva Dialogue: <code>{isKivaDialogue ? 'true' : 'false'}</code><br/>
+                    <strong style={{color: '#388E3C'}}>✅ EnhancedTranscription component is now visible!</strong><br/>
+                    <em>You should see the middle control buttons with tooltips below.</em>
+                  </div>
+                  
+                  <EnhancedTranscription 
+                    isRecording={isRecording}
+                    startRecording={startRecording}
+                    stopRecording={stopRecording}
+                    clearTranscription={clearTranscription}
+                    getStatusClass={getStatusClass}
+                  />
+                </div>
               )}
             </div>
           )}

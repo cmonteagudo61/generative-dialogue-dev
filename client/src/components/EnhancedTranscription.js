@@ -621,6 +621,63 @@ const EnhancedTranscription = ({
           Event Mode: {isTouchDevice ? 'Touch' : 'Hover'}
         </div>
       )}
+
+      {/* Quick Test Buttons for Tooltip Debugging */}
+      <div style={{
+        backgroundColor: '#fff3cd',
+        border: '1px solid #ffeaa7',
+        borderRadius: '6px',
+        padding: '10px',
+        marginBottom: '15px',
+        fontSize: '13px'
+      }}>
+        <strong>🧪 Tooltip Test Controls:</strong><br/>
+        <button 
+          style={{
+            margin: '5px',
+            padding: '5px 10px',
+            backgroundColor: showMicTooltip ? '#28a745' : '#6c757d',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+          onClick={() => setShowMicTooltip(!showMicTooltip)}
+        >
+          {showMicTooltip ? 'Hide' : 'Show'} Mic Tooltip
+        </button>
+        <button 
+          style={{
+            margin: '5px',
+            padding: '5px 10px',
+            backgroundColor: showUploadTooltip ? '#28a745' : '#6c757d',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+          onClick={() => setShowUploadTooltip(!showUploadTooltip)}
+        >
+          {showUploadTooltip ? 'Hide' : 'Show'} Upload Tooltip
+        </button>
+        <button 
+          style={{
+            margin: '5px',
+            padding: '5px 10px',
+            backgroundColor: showClearTooltip ? '#28a745' : '#6c757d',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+          onClick={() => setShowClearTooltip(!showClearTooltip)}
+        >
+          {showClearTooltip ? 'Hide' : 'Show'} Clear Tooltip
+        </button>
+      </div>
     </div>
   );
 };
