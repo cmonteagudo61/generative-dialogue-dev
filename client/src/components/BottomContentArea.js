@@ -2788,36 +2788,180 @@ const BottomContentArea = ({
                   </div>
                 </div>
               ) : (
-                /* Default WE content for other pages */
-                <>
-                  <h3 className="dialogue-title">Voices From The Field</h3>
-                  
-                  <div className="voice-card">
-                    <div className="voice-speaker">Sarah Johnson</div>
-                    <div className="voice-quote">"I was struck by how many of us referenced indigenous wisdom traditions as models for long-term thinking. There seems to be a collective yearning to reconnect with these deeper ways of seeing ourselves in relationship to future generations."</div>
+                /* Default WE content for CONNECT and other pages - Combined Voices From Field style */
+                <div className="dialogue-section">
+                  <div style={{marginBottom: '30px'}}>
+                    <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '20px'}}>
+                      Voices From the Field<br/>What are WE Saying?
+                    </h3>
+                    <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '20px'}}>
+                      Let us now hear from a small representative number <strong>(~six volunteers)</strong>. This is a way to 
+                      add to our sense of connection - the emerging WE - that has already begun to surface.
+                    </p>
                   </div>
-                  
-                  <div className="voice-card">
-                    <div className="voice-speaker">Michael Chen</div>
-                    <div className="voice-quote">"Our breakout group discussed how governance structures might be redesigned to include representatives for future generations - I'm curious if other groups explored similar ideas."</div>
-                  </div>
-                  
-                  <div className="voice-card">
-                    <div className="voice-speaker">Aisha Patel</div>
-                    <div className="voice-quote">"We explored the tension between short-term economic incentives and long-term ecological health. Several of us wondered what economic models might better align with intergenerational thinking."</div>
-                  </div>
-                  
-                  <div className="theme-tags">
-                    <h4>Emerging Themes</h4>
-                    <div>
-                      <span className="theme-tag">intergenerationalEthics</span>
-                      <span className="theme-tag">indigenousWisdom</span>
-                      <span className="theme-tag">governanceReform</span>
-                      <span className="theme-tag">economicReimagining</span>
-                      <span className="theme-tag">ecologicalAwareness</span>
+
+                  {/* Voices from the Field */}
+                  <div style={{marginBottom: '30px'}}>
+                    <h4 style={{color: '#E06D37', marginBottom: '15px', fontSize: '18px'}}>
+                      🎤 Voices from the Field
+                    </h4>
+                    <p style={{fontSize: '14px', color: '#666', marginBottom: '15px', fontStyle: 'italic'}}>
+                      Participants share insights and discoveries from their dialogue experiences:
+                    </p>
+                    
+                    <div style={{
+                      display: 'grid',
+                      gap: '12px',
+                      marginBottom: '20px'
+                    }}>
+                      <div style={{
+                        backgroundColor: '#fff3e0',
+                        border: '1px solid #E06D37',
+                        borderRadius: '6px',
+                        padding: '12px'
+                      }}>
+                        <div style={{
+                          fontWeight: '600',
+                          color: '#E06D37',
+                          fontSize: '14px',
+                          marginBottom: '6px'
+                        }}>
+                          Sarah Johnson
+                        </div>
+                        <div style={{
+                          fontSize: '14px',
+                          lineHeight: '1.4',
+                          fontStyle: 'italic',
+                          color: '#333'
+                        }}>
+                          "I was struck by how many of us referenced indigenous wisdom traditions as models for long-term thinking. There seems to be a collective yearning to reconnect with these deeper ways of seeing ourselves in relationship to future generations."
+                        </div>
+                      </div>
+                      
+                      <div style={{
+                        backgroundColor: '#fff3e0',
+                        border: '1px solid #E06D37',
+                        borderRadius: '6px',
+                        padding: '12px'
+                      }}>
+                        <div style={{
+                          fontWeight: '600',
+                          color: '#E06D37',
+                          fontSize: '14px',
+                          marginBottom: '6px'
+                        }}>
+                          Michael Chen
+                        </div>
+                        <div style={{
+                          fontSize: '14px',
+                          lineHeight: '1.4',
+                          fontStyle: 'italic',
+                          color: '#333'
+                        }}>
+                          "Our breakout group discussed how governance structures might be redesigned to include representatives for future generations - I'm curious if other groups explored similar ideas."
+                        </div>
+                      </div>
+                      
+                      <div style={{
+                        backgroundColor: '#fff3e0',
+                        border: '1px solid #E06D37',
+                        borderRadius: '6px',
+                        padding: '12px'
+                      }}>
+                        <div style={{
+                          fontWeight: '600',
+                          color: '#E06D37',
+                          fontSize: '14px',
+                          marginBottom: '6px'
+                        }}>
+                          Aisha Patel
+                        </div>
+                        <div style={{
+                          fontSize: '14px',
+                          lineHeight: '1.4',
+                          fontStyle: 'italic',
+                          color: '#333'
+                        }}>
+                          "We explored the tension between short-term economic incentives and long-term ecological health. Several of us wondered what economic models might better align with intergenerational thinking."
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </>
+
+                  {/* What Are We Saying - Emerging Themes */}
+                  <div>
+                    <h4 style={{color: '#E06D37', marginBottom: '15px', fontSize: '18px'}}>
+                      🧠 What Are We Saying? - Emerging Themes
+                    </h4>
+                    <p style={{fontSize: '14px', color: '#666', marginBottom: '20px', fontStyle: 'italic'}}>
+                      Collective patterns and themes emerging from our shared dialogues:
+                    </p>
+
+                    <div style={{
+                      backgroundColor: '#fff3e0',
+                      border: '1px solid #E06D37',
+                      borderRadius: '6px',
+                      padding: '20px',
+                      marginBottom: '20px'
+                    }}>
+                      <h5 style={{color: '#E06D37', marginBottom: '15px', fontSize: '16px'}}>
+                        Emerging Collective Wisdom
+                      </h5>
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '10px',
+                        marginBottom: '15px'
+                      }}>
+                        <span style={{
+                          backgroundColor: '#E06D37',
+                          color: 'white',
+                          padding: '6px 12px',
+                          borderRadius: '15px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          textAlign: 'center'
+                        }}>intergenerationalEthics</span>
+                        <span style={{
+                          backgroundColor: '#E06D37',
+                          color: 'white',
+                          padding: '6px 12px',
+                          borderRadius: '15px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          textAlign: 'center'
+                        }}>indigenousWisdom</span>
+                        <span style={{
+                          backgroundColor: '#E06D37',
+                          color: 'white',
+                          padding: '6px 12px',
+                          borderRadius: '15px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          textAlign: 'center'
+                        }}>governanceReform</span>
+                        <span style={{
+                          backgroundColor: '#E06D37',
+                          color: 'white',
+                          padding: '6px 12px',
+                          borderRadius: '15px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          textAlign: 'center'
+                        }}>economicReimagining</span>
+                        <span style={{
+                          backgroundColor: '#E06D37',
+                          color: 'white',
+                          padding: '6px 12px',
+                          borderRadius: '15px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          textAlign: 'center'
+                        }}>ecologicalAwareness</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           )}
