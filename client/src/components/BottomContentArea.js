@@ -757,12 +757,19 @@ const BottomContentArea = ({
             >
               Summary
             </div>
-            <div 
-              className={`tab-btn ${activeTab === 'we' ? 'active' : ''}`}
-              onClick={() => switchTab('we')}
-            >
-              WE
-            </div>
+            {/* Only show WE tab for dedicated collective wisdom pages or non-CONNECT stages */}
+            {(currentPage === 'connect-dyad-collective-wisdom' || 
+              currentPage.includes('explore-') || 
+              currentPage.includes('discover-') || 
+              currentPage === 'harvest' || 
+              currentPage === 'reflection') && (
+              <div 
+                className={`tab-btn ${activeTab === 'we' ? 'active' : ''}`}
+                onClick={() => switchTab('we')}
+              >
+                WE
+              </div>
+            )}
           </div>
           
           {/* Transcription Controls */}
