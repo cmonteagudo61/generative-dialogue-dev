@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './EnhancedTranscription.css';
 
 const EnhancedTranscription = ({ 
@@ -19,9 +19,6 @@ const EnhancedTranscription = ({
   const [confidence, setConfidence] = useState(0);
   const [status, setStatus] = useState('Ready to transcribe');
   const [error, setError] = useState('');
-
-  // Add debugging to make sure this component is actually rendering
-  console.log('🎯 ENHANCED TRANSCRIPTION COMPONENT IS RENDERING!');
 
   // Tooltip state for middle control buttons
   const [showMicTooltip, setShowMicTooltip] = useState(false);
@@ -76,27 +73,25 @@ const EnhancedTranscription = ({
   }, []);
 
   // Tooltip utility functions
-  const showTooltipWithDelay = (setTooltip, timeoutRef, delay = 2000) => {
-    console.log('⏰ TRANSCRIPTION: showTooltipWithDelay called with delay:', delay);
+  const showTooltipWithDelay = useCallback((setTooltip, timeoutRef, delay = 2000) => {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
-      console.log('⏰ TRANSCRIPTION: TIMEOUT FIRED: Setting tooltip to true');
+      console.log('✅ TRANSCRIPTION: Tooltip appearing');
       setTooltip(true);
     }, delay);
-  };
+  }, []);
 
   const showTooltipImmediately = (setTooltip) => {
     console.log('⚡ TRANSCRIPTION: showTooltipImmediately called');
     setTooltip(true);
   };
 
-  const hideTooltipImmediately = (setTooltip, timeoutRef, pressTimeoutRef = null, autoHideTimeoutRef = null) => {
-    console.log('❌ TRANSCRIPTION: hideTooltipImmediately called');
+  const hideTooltipImmediately = useCallback((setTooltip, timeoutRef, pressTimeoutRef = null, autoHideTimeoutRef = null) => {
     clearTimeout(timeoutRef.current);
     if (pressTimeoutRef) clearTimeout(pressTimeoutRef.current);
     if (autoHideTimeoutRef) clearTimeout(autoHideTimeoutRef.current);
     setTooltip(false);
-  };
+  }, []);
 
   // Device detection and tooltip positioning
   const isTouchDevice = forceMobileMode || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -150,53 +145,40 @@ const EnhancedTranscription = ({
   };
 
   // Universal event handlers that work on both desktop and mobile
-  const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef) => {
-    console.log('🔧 CREATING TOOLTIP HANDLERS - Touch device?', isTouchDevice);
-    
+  const createTooltipHandlers = useCallback((setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef) => {
     const handlers = {
       // Desktop hover events
       onMouseEnter: () => {
-        console.log('🖱️ TRANSCRIPTION HOVER START - Width:', window.innerWidth, 'Touch device?', isTouchDevice);
         if (!isTouchDevice) { // Desktop/laptop with mouse - always use hover
-          console.log('🖱️ TRANSCRIPTION DESKTOP: Starting 2s delay for tooltip');
           showTooltipWithDelay(setTooltip, timeoutRef);
-        } else {
-          console.log('🖱️ TRANSCRIPTION TOUCH DEVICE: Ignoring hover (use touch instead)');
         }
       },
       onMouseLeave: () => {
-        console.log('🖱️ TRANSCRIPTION HOVER END');
         if (!isTouchDevice) { // Desktop
           hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
         }
       },
       // Mobile touch events
       onTouchStart: () => {
-        console.log('👆 TRANSCRIPTION TOUCH START');
         if (isTouchDevice) {
-          console.log('👆 TRANSCRIPTION MOBILE: Starting 1s long-press detection');
           clearTimeout(pressTimeoutRef.current);
           clearTimeout(autoHideTimeoutRef.current);
           pressTimeoutRef.current = setTimeout(() => {
-            console.log('👆 TRANSCRIPTION MOBILE: Long-press detected! Showing tooltip');
             setTooltip(true);
             // Auto-hide after 4 seconds
             autoHideTimeoutRef.current = setTimeout(() => {
-              console.log('⏰ TRANSCRIPTION MOBILE: Auto-hiding tooltip after 4s');
               setTooltip(false);
             }, 4000);
           }, 1000);
         }
       },
       onTouchEnd: () => {
-        console.log('👆 TRANSCRIPTION TOUCH END');
         if (isTouchDevice) {
           clearTimeout(pressTimeoutRef.current);
           // Let auto-hide timeout continue if tooltip is showing
         }
       },
       onTouchCancel: () => {
-        console.log('👆 TRANSCRIPTION TOUCH CANCEL');
         if (isTouchDevice) {
           clearTimeout(pressTimeoutRef.current);
           clearTimeout(autoHideTimeoutRef.current);
@@ -205,9 +187,8 @@ const EnhancedTranscription = ({
       }
     };
     
-    console.log('🔧 CREATED HANDLERS:', Object.keys(handlers));
     return handlers;
-  };
+  }, [isTouchDevice, showTooltipWithDelay, hideTooltipImmediately]);
 
   // Start real-time transcription
   const startRealTimeTranscription = async () => {
@@ -492,7 +473,25 @@ const EnhancedTranscription = ({
                 border: '3px solid #000',
                 borderRadius: '8px'
               }}
-              {...createTooltipHandlers(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout)}
+              onMouseEnter={() => {
+                console.log('🖱️ DIRECT MIC HOVER - Touch device?', isTouchDevice);
+                if (!isTouchDevice) {
+                  console.log('🖱️ DIRECT MIC: Starting tooltip delay');
+                  showTooltipWithDelay(setShowMicTooltip, micTooltipTimeout);
+                }
+              }}
+              onMouseLeave={() => {
+                console.log('🖱️ DIRECT MIC HOVER END');
+                if (!isTouchDevice) {
+                  hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout);
+                }
+              }}
+              onTouchStart={() => {
+                console.log('👆 DIRECT MIC TOUCH START');
+                if (isTouchDevice) {
+                  setShowMicTooltip(true);
+                }
+              }}
             >
               {isRecording ? '⏹ Stop Recording' : '🎤 Start Live Transcription'}
             </button>
@@ -701,30 +700,32 @@ const EnhancedTranscription = ({
       )}
 
       {/* Debug Display for Testing (can be removed later) */}
-      {(showMicTooltip || showUploadTooltip || showClearTooltip) && (
-        <div style={{
-          position: 'fixed',
-          top: '10px',
-          right: '10px',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          padding: '8px',
-          borderRadius: '4px',
-          fontSize: '12px',
-          zIndex: 10001,
-          border: '1px solid #ccc'
-        }}>
-          🔧 TRANSCRIPTION TOOLTIPS<br/>
-          Width: {window.innerWidth}px<br/>
-          Touch Device: {isTouchDevice ? 'Yes' : 'No'}<br/>
-          <span 
-            style={{cursor: 'pointer', color: 'blue', textDecoration: 'underline'}}
-            onClick={() => setForceMobileMode(!forceMobileMode)}
-          >
-            Force Mobile: {forceMobileMode ? 'ON' : 'OFF'}
-          </span><br/>
-          Event Mode: {isTouchDevice ? 'Touch' : 'Hover'}
-        </div>
-      )}
+      <div style={{
+        position: 'fixed',
+        top: '10px',
+        right: '10px',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        padding: '8px',
+        borderRadius: '4px',
+        fontSize: '12px',
+        zIndex: 10001,
+        border: '1px solid #ccc'
+      }}>
+        🔧 TRANSCRIPTION TOOLTIPS<br/>
+        Width: {window.innerWidth}px<br/>
+        Touch Device: {isTouchDevice ? 'Yes' : 'No'}<br/>
+        <span 
+          style={{cursor: 'pointer', color: 'blue', textDecoration: 'underline'}}
+          onClick={() => setForceMobileMode(!forceMobileMode)}
+        >
+          Force Mobile: {forceMobileMode ? 'ON' : 'OFF'}
+        </span><br/>
+        Event Mode: {isTouchDevice ? 'TOUCH' : 'HOVER'}<br/>
+        <strong style={{color: 'red'}}>TOOLTIP STATES:</strong><br/>
+        Mic: {showMicTooltip ? '✅ VISIBLE' : '❌ hidden'}<br/>
+        Upload: {showUploadTooltip ? '✅ VISIBLE' : '❌ hidden'}<br/>
+        Clear: {showClearTooltip ? '✅ VISIBLE' : '❌ hidden'}
+      </div>
 
       {/* Quick Test Buttons for Tooltip Debugging */}
       <div style={{
