@@ -75,7 +75,7 @@ const ConnectDyadCollectiveWisdomPageInner = ({
       defaultActiveTab="we" // WE tab is active
       dialogueQuestion="What brought us together today and what do we hope to discover through our connection?"
       dialogueTimeframe="15 minutes"
-      dialogueFormat="DYAD connection pairs"
+      dialogueFormat="DYAD breakout rooms"
       isCollectiveWisdom={true}
     >
       <VideoGrid 

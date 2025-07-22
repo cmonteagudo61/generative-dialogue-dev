@@ -80,7 +80,7 @@ const DyadDialoguePageConnectInner = ({
       defaultActiveTab="dialogue" // Set Dialogue tab as active for this page
       dialogueQuestion="What brought us together today and what do we hope to discover through our connection?"
       dialogueTimeframe="15 minutes"
-      dialogueFormat="DYAD connection pairs"
+      dialogueFormat="DYAD breakout rooms"
       isDialogueActive={true}
     >
       <VideoGrid 
