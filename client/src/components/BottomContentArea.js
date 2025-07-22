@@ -66,23 +66,29 @@ const BottomContentArea = ({
   const [isLoopActive, setIsLoopActive] = useState(false);
   const [isLoopHover, setIsLoopHover] = useState(false);
 
-  // Tooltip state management
+  // Tooltip state and refs
   const [showMicTooltip, setShowMicTooltip] = useState(false);
   const [showCameraTooltip, setShowCameraTooltip] = useState(false);
   const [showPersonTooltip, setShowPersonTooltip] = useState(false);
   const [showLoopTooltip, setShowLoopTooltip] = useState(false);
 
-  // Tooltip timeout refs
+  // Timeout refs for tooltip delays
   const micTooltipTimeout = useRef(null);
   const cameraTooltipTimeout = useRef(null);
   const personTooltipTimeout = useRef(null);
   const loopTooltipTimeout = useRef(null);
 
-  // Touch/press timeout refs for mobile
+  // Press timeout refs for mobile long-press
   const micPressTimeout = useRef(null);
   const cameraPressTimeout = useRef(null);
   const personPressTimeout = useRef(null);
   const loopPressTimeout = useRef(null);
+
+  // Auto-hide timeout refs for mobile tooltips
+  const micAutoHideTimeout = useRef(null);
+  const cameraAutoHideTimeout = useRef(null);
+  const personAutoHideTimeout = useRef(null);
+  const loopAutoHideTimeout = useRef(null);
 
   // Utility functions for tooltip management
   const showTooltipWithDelay = (setTooltip, timeoutRef, delay = 2000) => {
@@ -99,10 +105,11 @@ const BottomContentArea = ({
     setTooltip(true);
   };
 
-  const hideTooltipImmediately = (setTooltip, timeoutRef, pressTimeoutRef = null) => {
+  const hideTooltipImmediately = (setTooltip, timeoutRef, pressTimeoutRef = null, autoHideTimeoutRef = null) => {
     console.log('❌ hideTooltipImmediately called');
     clearTimeout(timeoutRef.current);
     if (pressTimeoutRef) clearTimeout(pressTimeoutRef.current);
+    if (autoHideTimeoutRef) clearTimeout(autoHideTimeoutRef.current);
     setTooltip(false);
   };
 
@@ -153,7 +160,7 @@ const BottomContentArea = ({
   const isSmallScreen = window.innerWidth <= 768;
   
   // Universal event handlers that work on both desktop and mobile
-  const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef) => ({
+  const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef) => ({
     // Desktop hover events
     onMouseEnter: () => {
       console.log('🖱️ HOVER START - Width:', window.innerWidth, 'Touch device?', isTouchDevice, 'Small screen?', isSmallScreen);
@@ -168,34 +175,42 @@ const BottomContentArea = ({
       console.log('🖱️ HOVER END - Width:', window.innerWidth);
       if (!isTouchDevice) { // Desktop/laptop with mouse
         console.log('🖱️ DESKTOP: Hiding tooltip immediately');
-        hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
+        hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
       }
     },
     // Mobile/tablet touch events
     onTouchStart: () => {
       console.log('👆 TOUCH START - Touch device?', isTouchDevice);
       if (isTouchDevice) { // Only on actual touch devices
+        // Clear any existing timeouts
+        clearTimeout(pressTimeoutRef.current);
+        clearTimeout(autoHideTimeoutRef.current);
+        
         console.log('👆 TOUCH DEVICE: Starting 1s press timeout');
         pressTimeoutRef.current = setTimeout(() => {
           console.log('👆 TOUCH DEVICE: Long press detected, showing tooltip');
           showTooltipImmediately(setTooltip);
+          
+          // Auto-hide after 4 seconds on mobile
+          autoHideTimeoutRef.current = setTimeout(() => {
+            console.log('👆 MOBILE: Auto-hiding tooltip after 4s');
+            hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
+          }, 4000);
         }, 1000);
       }
     },
     onTouchEnd: () => {
       console.log('👆 TOUCH END');
       if (isTouchDevice) { // Only on actual touch devices
+        // Clear the press timeout (in case user released before 1s)
         clearTimeout(pressTimeoutRef.current);
-        // Hide tooltip after 3 seconds on touch devices
-        setTimeout(() => {
-          hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
-        }, 3000);
+        // Don't clear autoHideTimeoutRef here - let it continue if tooltip is already showing
       }
     },
     onTouchCancel: () => {
       console.log('👆 TOUCH CANCEL');
       if (isTouchDevice) { // Only on actual touch devices
-        hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
+        hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
       }
     }
   });
@@ -211,6 +226,10 @@ const BottomContentArea = ({
       clearTimeout(cameraPressTimeout.current);
       clearTimeout(personPressTimeout.current);
       clearTimeout(loopPressTimeout.current);
+      clearTimeout(micAutoHideTimeout.current);
+      clearTimeout(cameraAutoHideTimeout.current);
+      clearTimeout(personAutoHideTimeout.current);
+      clearTimeout(loopAutoHideTimeout.current);
     };
   }, []);
 
@@ -784,19 +803,19 @@ const BottomContentArea = ({
   const toggleMic = () => {
     setIsMuted(!isMuted);
     setIsMicrophoneHover(false); // Reset hover state after click
-    hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout);
+    hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout);
   };
 
   const toggleCamera = () => {
     setIsCameraOff(!isCameraOff);
     setIsCameraHover(false); // Reset hover state after click
-    hideTooltipImmediately(setShowCameraTooltip, cameraTooltipTimeout);
+    hideTooltipImmediately(setShowCameraTooltip, cameraTooltipTimeout, cameraPressTimeout, cameraAutoHideTimeout);
   };
 
   const toggleCall = () => {
     setIsInCall(!isInCall);
     setPersonHover(false); // Reset hover state after click
-    hideTooltipImmediately(setShowPersonTooltip, personTooltipTimeout);
+    hideTooltipImmediately(setShowPersonTooltip, personTooltipTimeout, personPressTimeout, personAutoHideTimeout);
   };
 
   const toggleLoop = () => {
@@ -804,7 +823,7 @@ const BottomContentArea = ({
     console.log(`🔄 LOOP TOGGLE: ${isLoopActive} → ${newLoopState}`);
     setIsLoopActive(newLoopState);
     setIsLoopHover(false); // Reset hover state after click
-    hideTooltipImmediately(setShowLoopTooltip, loopTooltipTimeout);
+    hideTooltipImmediately(setShowLoopTooltip, loopTooltipTimeout, loopPressTimeout, loopAutoHideTimeout);
     if (onLoopToggle) {
       console.log(`📡 CALLING onLoopToggle with: ${newLoopState}`);
       onLoopToggle(newLoopState);
@@ -3190,10 +3209,10 @@ const BottomContentArea = ({
             className="control-button"
             onClick={(e) => {
               console.log('🔥 CAMERA BUTTON CLICKED!'); // Debug test
-              hideTooltipImmediately(setShowCameraTooltip, cameraTooltipTimeout, cameraPressTimeout);
+              hideTooltipImmediately(setShowCameraTooltip, cameraTooltipTimeout, cameraPressTimeout, cameraAutoHideTimeout);
               toggleCamera(e);
             }}
-            {...createTooltipHandlers(setShowCameraTooltip, cameraTooltipTimeout, cameraPressTimeout)}
+            {...createTooltipHandlers(setShowCameraTooltip, cameraTooltipTimeout, cameraPressTimeout, cameraAutoHideTimeout)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -3220,10 +3239,10 @@ const BottomContentArea = ({
             id="mic-btn" 
             className="control-button"
             onClick={(e) => {
-              hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout);
+              hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout);
               toggleMic(e);
             }}
-            {...createTooltipHandlers(setShowMicTooltip, micTooltipTimeout, micPressTimeout)}
+            {...createTooltipHandlers(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -3252,10 +3271,10 @@ const BottomContentArea = ({
             id="join-btn" 
             className={`control-button ${isInCall ? 'active' : ''}`}
             onClick={(e) => {
-              hideTooltipImmediately(setShowPersonTooltip, personTooltipTimeout, personPressTimeout);
+              hideTooltipImmediately(setShowPersonTooltip, personTooltipTimeout, personPressTimeout, personAutoHideTimeout);
               toggleCall(e);
             }}
-            {...createTooltipHandlers(setShowPersonTooltip, personTooltipTimeout, personPressTimeout)}
+            {...createTooltipHandlers(setShowPersonTooltip, personTooltipTimeout, personPressTimeout, personAutoHideTimeout)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -3284,10 +3303,10 @@ const BottomContentArea = ({
             id="loop-btn" 
             className={`control-button ${isLoopActive ? 'active' : ''}`}
             onClick={(e) => {
-              hideTooltipImmediately(setShowLoopTooltip, loopTooltipTimeout, loopPressTimeout);
+              hideTooltipImmediately(setShowLoopTooltip, loopTooltipTimeout, loopPressTimeout, loopAutoHideTimeout);
               toggleLoop(e);
             }}
-            {...createTooltipHandlers(setShowLoopTooltip, loopTooltipTimeout, loopPressTimeout)}
+            {...createTooltipHandlers(setShowLoopTooltip, loopTooltipTimeout, loopPressTimeout, loopAutoHideTimeout)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
