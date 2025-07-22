@@ -86,17 +86,21 @@ const BottomContentArea = ({
 
   // Utility functions for tooltip management
   const showTooltipWithDelay = (setTooltip, timeoutRef, delay = 2000) => {
+    console.log('⏰ showTooltipWithDelay called with delay:', delay);
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
+      console.log('⏰ TIMEOUT FIRED: Setting tooltip to true');
       setTooltip(true);
     }, delay);
   };
 
   const showTooltipImmediately = (setTooltip) => {
+    console.log('⚡ showTooltipImmediately called');
     setTooltip(true);
   };
 
   const hideTooltipImmediately = (setTooltip, timeoutRef, pressTimeoutRef = null) => {
+    console.log('❌ hideTooltipImmediately called');
     clearTimeout(timeoutRef.current);
     if (pressTimeoutRef) clearTimeout(pressTimeoutRef.current);
     setTooltip(false);
@@ -124,24 +128,34 @@ const BottomContentArea = ({
   const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef) => ({
     // Desktop hover events
     onMouseEnter: () => {
+      console.log('🖱️ HOVER START - Width:', window.innerWidth, 'Desktop?', window.innerWidth > 768);
       if (window.innerWidth > 768) { // Only on desktop
+        console.log('🖱️ DESKTOP: Starting 2s delay for tooltip');
         showTooltipWithDelay(setTooltip, timeoutRef);
+      } else {
+        console.log('🖱️ MOBILE: Ignoring hover (use touch instead)');
       }
     },
     onMouseLeave: () => {
+      console.log('🖱️ HOVER END - Width:', window.innerWidth);
       if (window.innerWidth > 768) { // Only on desktop
+        console.log('🖱️ DESKTOP: Hiding tooltip immediately');
         hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
       }
     },
     // Mobile touch events
     onTouchStart: () => {
+      console.log('👆 TOUCH START - Width:', window.innerWidth);
       if (window.innerWidth <= 768) { // Only on mobile
+        console.log('👆 MOBILE: Starting 1s press timeout');
         pressTimeoutRef.current = setTimeout(() => {
+          console.log('👆 MOBILE: Long press detected, showing tooltip');
           showTooltipImmediately(setTooltip);
         }, 1000);
       }
     },
     onTouchEnd: () => {
+      console.log('👆 TOUCH END');
       if (window.innerWidth <= 768) { // Only on mobile
         clearTimeout(pressTimeoutRef.current);
         // Hide tooltip after 3 seconds on mobile
@@ -151,6 +165,7 @@ const BottomContentArea = ({
       }
     },
     onTouchCancel: () => {
+      console.log('👆 TOUCH CANCEL');
       if (window.innerWidth <= 768) { // Only on mobile
         hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
       }
@@ -159,6 +174,16 @@ const BottomContentArea = ({
 
   // Cleanup timeouts on unmount
   useEffect(() => {
+    // Test: Show camera tooltip immediately to verify rendering
+    console.log('🧪 TEST: Showing camera tooltip immediately on mount');
+    setShowCameraTooltip(true);
+    
+    // Hide it after 3 seconds
+    setTimeout(() => {
+      console.log('🧪 TEST: Hiding camera tooltip');
+      setShowCameraTooltip(false);
+    }, 3000);
+    
     return () => {
       clearTimeout(micTooltipTimeout.current);
       clearTimeout(cameraTooltipTimeout.current);
@@ -3116,9 +3141,16 @@ const BottomContentArea = ({
           padding: '8px',
           borderRadius: '4px',
           fontSize: '12px',
-          zIndex: 99999
+          zIndex: 99999,
+          fontFamily: 'monospace'
         }}>
-          🐛 Debug: Camera={showCameraTooltip ? 'ON' : 'OFF'} | Device={window.innerWidth <= 768 ? 'MOBILE' : 'DESKTOP'} | Touch={'ontouchstart' in window ? 'YES' : 'NO'}
+          <div>🖥️ Width: {window.innerWidth}px</div>
+          <div>📱 Device: {window.innerWidth <= 768 ? 'MOBILE' : 'DESKTOP'}</div>
+          <div>👆 Touch: {'ontouchstart' in window ? 'YES' : 'NO'}</div>
+          <div>📷 Camera: {showCameraTooltip ? 'ON' : 'OFF'}</div>
+          <div>🎤 Mic: {showMicTooltip ? 'ON' : 'OFF'}</div>
+          <div>👤 Person: {showPersonTooltip ? 'ON' : 'OFF'}</div>
+          <div>🔄 Loop: {showLoopTooltip ? 'ON' : 'OFF'}</div>
         </div>
         
         {/* Media controls - Left group */}
