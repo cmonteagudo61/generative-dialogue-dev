@@ -110,33 +110,38 @@ const BottomContentArea = ({
   const getTooltipPosition = (buttonId) => {
     const button = document.getElementById(buttonId);
     if (!button) {
-      return { left: '50%', bottom: '60px' };
+      return { left: '50%', top: '50%' };
     }
     
     const rect = button.getBoundingClientRect();
-    const buttonCenter = rect.left + rect.width / 2;
-    const viewportWidth = window.innerWidth;
+    const buttonCenterY = rect.top + rect.height / 2;
+    const buttonRight = rect.right;
+    const viewportHeight = window.innerHeight;
     
-    // Estimate tooltip width (adjust based on content)
-    const tooltipWidth = 200; // Approximate tooltip width
-    const halfTooltipWidth = tooltipWidth / 2;
-    
-    // Calculate ideal left position (button center)
-    let leftPosition = buttonCenter;
-    
-    // Check if tooltip would go off the left edge
-    if (leftPosition - halfTooltipWidth < 10) {
-      leftPosition = halfTooltipWidth + 10; // 10px margin from edge
-    }
+    // Position tooltip to the right of the button
+    let leftPosition = buttonRight + 15; // 15px gap from button
+    let topPosition = buttonCenterY;
     
     // Check if tooltip would go off the right edge
-    if (leftPosition + halfTooltipWidth > viewportWidth - 10) {
-      leftPosition = viewportWidth - halfTooltipWidth - 10; // 10px margin from edge
+    const tooltipWidth = 200;
+    if (leftPosition + tooltipWidth > window.innerWidth - 10) {
+      // If not enough space on right, position to the left of button
+      leftPosition = rect.left - tooltipWidth - 15;
+    }
+    
+    // Check if tooltip would go off the top or bottom
+    const tooltipHeight = 50; // Approximate tooltip height
+    if (topPosition - tooltipHeight/2 < 10) {
+      topPosition = tooltipHeight/2 + 10;
+    }
+    if (topPosition + tooltipHeight/2 > viewportHeight - 10) {
+      topPosition = viewportHeight - tooltipHeight/2 - 10;
     }
     
     const position = {
       left: `${leftPosition}px`,
-      bottom: window.innerWidth <= 768 ? '60px' : '50px' // Closer to the button
+      top: `${topPosition}px`,
+      transform: 'translateY(-50%)' // Center vertically
     };
     
     return position;
@@ -3431,7 +3436,6 @@ const BottomContentArea = ({
         <div style={{
           position: 'fixed',
           ...getTooltipPosition('camera-btn'),
-          transform: 'translateX(-50%)', // Center above the button
           backgroundColor: 'rgba(0, 0, 0, 0.9)',
           color: 'white',
           padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
@@ -3446,17 +3450,17 @@ const BottomContentArea = ({
           textAlign: 'center'
         }}>
           {isCameraOff ? '📷 Turn camera on' : '📷 Turn camera off'}
-          {/* Tooltip arrow */}
+          {/* Left-pointing tooltip arrow */}
           <div style={{
             position: 'absolute',
-            bottom: '-6px',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            left: '-6px',
+            top: '50%',
+            transform: 'translateY(-50%)',
             width: '0',
             height: '0',
-            borderLeft: '6px solid transparent',
-            borderRight: '6px solid transparent',
-            borderTop: '6px solid rgba(0, 0, 0, 0.9)'
+            borderTop: '6px solid transparent',
+            borderBottom: '6px solid transparent',
+            borderRight: '6px solid rgba(0, 0, 0, 0.9)'
           }} />
         </div>
       )}
@@ -3465,7 +3469,6 @@ const BottomContentArea = ({
         <div style={{
           position: 'fixed',
           ...getTooltipPosition('mic-btn'),
-          transform: 'translateX(-50%)',
           backgroundColor: 'rgba(0, 0, 0, 0.9)',
           color: 'white',
           padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
@@ -3480,16 +3483,17 @@ const BottomContentArea = ({
           textAlign: 'center'
         }}>
           {isMuted ? '🎤 Unmute microphone' : '🎤 Mute microphone'}
+          {/* Left-pointing tooltip arrow */}
           <div style={{
             position: 'absolute',
-            bottom: '-6px',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            left: '-6px',
+            top: '50%',
+            transform: 'translateY(-50%)',
             width: '0',
             height: '0',
-            borderLeft: '6px solid transparent',
-            borderRight: '6px solid transparent',
-            borderTop: '6px solid rgba(0, 0, 0, 0.9)'
+            borderTop: '6px solid transparent',
+            borderBottom: '6px solid transparent',
+            borderRight: '6px solid rgba(0, 0, 0, 0.9)'
           }} />
         </div>
       )}
@@ -3498,7 +3502,6 @@ const BottomContentArea = ({
         <div style={{
           position: 'fixed',
           ...getTooltipPosition('join-btn'),
-          transform: 'translateX(-50%)',
           backgroundColor: 'rgba(0, 0, 0, 0.9)',
           color: 'white',
           padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
@@ -3513,16 +3516,17 @@ const BottomContentArea = ({
           textAlign: 'center'
         }}>
           {isInCall ? '👤 Leave call' : '👤 Join call'}
+          {/* Left-pointing tooltip arrow */}
           <div style={{
             position: 'absolute',
-            bottom: '-6px',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            left: '-6px',
+            top: '50%',
+            transform: 'translateY(-50%)',
             width: '0',
             height: '0',
-            borderLeft: '6px solid transparent',
-            borderRight: '6px solid transparent',
-            borderTop: '6px solid rgba(0, 0, 0, 0.9)'
+            borderTop: '6px solid transparent',
+            borderBottom: '6px solid transparent',
+            borderRight: '6px solid rgba(0, 0, 0, 0.9)'
           }} />
         </div>
       )}
@@ -3531,7 +3535,6 @@ const BottomContentArea = ({
         <div style={{
           position: 'fixed',
           ...getTooltipPosition('loop-btn'),
-          transform: 'translateX(-50%)',
           backgroundColor: 'rgba(0, 0, 0, 0.9)',
           color: 'white',
           padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
@@ -3546,16 +3549,17 @@ const BottomContentArea = ({
           textAlign: 'center'
         }}>
           🔍 Toggle loop magnifier
+          {/* Left-pointing tooltip arrow */}
           <div style={{
             position: 'absolute',
-            bottom: '-6px',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            left: '-6px',
+            top: '50%',
+            transform: 'translateY(-50%)',
             width: '0',
             height: '0',
-            borderLeft: '6px solid transparent',
-            borderRight: '6px solid transparent',
-            borderTop: '6px solid rgba(0, 0, 0, 0.9)'
+            borderTop: '6px solid transparent',
+            borderBottom: '6px solid transparent',
+            borderRight: '6px solid rgba(0, 0, 0, 0.9)'
           }} />
         </div>
       )}
