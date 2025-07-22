@@ -1024,27 +1024,276 @@ const BottomContentArea = ({
           {activeTab === 'dialogue' && (
             <div id="dialogueContent" className="content-section dialogue-tab-content">
               {currentPage === 'dyad-dialogue-connect' ? (
-                /* Dyad Dialogue Guide for Connect phase */
-                <div className="dialogue-section">
-                  <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '20px'}}>Dyad Dialogue Guide</h3>
-                  <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '20px'}}>
-                    In this next section, you will have a total of <strong>10 minutes</strong> to share with each other what 
-                    came up for you during the mindfulness exercise.
-                  </p>
-                  
-                  <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '15px'}}>
-                    The <strong>10 minutes</strong> will allow the two participants to share as follows:
-                  </p>
-                  
-                  <div style={{fontSize: '16px', lineHeight: '1.8', marginLeft: '20px'}}>
-                    <div style={{marginBottom: '8px'}}>
-                      <strong>1.</strong> Go in sequence <strong>(4 mins each)</strong>
+                isDialogueActive ? (
+                  /* CONNECT Stage Dyad Dialogue Content with Full Transcript Functionality */
+                  <div className="dialogue-section">
+                    {/* Instructions Section */}
+                    <div style={{marginBottom: '20px'}}>
+                      <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '15px'}}>
+                        CONNECT Stage - {dialogueFormat} Instructions
+                      </h3>
+                      
+                      <div style={{display: 'flex', gap: '20px', marginBottom: '12px', fontSize: '14px'}}>
+                        <div><strong>Format:</strong> {dialogueFormat}</div>
+                        <div><strong>Timeframe:</strong> {dialogueTimeframe}</div>
+                        <div style={{
+                          backgroundColor: dialogueTimeRemaining < 300 ? '#dc3545' : '#28a745',
+                          color: 'white',
+                          padding: '2px 6px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          fontWeight: '600'
+                        }}>
+                          {Math.floor(dialogueTimeRemaining / 60)}:{String(dialogueTimeRemaining % 60).padStart(2, '0')} remaining
+                        </div>
+                      </div>
+                      
+                      {dialogueQuestion && (
+                        <div style={{
+                          backgroundColor: '#fff3e0',
+                          padding: '10px',
+                          borderRadius: '4px',
+                          marginBottom: '12px',
+                          border: '1px solid #E06D37',
+                          fontSize: '14px'
+                        }}>
+                          <strong style={{color: '#E06D37'}}>Question:</strong> "{dialogueQuestion}"
+                        </div>
+                      )}
+
+                      <div style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        marginBottom: '12px',
+                        border: '1px solid #E06D37',
+                        fontSize: '14px'
+                      }}>
+                        <strong style={{color: '#E06D37'}}>Connection Guidelines:</strong>
+                        <div style={{fontSize: '14px', lineHeight: '1.6', marginTop: '8px'}}>
+                          <div style={{marginBottom: '4px'}}>• Go in sequence (share for equal time)</div>
+                          <div style={{marginBottom: '4px'}}>• Listen without interruption</div>
+                          <div>• Create space for authentic connection</div>
+                        </div>
+                      </div>
                     </div>
-                    <div style={{marginBottom: '15px'}}>
-                      <strong>2.</strong> No interruption
+
+                    {/* Live Transcription Section */}
+                    <div>
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                        <h4 style={{color: '#E06D37', margin: 0, fontSize: '16px'}}>Live Dialogue Transcript</h4>
+                        
+                        {/* Edit/Submit Controls */}
+                        {!isDialogueEnded && formattedTranscript.length === 0 && (
+                          <span style={{fontSize: '12px', color: '#666'}}>Dialogue in progress...</span>
+                        )}
+                        
+                        {(isDialogueEnded || formattedTranscript.length > 0) && !transcriptSubmitted && (
+                          <div style={{display: 'flex', gap: '8px'}}>
+                            {!isEditingTranscript ? (
+                              <>
+                                <button
+                                  onClick={startEditingTranscript}
+                                  style={{
+                                    backgroundColor: '#f8f9fa',
+                                    border: '1px solid #E06D37',
+                                    color: '#E06D37',
+                                    padding: '4px 12px',
+                                    borderRadius: '4px',
+                                    fontSize: '12px',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Edit Transcript
+                                </button>
+                                <button
+                                  onClick={submitTranscriptForAI}
+                                  style={{
+                                    backgroundColor: '#28a745',
+                                    border: 'none',
+                                    color: 'white',
+                                    padding: '4px 12px',
+                                    borderRadius: '4px',
+                                    fontSize: '12px',
+                                    cursor: 'pointer',
+                                    fontWeight: '600'
+                                  }}
+                                >
+                                  Submit for AI Summary
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={cancelEditingTranscript}
+                                  style={{
+                                    backgroundColor: '#f8f9fa',
+                                    border: '1px solid #6c757d',
+                                    color: '#6c757d',
+                                    padding: '4px 12px',
+                                    borderRadius: '4px',
+                                    fontSize: '12px',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={submitTranscriptForAI}
+                                  style={{
+                                    backgroundColor: '#28a745',
+                                    border: 'none',
+                                    color: 'white',
+                                    padding: '4px 12px',
+                                    borderRadius: '4px',
+                                    fontSize: '12px',
+                                    cursor: 'pointer',
+                                    fontWeight: '600'
+                                  }}
+                                >
+                                  Submit for AI Summary
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                        
+                        {transcriptSubmitted && (
+                          <span style={{
+                            color: '#28a745',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            padding: '4px 8px',
+                            backgroundColor: '#d4edda',
+                            borderRadius: '4px'
+                          }}>
+                            ✓ Submitted for AI Processing
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Live Transcript Lines (1-2 lines for visual feedback) */}
+                      {!isDialogueEnded && (
+                        <div style={{
+                          backgroundColor: '#fff8f0',
+                          padding: '8px',
+                          borderRadius: '4px',
+                          marginBottom: '10px',
+                          fontSize: '14px',
+                          fontStyle: 'italic',
+                          color: '#666',
+                          minHeight: '40px',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}>
+                          {liveTranscript ? (
+                            <>🔴 Live: {liveTranscript}</>
+                          ) : (
+                            <>🔴 Live transcript will appear here...</>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Formatted Transcript (near real-time) */}
+                      <div style={{
+                        backgroundColor: transcriptSubmitted ? '#f8f9fa' : '#fff',
+                        border: '1px solid #ddd',
+                        borderRadius: '4px',
+                        padding: '10px',
+                        maxHeight: '180px',
+                        overflowY: 'auto'
+                      }}>
+                        {formattedTranscript.length === 0 ? (
+                          <div style={{textAlign: 'center', color: '#999', fontStyle: 'italic', padding: '20px'}}>
+                            Formatted dialogue transcript will appear here in near real-time...
+                          </div>
+                        ) : (
+                          (isEditingTranscript ? editableTranscript : formattedTranscript).map((entry) => (
+                            <div key={entry.id} style={{marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #eee'}}>
+                              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
+                                <strong style={{color: '#E06D37', fontSize: '14px'}}>{entry.speaker}</strong>
+                                <span style={{color: '#666', fontSize: '12px'}}>{entry.timestamp}</span>
+                              </div>
+                              {isEditingTranscript ? (
+                                <textarea
+                                  value={entry.text}
+                                  onChange={(e) => updateTranscriptEntry(entry.id, e.target.value)}
+                                  style={{
+                                    width: '100%',
+                                    fontSize: '14px',
+                                    lineHeight: '1.4',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '3px',
+                                    padding: '4px',
+                                    resize: 'vertical',
+                                    minHeight: '60px',
+                                    fontFamily: 'inherit'
+                                  }}
+                                />
+                              ) : (
+                                <div style={{
+                                  fontSize: '14px', 
+                                  lineHeight: '1.4',
+                                  opacity: transcriptSubmitted ? 0.7 : 1
+                                }}>
+                                  {entry.text}
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      
+                      {isEditingTranscript && (
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#666',
+                          fontStyle: 'italic',
+                          marginTop: '8px',
+                          textAlign: 'center'
+                        }}>
+                          💡 Make small corrections for accuracy. Click "Submit for AI Summary" when ready.
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
+                ) : (
+                  /* CONNECT Stage - Pre-dialogue Instructions */
+                  <div className="dialogue-section">
+                    <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '20px'}}>Dyad Dialogue Guide</h3>
+                    <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '20px'}}>
+                      In this next section, you will have a total of <strong>15 minutes</strong> to share with each other what 
+                      brought you together today and what you hope to discover through your connection.
+                    </p>
+                    
+                    <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '15px'}}>
+                      The <strong>15 minutes</strong> will allow the two participants to share as follows:
+                    </p>
+                    
+                    <div style={{fontSize: '16px', lineHeight: '1.8', marginLeft: '20px'}}>
+                      <div style={{marginBottom: '8px'}}>
+                        <strong>1.</strong> Go in sequence (share for equal time)
+                      </div>
+                      <div style={{marginBottom: '15px'}}>
+                        <strong>2.</strong> Listen without interruption
+                      </div>
+                      <div style={{marginBottom: '15px'}}>
+                        <strong>3.</strong> Create space for authentic connection
+                      </div>
+                    </div>
+
+                    <div style={{
+                      backgroundColor: '#fff3e0',
+                      padding: '15px',
+                      borderRadius: '6px',
+                      marginTop: '20px',
+                      border: '1px solid #E06D37',
+                      textAlign: 'center'
+                    }}>
+                      <strong style={{color: '#E06D37'}}>🎙️ Once dialogue begins, live transcript and editing features will be available below</strong>
+                    </div>
+                  </div>
+                )
               ) : currentPage === 'explore-triad-dialogue' && isDialogueActive ? (
                 /* EXPLORE Stage Triad Dialogue Content */
                 <div className="dialogue-section">
@@ -2037,22 +2286,22 @@ const BottomContentArea = ({
                   </div>
                 </div>
               ) : currentPage === 'connect-dyad-collective-wisdom' && isCollectiveWisdom ? (
-                /* CONNECT Stage Collective Wisdom */
+                /* CONNECT Stage Collective Wisdom - Combined Version */
                 <div className="dialogue-section">
                   <div style={{marginBottom: '30px'}}>
-                    <h3 className="dialogue-title" style={{color: '#2E5BBA', marginBottom: '15px'}}>
-                      What Are WE Learning Through Connection?
+                    <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '20px'}}>
+                      Voices From the Field<br/>What are WE Saying?
                     </h3>
-                    <p style={{fontSize: '14px', lineHeight: '1.5', color: '#555', marginBottom: '20px'}}>
+                    <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '20px'}}>
                       After experiencing authentic one-to-one connection in dyads, we come back together to discover 
-                      the collective wisdom that emerges. Here are voices from dyad conversations followed by AI-compiled 
-                      insights about the nature of human connection itself.
+                      the collective wisdom that emerges. Let us now hear from a small representative number <strong>(~six volunteers)</strong>. 
+                      This is a way to add to our sense of connection - the emerging WE - that has already begun to surface.
                     </p>
                   </div>
 
                   {/* Voices from the Field */}
                   <div style={{marginBottom: '30px'}}>
-                    <h4 style={{color: '#2E5BBA', marginBottom: '15px', fontSize: '18px'}}>
+                    <h4 style={{color: '#E06D37', marginBottom: '15px', fontSize: '18px'}}>
                       🎤 Voices from Dyad Connections
                     </h4>
                     <p style={{fontSize: '14px', color: '#666', marginBottom: '15px', fontStyle: 'italic'}}>
@@ -2066,14 +2315,14 @@ const BottomContentArea = ({
                     }}>
                       {connectVoicesFromField.map((voice, index) => (
                         <div key={index} style={{
-                          backgroundColor: '#f8f9fa',
-                          border: '1px solid #e9ecef',
+                          backgroundColor: '#fff3e0',
+                          border: '1px solid #E06D37',
                           borderRadius: '6px',
                           padding: '12px'
                         }}>
                           <div style={{
                             fontWeight: '600',
-                            color: '#2E5BBA',
+                            color: '#E06D37',
                             fontSize: '14px',
                             marginBottom: '6px'
                           }}>
@@ -2092,23 +2341,23 @@ const BottomContentArea = ({
                     </div>
                   </div>
 
-                  {/* AI-Generated Collective Wisdom */}
+                  {/* What Are We Saying - AI-Generated Collective Wisdom */}
                   <div>
-                    <h4 style={{color: '#2E5BBA', marginBottom: '15px', fontSize: '18px'}}>
-                      🧠 AI-Compiled Collective Wisdom
+                    <h4 style={{color: '#E06D37', marginBottom: '15px', fontSize: '18px'}}>
+                      🧠 What Are We Saying? - Collective Wisdom
                     </h4>
                     <p style={{fontSize: '14px', color: '#666', marginBottom: '20px', fontStyle: 'italic'}}>
                       Drawing from all dyad conversations, here's what emerges about the nature of human connection:
                     </p>
 
                     <div style={{
-                      backgroundColor: '#f8f9fa',
-                      border: '1px solid #e9ecef', 
+                      backgroundColor: '#fff3e0',
+                      border: '1px solid #E06D37', 
                       borderRadius: '6px',
                       padding: '20px',
                       marginBottom: '20px'
                     }}>
-                      <h5 style={{color: '#2E5BBA', marginBottom: '10px', fontSize: '16px'}}>
+                      <h5 style={{color: '#E06D37', marginBottom: '10px', fontSize: '16px'}}>
                         {connectCollectiveWisdom.title}
                       </h5>
                       <p style={{
@@ -2170,7 +2419,7 @@ const BottomContentArea = ({
                           fontSize: '14px',
                           fontWeight: '600',
                           marginBottom: '10px',
-                          color: '#2E5BBA'
+                          color: '#E06D37'
                         }}>
                           Overall Tone: {connectCollectiveWisdom.sentimentAnalysis.overall}
                         </div>
@@ -2216,7 +2465,7 @@ const BottomContentArea = ({
                   </div>
                 </div>
               ) : currentPage === 'voices-from-field' ? (
-                /* Voices from the Field page content */
+                /* Voices from the Field page content - Simplified version without AI transcript box */
                 <div className="dialogue-section">
                   <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '20px'}}>Voices From the Field<br/>What are WE Saying?</h3>
                   <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '20px'}}>
@@ -2225,29 +2474,9 @@ const BottomContentArea = ({
                   </p>
                   
                   <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '30px'}}>
-                    Below, in real time, is an AI generated transcript of what was just shared, followed by an 
-                    AI analysis of patterns emerging from all the breakout groups that participated in this segment.
+                    Voices from volunteers will share their insights and aha moments from the dyad conversations, 
+                    building our collective understanding of what emerges through authentic human connection.
                   </p>
-                  
-                  <div style={{
-                    backgroundColor: '#f8f9fa', 
-                    border: '1px solid #e9ecef', 
-                    borderRadius: '8px', 
-                    padding: '20px', 
-                    margin: '20px 0',
-                    fontStyle: 'italic',
-                    lineHeight: '1.6'
-                  }}>
-                    <p style={{marginBottom: '15px', fontWeight: '500'}}>
-                      <strong>Real-time AI Transcript:</strong>
-                    </p>
-                    <p style={{marginBottom: '15px'}}>
-                      <em>[Voices from volunteers will appear here as they share their insights and aha moments from the dyad conversations...]</em>
-                    </p>
-                    <p style={{marginBottom: '0'}}>
-                      <strong>AI Pattern Analysis:</strong> <em>[Collective themes and insights from all parallel dyad summaries will be synthesized here...]</em>
-                    </p>
-                  </div>
                 </div>
               ) : currentPage === 'discover-collective-wisdom' && isDiscoverCollectiveWisdom ? (
                 /* DISCOVER Stage Collective Wisdom */
