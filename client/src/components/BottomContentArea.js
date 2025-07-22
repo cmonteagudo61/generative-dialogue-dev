@@ -1545,6 +1545,16 @@ const BottomContentArea = ({
                     <div style={{display: 'flex', gap: '20px', marginBottom: '12px', fontSize: '14px'}}>
                       <div><strong>Format:</strong> {dialogueFormat}</div>
                       <div><strong>Timeframe:</strong> {dialogueTimeframe}</div>
+                      <div style={{
+                        backgroundColor: dialogueTimeRemaining < 300 ? '#dc3545' : '#28a745',
+                        color: 'white',
+                        padding: '2px 6px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: '600'
+                      }}>
+                        {Math.floor(dialogueTimeRemaining / 60)}:{String(dialogueTimeRemaining % 60).padStart(2, '0')} remaining
+                      </div>
                     </div>
                     
                     {dialogueQuestion && (
