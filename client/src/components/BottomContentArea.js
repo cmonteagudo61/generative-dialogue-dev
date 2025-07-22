@@ -104,41 +104,65 @@ const BottomContentArea = ({
 
   // Get tooltip positioning relative to button
   const getTooltipPosition = (buttonId) => {
+    console.log(`🎯 Getting position for button: ${buttonId}`); // Debug
     const button = document.getElementById(buttonId);
-    if (!button) return { left: '50%', bottom: '80px' };
+    if (!button) {
+      console.log(`❌ Button ${buttonId} not found, using fallback position`); // Debug
+      return { left: '50%', bottom: '80px' };
+    }
     
     const rect = button.getBoundingClientRect();
     const buttonCenter = rect.left + rect.width / 2;
     
-    return {
+    console.log(`📍 Button ${buttonId} position:`, { 
+      left: rect.left, 
+      width: rect.width, 
+      center: buttonCenter 
+    }); // Debug
+    
+    const position = {
       left: `${buttonCenter}px`,
       bottom: window.innerWidth <= 768 ? '80px' : '70px' // Above the button
     };
+    
+    console.log(`📍 Calculated tooltip position:`, position); // Debug
+    return position;
   };
 
   // Universal event handlers that work on both desktop and mobile
   const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef) => ({
     // Desktop hover events
     onMouseEnter: () => {
+      console.log('🖱️ MOUSE ENTER - Device width:', window.innerWidth); // Debug
+      console.log('🧪 IMMEDIATE TEST - Showing tooltip NOW'); // Debug
+      setTooltip(true); // Show immediately for testing
       if (window.innerWidth > 768) { // Only on desktop
+        console.log('🖱️ DESKTOP HOVER - Starting tooltip delay'); // Debug
         showTooltipWithDelay(setTooltip, timeoutRef);
       }
     },
     onMouseLeave: () => {
+      console.log('🖱️ MOUSE LEAVE - Device width:', window.innerWidth); // Debug
       if (window.innerWidth > 768) { // Only on desktop
+        console.log('🖱️ DESKTOP LEAVE - Hiding tooltip'); // Debug
         hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
       }
     },
     // Mobile touch events
     onTouchStart: () => {
+      console.log('👆 TOUCH START - Device width:', window.innerWidth); // Debug
+      console.log('🧪 IMMEDIATE TOUCH TEST - Showing tooltip NOW'); // Debug
+      setTooltip(true); // Show immediately for testing
       if (window.innerWidth <= 768) { // Only on mobile
-        // Long press detection (1 second for mobile)
+        console.log('👆 MOBILE TOUCH - Starting press timeout'); // Debug
         pressTimeoutRef.current = setTimeout(() => {
+          console.log('👆 MOBILE LONG PRESS - Showing tooltip'); // Debug
           showTooltipImmediately(setTooltip);
         }, 1000);
       }
     },
     onTouchEnd: () => {
+      console.log('👆 TOUCH END - Device width:', window.innerWidth); // Debug
       if (window.innerWidth <= 768) { // Only on mobile
         clearTimeout(pressTimeoutRef.current);
         // Hide tooltip after 3 seconds on mobile
@@ -148,6 +172,7 @@ const BottomContentArea = ({
       }
     },
     onTouchCancel: () => {
+      console.log('👆 TOUCH CANCEL - Device width:', window.innerWidth); // Debug
       if (window.innerWidth <= 768) { // Only on mobile
         hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
       }
@@ -3186,15 +3211,11 @@ const BottomContentArea = ({
           <button 
             id="join-btn" 
             className={`control-button ${isInCall ? 'active' : ''}`}
-            onClick={toggleCall}
-            onMouseEnter={() => {
-              setPersonHover(true);
-              showTooltipWithDelay(setShowPersonTooltip, personTooltipTimeout);
+            onClick={(e) => {
+              hideTooltipImmediately(setShowPersonTooltip, personTooltipTimeout, personPressTimeout);
+              toggleCall(e);
             }}
-            onMouseLeave={() => {
-              setPersonHover(false);
-              hideTooltipImmediately(setShowPersonTooltip, personTooltipTimeout);
-            }}
+            {...createTooltipHandlers(setShowPersonTooltip, personTooltipTimeout, personPressTimeout)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -3222,15 +3243,11 @@ const BottomContentArea = ({
           <button 
             id="loop-btn" 
             className={`control-button ${isLoopActive ? 'active' : ''}`}
-            onClick={toggleLoop}
-            onMouseEnter={() => {
-              setIsLoopHover(true);
-              showTooltipWithDelay(setShowLoopTooltip, loopTooltipTimeout);
+            onClick={(e) => {
+              hideTooltipImmediately(setShowLoopTooltip, loopTooltipTimeout, loopPressTimeout);
+              toggleLoop(e);
             }}
-            onMouseLeave={() => {
-              setIsLoopHover(false);
-              hideTooltipImmediately(setShowLoopTooltip, loopTooltipTimeout);
-            }}
+            {...createTooltipHandlers(setShowLoopTooltip, loopTooltipTimeout, loopPressTimeout)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
