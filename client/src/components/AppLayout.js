@@ -46,10 +46,26 @@ const AppLayout = ({
   onBack,
   onForward,
   currentPage,
-  showBottomContent = true
+  showBottomContent = true,
+  activeStage = null, // Allow explicit stage override
+  defaultActiveTab = '', // Allow pages to set default active tab
+  dialogueQuestion = '',
+  dialogueTimeframe = '',
+  dialogueFormat = '',
+  isDialogueActive = false,
+  isSummaryReview = false,
+  isCollectiveWisdom = false,
+  isFishbowlCatalyst = false,
+  isKivaDialogue = false,
+  isKivaSummaryReview = false,
+  isDiscoverCollectiveWisdom = false,
+  isHarvestClosing = false
 }) => {
   // Remove experimental debugging behavior - use currentPage for navigation state
   const getCurrentStage = () => {
+    // If activeStage is explicitly passed, use it
+    if (activeStage) return activeStage;
+    
     // Map currentPage to stage based on application flow
     if (currentPage === 'videoconference') return null; // Videoconference - no active tabs
     if (currentPage === 'landing' || currentPage === 'input' || currentPage === 'permissions') return 'connect';
@@ -136,6 +152,18 @@ const AppLayout = ({
             onBack={onBack}
             onForward={onForward}
             currentPage={currentPage}
+            defaultActiveTab={defaultActiveTab}
+            dialogueQuestion={dialogueQuestion}
+            dialogueTimeframe={dialogueTimeframe}
+            dialogueFormat={dialogueFormat}
+            isDialogueActive={isDialogueActive}
+            isSummaryReview={isSummaryReview}
+            isCollectiveWisdom={isCollectiveWisdom}
+            isFishbowlCatalyst={isFishbowlCatalyst}
+            isKivaDialogue={isKivaDialogue}
+            isKivaSummaryReview={isKivaSummaryReview}
+            isDiscoverCollectiveWisdom={isDiscoverCollectiveWisdom}
+            isHarvestClosing={isHarvestClosing}
           />
         )}
       </div>

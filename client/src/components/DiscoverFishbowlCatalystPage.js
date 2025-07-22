@@ -1,0 +1,99 @@
+import React, { useState, useMemo } from 'react';
+import { useVideo } from './VideoProvider';
+import VideoGrid from './video/VideoGrid';
+import AppLayout from './AppLayout';
+import '../App.css';
+
+const getLayoutFromView = (activeView) => {
+  switch (String(activeView)) {
+    case 'all':
+      return 'community';
+    case '6':
+      return 'kiva';
+    case '4':
+      return 'quad';
+    case '3':
+      return 'triad';
+    case '2':
+      return 'dyad';
+    case '1':
+      return 'self';
+    case 'fishbowl':
+      return 'fishbowl';
+    default:
+      return 'fishbowl'; // Default to fishbowl for this catalyst
+  }
+};
+
+const DiscoverFishbowlCatalystPageInner = ({ 
+  canGoBack,
+  canGoForward, 
+  onBack,
+  onForward,
+  currentPage,
+  currentIndex,
+  totalPages,
+  developmentMode
+}) => {
+  // Start with fishbowl view for catalyst
+  const [activeView, setActiveView] = useState('fishbowl'); // Fishbowl view
+  // Pre-select 6 participants for fishbowl
+  const [selectedParticipants, setSelectedParticipants] = useState([
+    'mock-1', 'mock-2', 'mock-3', 'mock-4', 'mock-5', 'mock-6'
+  ]);
+  const [isLoopActive, setIsLoopActive] = useState(false);
+  
+  const { participants, realParticipants, error } = useVideo();
+  const layout = getLayoutFromView(activeView);
+  const participantCount = useMemo(() => realParticipants.length, [realParticipants]);
+
+  const handleViewChange = (newView) => setActiveView(newView);
+  
+  const handleParticipantSelect = (participant) => {
+    setSelectedParticipants(prev => 
+      prev.includes(participant.session_id) 
+        ? prev.filter(id => id !== participant.session_id)
+        : [...prev, participant.session_id]
+    );
+  };
+
+  const handleLoopToggle = (isActive) => {
+    setIsLoopActive(isActive);
+  };
+
+  return (
+    <AppLayout
+      activeSize={activeView}
+      viewMode={layout}
+      onSizeChange={handleViewChange}
+      participantCount={participantCount}
+      onLoopToggle={handleLoopToggle}
+      developmentMode={developmentMode}
+      canGoBack={canGoBack}
+      canGoForward={canGoForward}
+      onBack={onBack}
+      onForward={onForward}
+      currentPage={currentPage}
+      activeStage="discover" // DISCOVER stage is active
+      defaultActiveTab="catalyst" // CATALYST tab is active
+      dialogueQuestion="What unexpected connections do you notice emerging from our collective exploration of community resilience?"
+      dialogueTimeframe="15 minutes"
+      dialogueFormat="FISHBOWL dialogue"
+      isFishbowlCatalyst={true}
+    >
+      <VideoGrid 
+        participants={participants} 
+        layout={layout} 
+        showLabels={layout !== 'community'} 
+        selectedParticipants={selectedParticipants}
+        onParticipantSelect={handleParticipantSelect}
+        isLoopActive={isLoopActive}
+      />
+      {error && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
+    </AppLayout>
+  );
+};
+
+const DiscoverFishbowlCatalystPage = (props) => <DiscoverFishbowlCatalystPageInner {...props} />;
+
+export default DiscoverFishbowlCatalystPage; 

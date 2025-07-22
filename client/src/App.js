@@ -4,6 +4,19 @@ import './App.css';
 
 // Import components
 import GenerativeDialogue from './components/GenerativeDialogue';
+import ConnectDyadPage from './components/ConnectDyadPage';
+import DyadDialoguePageConnect from './components/DyadDialoguePageConnect';
+import DyadSummaryReviewPage from './components/DyadSummaryReviewPage';
+import VoicesFromFieldPage from './components/VoicesFromFieldPage';
+import ExploreCatalystPage from './components/ExploreCatalystPage';
+import ExploreTriadDialoguePage from './components/ExploreTriadDialoguePage';
+import ExploreTriadSummaryPage from './components/ExploreTriadSummaryPage';
+import ExploreCollectiveWisdomPage from './components/ExploreCollectiveWisdomPage';
+import DiscoverFishbowlCatalystPage from './components/DiscoverFishbowlCatalystPage';
+import DiscoverKivaDialoguePage from './components/DiscoverKivaDialoguePage';
+import DiscoverKivaSummaryPage from './components/DiscoverKivaSummaryPage';
+import DiscoverCollectiveWisdomPage from './components/DiscoverCollectiveWisdomPage';
+import HarvestPage from './components/HarvestPage';
 import LandingPage from './components/LandingPage';
 import PermissionSetup from './components/PermissionSetup';
 import InputPage from './components/InputPage';
@@ -28,27 +41,20 @@ function App() {
     const sessionSetupComplete = sessionStorage.getItem('setupComplete');
     const dialogueParameters = localStorage.getItem('dialogueParameters');
     
-    // If user has completed both input parameters and permissions, go to video conference
+    // Only auto-redirect if user has completed BOTH setup steps in the current session
+    // This ensures we always start fresh on landing page unless actively in a session
     if (sessionSetupComplete === 'true' && deviceInfo && dialogueParameters) {
       setCurrentPage('videoconference');
     }
-    // If user has completed input parameters but not permissions, go to permissions page
-    else if (dialogueParameters && !deviceInfo) {
-      setCurrentPage('permissions');
-    }
-    // If user has completed permissions but not input parameters, go to input page
-    else if (deviceInfo && !dialogueParameters) {
-      setCurrentPage('input');
-    }
+    // For partial completion, let user start fresh from landing page
+    // They can navigate forward manually if they want to resume
   }, []);
 
   const handleContinueToInput = () => {
     setCurrentPage('input');
   };
 
-  const handleContinueToPermissions = () => {
-    setCurrentPage('permissions');
-  };
+
 
   const handleInputComplete = () => {
     // After input page, go to permissions page
@@ -62,7 +68,7 @@ function App() {
   };
 
   const renderCurrentPage = () => {
-    const pages = ['landing', 'input', 'permissions', 'videoconference', 'reflection', 'summary', 'we-summary', 'new-insights', 'questions', 'talkabout', 'cantalk', 'emergingstory', 'ourstory', 'buildingcommunity'];
+    const pages = ['landing', 'input', 'permissions', 'videoconference', 'connect-dyad', 'dyad-dialogue-connect', 'dyad-summary-review', 'voices-from-field', 'explore-catalyst', 'explore-triad-dialogue', 'explore-triad-summary', 'explore-collective-wisdom', 'discover-fishbowl-catalyst', 'discover-kiva-dialogue', 'discover-kiva-summary', 'discover-collective-wisdom', 'harvest', 'reflection', 'summary', 'we-summary', 'new-insights', 'questions', 'talkabout', 'cantalk', 'emergingstory', 'ourstory', 'buildingcommunity'];
     const currentIndex = pages.indexOf(currentPage);
     
     const navigationProps = {
@@ -86,6 +92,32 @@ function App() {
         return <PermissionSetup onSetupComplete={handleSetupComplete} {...navigationProps} />;
       case 'videoconference':
         return <GenerativeDialogue {...navigationProps} />;
+      case 'connect-dyad':
+        return <ConnectDyadPage {...navigationProps} />;
+      case 'dyad-dialogue-connect':
+        return <DyadDialoguePageConnect {...navigationProps} />;
+      case 'dyad-summary-review':
+        return <DyadSummaryReviewPage {...navigationProps} />;
+      case 'voices-from-field':
+        return <VoicesFromFieldPage {...navigationProps} />;
+      case 'explore-catalyst':
+        return <ExploreCatalystPage {...navigationProps} />;
+      case 'explore-triad-dialogue':
+        return <ExploreTriadDialoguePage {...navigationProps} />;
+      case 'explore-triad-summary':
+        return <ExploreTriadSummaryPage {...navigationProps} />;
+      case 'explore-collective-wisdom':
+        return <ExploreCollectiveWisdomPage {...navigationProps} />;
+      case 'discover-fishbowl-catalyst':
+        return <DiscoverFishbowlCatalystPage {...navigationProps} />;
+      case 'discover-kiva-dialogue':
+        return <DiscoverKivaDialoguePage {...navigationProps} />;
+      case 'discover-kiva-summary':
+        return <DiscoverKivaSummaryPage {...navigationProps} />;
+      case 'discover-collective-wisdom':
+        return <DiscoverCollectiveWisdomPage {...navigationProps} />;
+      case 'harvest':
+        return <HarvestPage {...navigationProps} />;
       case 'reflection':
         return <IndividualReflectionPage {...navigationProps} />;
       case 'summary':

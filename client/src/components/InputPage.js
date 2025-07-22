@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './InputPage.css';
 import {
   directionBackwardOff,
@@ -35,19 +35,6 @@ const InputPage = ({
 
   const [backButtonState, setBackButtonState] = useState('off');
   const [forwardButtonState, setForwardButtonState] = useState('off');
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Check for mobile view
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 1100);
-    };
-    
-    checkMobile(); // Check on mount
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const handleParameterChange = (field, value) => {
     setParameters(prev => ({

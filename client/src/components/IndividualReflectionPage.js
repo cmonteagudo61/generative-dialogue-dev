@@ -13,12 +13,17 @@ import './IndividualReflectionPage.css';
   totalPages,
   developmentMode
 }) => {
+  // Set up for SELF view to make self button active
+  const [activeView, setActiveView] = useState('1'); // Self view (1 person)
+  
   // Get participant count from VideoProvider
   const { realParticipants } = useVideo();
   const participantCount = useMemo(() => {
     // For demo purposes, show a fixed count if no real participants
     return realParticipants.length > 0 ? realParticipants.length : 1093;
   }, [realParticipants]);
+
+  const handleViewChange = (newView) => setActiveView(newView);
 
   // State for individual responses
   const [responses, setResponses] = useState({
@@ -71,6 +76,8 @@ import './IndividualReflectionPage.css';
 
   return (
     <AppLayout
+      activeSize={activeView}
+      onSizeChange={handleViewChange}
       viewMode="reflection" // Display "INDIVIDUAL REFLECTION" as single line header
       participantCount={participantCount}
       canGoBack={canGoBack}
