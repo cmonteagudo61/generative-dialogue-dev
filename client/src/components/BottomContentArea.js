@@ -104,28 +104,19 @@ const BottomContentArea = ({
 
   // Get tooltip positioning relative to button
   const getTooltipPosition = (buttonId) => {
-    console.log(`🎯 Getting position for button: ${buttonId}`); // Debug
     const button = document.getElementById(buttonId);
     if (!button) {
-      console.log(`❌ Button ${buttonId} not found, using fallback position`); // Debug
-      return { left: '50%', bottom: '80px' };
+      return { left: '50%', bottom: '60px' };
     }
     
     const rect = button.getBoundingClientRect();
     const buttonCenter = rect.left + rect.width / 2;
     
-    console.log(`📍 Button ${buttonId} position:`, { 
-      left: rect.left, 
-      width: rect.width, 
-      center: buttonCenter 
-    }); // Debug
-    
     const position = {
       left: `${buttonCenter}px`,
-      bottom: window.innerWidth <= 768 ? '80px' : '70px' // Above the button
+      bottom: window.innerWidth <= 768 ? '60px' : '50px' // Closer to the button
     };
     
-    console.log(`📍 Calculated tooltip position:`, position); // Debug
     return position;
   };
 
@@ -133,36 +124,24 @@ const BottomContentArea = ({
   const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef) => ({
     // Desktop hover events
     onMouseEnter: () => {
-      console.log('🖱️ MOUSE ENTER - Device width:', window.innerWidth); // Debug
-      console.log('🧪 IMMEDIATE TEST - Showing tooltip NOW'); // Debug
-      setTooltip(true); // Show immediately for testing
       if (window.innerWidth > 768) { // Only on desktop
-        console.log('🖱️ DESKTOP HOVER - Starting tooltip delay'); // Debug
         showTooltipWithDelay(setTooltip, timeoutRef);
       }
     },
     onMouseLeave: () => {
-      console.log('🖱️ MOUSE LEAVE - Device width:', window.innerWidth); // Debug
       if (window.innerWidth > 768) { // Only on desktop
-        console.log('🖱️ DESKTOP LEAVE - Hiding tooltip'); // Debug
         hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
       }
     },
     // Mobile touch events
     onTouchStart: () => {
-      console.log('👆 TOUCH START - Device width:', window.innerWidth); // Debug
-      console.log('🧪 IMMEDIATE TOUCH TEST - Showing tooltip NOW'); // Debug
-      setTooltip(true); // Show immediately for testing
       if (window.innerWidth <= 768) { // Only on mobile
-        console.log('👆 MOBILE TOUCH - Starting press timeout'); // Debug
         pressTimeoutRef.current = setTimeout(() => {
-          console.log('👆 MOBILE LONG PRESS - Showing tooltip'); // Debug
           showTooltipImmediately(setTooltip);
         }, 1000);
       }
     },
     onTouchEnd: () => {
-      console.log('👆 TOUCH END - Device width:', window.innerWidth); // Debug
       if (window.innerWidth <= 768) { // Only on mobile
         clearTimeout(pressTimeoutRef.current);
         // Hide tooltip after 3 seconds on mobile
@@ -172,7 +151,6 @@ const BottomContentArea = ({
       }
     },
     onTouchCancel: () => {
-      console.log('👆 TOUCH CANCEL - Device width:', window.innerWidth); // Debug
       if (window.innerWidth <= 768) { // Only on mobile
         hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
       }
