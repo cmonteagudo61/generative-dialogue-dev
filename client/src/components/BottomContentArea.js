@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './BottomContentArea.css';
 import EnhancedTranscription from './EnhancedTranscription';
 import {
@@ -65,6 +65,42 @@ const BottomContentArea = ({
   const [isCameraHover, setIsCameraHover] = useState(false);
   const [isLoopActive, setIsLoopActive] = useState(false);
   const [isLoopHover, setIsLoopHover] = useState(false);
+
+  // Tooltip state variables
+  const [showMicTooltip, setShowMicTooltip] = useState(false);
+  const [showCameraTooltip, setShowCameraTooltip] = useState(false);
+  const [showPersonTooltip, setShowPersonTooltip] = useState(false);
+  const [showLoopTooltip, setShowLoopTooltip] = useState(false);
+  
+  // Timeout refs for delayed tooltips
+  const micTooltipTimeout = useRef(null);
+  const cameraTooltipTimeout = useRef(null);
+  const personTooltipTimeout = useRef(null);
+  const loopTooltipTimeout = useRef(null);
+
+  // Tooltip utility functions
+  const showTooltipWithDelay = (setTooltip, timeoutRef) => {
+    timeoutRef.current = setTimeout(() => {
+      setTooltip(true);
+    }, 2000); // 2-second delay
+  };
+
+  const hideTooltipImmediately = (setTooltip, timeoutRef) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setTooltip(false);
+  };
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      [micTooltipTimeout, cameraTooltipTimeout, personTooltipTimeout, loopTooltipTimeout].forEach(ref => {
+        if (ref.current) clearTimeout(ref.current);
+      });
+    };
+  }, []);
 
   // Transcription state
   const [isRecording, setIsRecording] = useState(false);
@@ -636,16 +672,19 @@ const BottomContentArea = ({
   const toggleMic = () => {
     setIsMuted(!isMuted);
     setIsMicrophoneHover(false); // Reset hover state after click
+    hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout);
   };
 
   const toggleCamera = () => {
     setIsCameraOff(!isCameraOff);
     setIsCameraHover(false); // Reset hover state after click
+    hideTooltipImmediately(setShowCameraTooltip, cameraTooltipTimeout);
   };
 
   const toggleCall = () => {
     setIsInCall(!isInCall);
     setPersonHover(false); // Reset hover state after click
+    hideTooltipImmediately(setShowPersonTooltip, personTooltipTimeout);
   };
 
   const toggleLoop = () => {
@@ -653,6 +692,7 @@ const BottomContentArea = ({
     console.log(`🔄 LOOP TOGGLE: ${isLoopActive} → ${newLoopState}`);
     setIsLoopActive(newLoopState);
     setIsLoopHover(false); // Reset hover state after click
+    hideTooltipImmediately(setShowLoopTooltip, loopTooltipTimeout);
     if (onLoopToggle) {
       console.log(`📡 CALLING onLoopToggle with: ${newLoopState}`);
       onLoopToggle(newLoopState);
@@ -3003,8 +3043,14 @@ const BottomContentArea = ({
             id="camera-btn" 
             className="control-button"
             onClick={toggleCamera}
-            onMouseEnter={() => setIsCameraHover(true)}
-            onMouseLeave={() => setIsCameraHover(false)}
+            onMouseEnter={() => {
+              setIsCameraHover(true);
+              showTooltipWithDelay(setShowCameraTooltip, cameraTooltipTimeout);
+            }}
+            onMouseLeave={() => {
+              setIsCameraHover(false);
+              hideTooltipImmediately(setShowCameraTooltip, cameraTooltipTimeout);
+            }}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -3031,8 +3077,14 @@ const BottomContentArea = ({
             id="mic-btn" 
             className="control-button"
             onClick={toggleMic}
-            onMouseEnter={() => setIsMicrophoneHover(true)}
-            onMouseLeave={() => setIsMicrophoneHover(false)}
+            onMouseEnter={() => {
+              setIsMicrophoneHover(true);
+              showTooltipWithDelay(setShowMicTooltip, micTooltipTimeout);
+            }}
+            onMouseLeave={() => {
+              setIsMicrophoneHover(false);
+              hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout);
+            }}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -3061,8 +3113,14 @@ const BottomContentArea = ({
             id="join-btn" 
             className={`control-button ${isInCall ? 'active' : ''}`}
             onClick={toggleCall}
-            onMouseEnter={() => setPersonHover(true)}
-            onMouseLeave={() => setPersonHover(false)}
+            onMouseEnter={() => {
+              setPersonHover(true);
+              showTooltipWithDelay(setShowPersonTooltip, personTooltipTimeout);
+            }}
+            onMouseLeave={() => {
+              setPersonHover(false);
+              hideTooltipImmediately(setShowPersonTooltip, personTooltipTimeout);
+            }}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -3091,8 +3149,14 @@ const BottomContentArea = ({
             id="loop-btn" 
             className={`control-button ${isLoopActive ? 'active' : ''}`}
             onClick={toggleLoop}
-            onMouseEnter={() => setIsLoopHover(true)}
-            onMouseLeave={() => setIsLoopHover(false)}
+            onMouseEnter={() => {
+              setIsLoopHover(true);
+              showTooltipWithDelay(setShowLoopTooltip, loopTooltipTimeout);
+            }}
+            onMouseLeave={() => {
+              setIsLoopHover(false);
+              hideTooltipImmediately(setShowLoopTooltip, loopTooltipTimeout);
+            }}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -3235,6 +3299,132 @@ const BottomContentArea = ({
           </button>
         </div>
       </div>
+
+      {/* Tooltips */}
+      {showCameraTooltip && (
+        <div style={{
+          position: 'absolute',
+          bottom: '80px',
+          left: '20px',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          fontSize: '12px',
+          fontWeight: '500',
+          whiteSpace: 'nowrap',
+          zIndex: 1000,
+          pointerEvents: 'none',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+        }}>
+          {isCameraOff ? 'Turn camera on' : 'Turn camera off'}
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: '6px solid rgba(0, 0, 0, 0.8)'
+          }} />
+        </div>
+      )}
+
+      {showMicTooltip && (
+        <div style={{
+          position: 'absolute',
+          bottom: '80px',
+          left: '70px',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          fontSize: '12px',
+          fontWeight: '500',
+          whiteSpace: 'nowrap',
+          zIndex: 1000,
+          pointerEvents: 'none',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+        }}>
+          {isMuted ? 'Unmute microphone' : 'Mute microphone'}
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: '6px solid rgba(0, 0, 0, 0.8)'
+          }} />
+        </div>
+      )}
+
+      {showPersonTooltip && (
+        <div style={{
+          position: 'absolute',
+          bottom: '80px',
+          left: '120px',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          fontSize: '12px',
+          fontWeight: '500',
+          whiteSpace: 'nowrap',
+          zIndex: 1000,
+          pointerEvents: 'none',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+        }}>
+          {isInCall ? 'Leave call' : 'Join call'}
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: '6px solid rgba(0, 0, 0, 0.8)'
+          }} />
+        </div>
+      )}
+
+      {showLoopTooltip && (
+        <div style={{
+          position: 'absolute',
+          bottom: '80px',
+          left: '170px',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          fontSize: '12px',
+          fontWeight: '500',
+          whiteSpace: 'nowrap',
+          zIndex: 1000,
+          pointerEvents: 'none',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+        }}>
+          {isLoopActive ? 'Disable audio loop' : 'Enable audio loop'}
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: '6px solid rgba(0, 0, 0, 0.8)'
+          }} />
+        </div>
+      )}
+
     </div>
   );
 };
