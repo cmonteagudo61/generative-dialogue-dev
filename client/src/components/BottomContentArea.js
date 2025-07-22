@@ -66,39 +66,105 @@ const BottomContentArea = ({
   const [isLoopActive, setIsLoopActive] = useState(false);
   const [isLoopHover, setIsLoopHover] = useState(false);
 
-  // Tooltip state variables
+  // Tooltip state management
   const [showMicTooltip, setShowMicTooltip] = useState(false);
   const [showCameraTooltip, setShowCameraTooltip] = useState(false);
   const [showPersonTooltip, setShowPersonTooltip] = useState(false);
   const [showLoopTooltip, setShowLoopTooltip] = useState(false);
-  
-  // Timeout refs for delayed tooltips
+
+  // Tooltip timeout refs
   const micTooltipTimeout = useRef(null);
   const cameraTooltipTimeout = useRef(null);
   const personTooltipTimeout = useRef(null);
   const loopTooltipTimeout = useRef(null);
 
-  // Tooltip utility functions
-  const showTooltipWithDelay = (setTooltip, timeoutRef) => {
+  // Touch/press timeout refs for mobile
+  const micPressTimeout = useRef(null);
+  const cameraPressTimeout = useRef(null);
+  const personPressTimeout = useRef(null);
+  const loopPressTimeout = useRef(null);
+
+  // Utility functions for tooltip management
+  const showTooltipWithDelay = (setTooltip, timeoutRef, delay = 2000) => {
+    clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       setTooltip(true);
-    }, 2000); // 2-second delay
+    }, delay);
   };
 
-  const hideTooltipImmediately = (setTooltip, timeoutRef) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
+  const showTooltipImmediately = (setTooltip) => {
+    setTooltip(true);
+  };
+
+  const hideTooltipImmediately = (setTooltip, timeoutRef, pressTimeoutRef = null) => {
+    clearTimeout(timeoutRef.current);
+    if (pressTimeoutRef) clearTimeout(pressTimeoutRef.current);
     setTooltip(false);
   };
+
+  // Get tooltip positioning relative to button
+  const getTooltipPosition = (buttonId) => {
+    const button = document.getElementById(buttonId);
+    if (!button) return { left: '50%', bottom: '80px' };
+    
+    const rect = button.getBoundingClientRect();
+    const buttonCenter = rect.left + rect.width / 2;
+    
+    return {
+      left: `${buttonCenter}px`,
+      bottom: window.innerWidth <= 768 ? '80px' : '70px' // Above the button
+    };
+  };
+
+  // Universal event handlers that work on both desktop and mobile
+  const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef) => ({
+    // Desktop hover events
+    onMouseEnter: () => {
+      if (window.innerWidth > 768) { // Only on desktop
+        showTooltipWithDelay(setTooltip, timeoutRef);
+      }
+    },
+    onMouseLeave: () => {
+      if (window.innerWidth > 768) { // Only on desktop
+        hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
+      }
+    },
+    // Mobile touch events
+    onTouchStart: () => {
+      if (window.innerWidth <= 768) { // Only on mobile
+        // Long press detection (1 second for mobile)
+        pressTimeoutRef.current = setTimeout(() => {
+          showTooltipImmediately(setTooltip);
+        }, 1000);
+      }
+    },
+    onTouchEnd: () => {
+      if (window.innerWidth <= 768) { // Only on mobile
+        clearTimeout(pressTimeoutRef.current);
+        // Hide tooltip after 3 seconds on mobile
+        setTimeout(() => {
+          hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
+        }, 3000);
+      }
+    },
+    onTouchCancel: () => {
+      if (window.innerWidth <= 768) { // Only on mobile
+        hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef);
+      }
+    }
+  });
 
   // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
-      [micTooltipTimeout, cameraTooltipTimeout, personTooltipTimeout, loopTooltipTimeout].forEach(ref => {
-        if (ref.current) clearTimeout(ref.current);
-      });
+      clearTimeout(micTooltipTimeout.current);
+      clearTimeout(cameraTooltipTimeout.current);
+      clearTimeout(personTooltipTimeout.current);
+      clearTimeout(loopTooltipTimeout.current);
+      clearTimeout(micPressTimeout.current);
+      clearTimeout(cameraPressTimeout.current);
+      clearTimeout(personPressTimeout.current);
+      clearTimeout(loopPressTimeout.current);
     };
   }, []);
 
@@ -3049,7 +3115,7 @@ const BottomContentArea = ({
           fontSize: '12px',
           zIndex: 99999
         }}>
-          🐛 Debug: Camera={showCameraTooltip ? 'ON' : 'OFF'} | Mic={showMicTooltip ? 'ON' : 'OFF'}
+          🐛 Debug: Camera={showCameraTooltip ? 'ON' : 'OFF'} | Device={window.innerWidth <= 768 ? 'MOBILE' : 'DESKTOP'} | Touch={'ontouchstart' in window ? 'YES' : 'NO'}
         </div>
         
         {/* Media controls - Left group */}
@@ -3057,18 +3123,12 @@ const BottomContentArea = ({
           <button 
             id="camera-btn" 
             className="control-button"
-            onClick={toggleCamera}
-            onMouseEnter={() => {
-              console.log('🐛 Camera hover ENTER'); // Debug log
-              setIsCameraHover(true);
-              setShowCameraTooltip(true); // Debug: show immediately
-              showTooltipWithDelay(setShowCameraTooltip, cameraTooltipTimeout);
+            onClick={(e) => {
+              console.log('🔥 CAMERA BUTTON CLICKED!'); // Debug test
+              hideTooltipImmediately(setShowCameraTooltip, cameraTooltipTimeout, cameraPressTimeout);
+              toggleCamera(e);
             }}
-            onMouseLeave={() => {
-              console.log('🐛 Camera hover LEAVE'); // Debug log
-              setIsCameraHover(false);
-              hideTooltipImmediately(setShowCameraTooltip, cameraTooltipTimeout);
-            }}
+            {...createTooltipHandlers(setShowCameraTooltip, cameraTooltipTimeout, cameraPressTimeout)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -3094,15 +3154,11 @@ const BottomContentArea = ({
           <button 
             id="mic-btn" 
             className="control-button"
-            onClick={toggleMic}
-            onMouseEnter={() => {
-              setIsMicrophoneHover(true);
-              showTooltipWithDelay(setShowMicTooltip, micTooltipTimeout);
+            onClick={(e) => {
+              hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout);
+              toggleMic(e);
             }}
-            onMouseLeave={() => {
-              setIsMicrophoneHover(false);
-              hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout);
-            }}
+            {...createTooltipHandlers(setShowMicTooltip, micTooltipTimeout, micPressTimeout)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -3321,115 +3377,133 @@ const BottomContentArea = ({
       {/* Tooltips */}
       {showCameraTooltip && (
         <div style={{
-          position: 'fixed', // Changed from absolute to fixed
-          top: '50%', // Center of screen
-          left: '50%', // Center of screen
-          transform: 'translate(-50%, -50%)', // Center the tooltip itself
-          backgroundColor: 'rgba(255, 0, 0, 0.9)', // Debug: bright red background
+          position: 'fixed',
+          ...getTooltipPosition('camera-btn'),
+          transform: 'translateX(-50%)', // Center above the button
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
           color: 'white',
-          padding: '20px 30px', // Even bigger for visibility
-          borderRadius: '6px',
-          fontSize: '18px', // Larger font
+          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
+          borderRadius: '8px',
+          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
           fontWeight: '600',
           whiteSpace: 'nowrap',
-          zIndex: 99999, // Even higher z-index
+          zIndex: 99999,
           pointerEvents: 'none',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-          border: '4px solid yellow' // Thicker border
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
+          textAlign: 'center'
         }}>
-          🐛 TOOLTIP TEST: {isCameraOff ? 'Turn camera on' : 'Turn camera off'}
+          {isCameraOff ? '📷 Turn camera on' : '📷 Turn camera off'}
+          {/* Tooltip arrow */}
+          <div style={{
+            position: 'absolute',
+            bottom: '-6px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '0',
+            height: '0',
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: '6px solid rgba(0, 0, 0, 0.9)'
+          }} />
         </div>
       )}
 
       {showMicTooltip && (
         <div style={{
-          position: 'absolute',
-          bottom: '80px',
-          left: '70px',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          position: 'fixed',
+          ...getTooltipPosition('mic-btn'),
+          transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
           color: 'white',
-          padding: '8px 12px',
-          borderRadius: '6px',
-          fontSize: '12px',
-          fontWeight: '500',
+          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
+          borderRadius: '8px',
+          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
+          fontWeight: '600',
           whiteSpace: 'nowrap',
-          zIndex: 1000,
+          zIndex: 99999,
           pointerEvents: 'none',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
+          textAlign: 'center'
         }}>
-          {isMuted ? 'Unmute microphone' : 'Mute microphone'}
+          {isMuted ? '🎤 Unmute microphone' : '🎤 Mute microphone'}
           <div style={{
             position: 'absolute',
-            top: '100%',
+            bottom: '-6px',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: 0,
-            height: 0,
+            width: '0',
+            height: '0',
             borderLeft: '6px solid transparent',
             borderRight: '6px solid transparent',
-            borderTop: '6px solid rgba(0, 0, 0, 0.8)'
+            borderTop: '6px solid rgba(0, 0, 0, 0.9)'
           }} />
         </div>
       )}
 
       {showPersonTooltip && (
         <div style={{
-          position: 'absolute',
-          bottom: '80px',
-          left: '120px',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          position: 'fixed',
+          ...getTooltipPosition('join-btn'),
+          transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
           color: 'white',
-          padding: '8px 12px',
-          borderRadius: '6px',
-          fontSize: '12px',
-          fontWeight: '500',
+          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
+          borderRadius: '8px',
+          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
+          fontWeight: '600',
           whiteSpace: 'nowrap',
-          zIndex: 1000,
+          zIndex: 99999,
           pointerEvents: 'none',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
+          textAlign: 'center'
         }}>
-          {isInCall ? 'Leave call' : 'Join call'}
+          {isInCall ? '👤 Leave call' : '👤 Join call'}
           <div style={{
             position: 'absolute',
-            top: '100%',
+            bottom: '-6px',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: 0,
-            height: 0,
+            width: '0',
+            height: '0',
             borderLeft: '6px solid transparent',
             borderRight: '6px solid transparent',
-            borderTop: '6px solid rgba(0, 0, 0, 0.8)'
+            borderTop: '6px solid rgba(0, 0, 0, 0.9)'
           }} />
         </div>
       )}
 
       {showLoopTooltip && (
         <div style={{
-          position: 'absolute',
-          bottom: '80px',
-          left: '170px',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          position: 'fixed',
+          ...getTooltipPosition('loop-btn'),
+          transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
           color: 'white',
-          padding: '8px 12px',
-          borderRadius: '6px',
-          fontSize: '12px',
-          fontWeight: '500',
+          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
+          borderRadius: '8px',
+          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
+          fontWeight: '600',
           whiteSpace: 'nowrap',
-          zIndex: 1000,
+          zIndex: 99999,
           pointerEvents: 'none',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
+          textAlign: 'center'
         }}>
-          {isLoopActive ? 'Disable audio loop' : 'Enable audio loop'}
+          {isLoopActive ? '🔄 Disable audio loop' : '🔄 Enable audio loop'}
           <div style={{
             position: 'absolute',
-            top: '100%',
+            bottom: '-6px',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: 0,
-            height: 0,
+            width: '0',
+            height: '0',
             borderLeft: '6px solid transparent',
             borderRight: '6px solid transparent',
-            borderTop: '6px solid rgba(0, 0, 0, 0.8)'
+            borderTop: '6px solid rgba(0, 0, 0, 0.9)'
           }} />
         </div>
       )}
