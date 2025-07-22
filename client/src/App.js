@@ -8,7 +8,6 @@ import ConnectDyadPage from './components/ConnectDyadPage';
 import DyadDialoguePageConnect from './components/DyadDialoguePageConnect';
 import DyadSummaryReviewPage from './components/DyadSummaryReviewPage';
 import ConnectDyadCollectiveWisdomPage from './components/ConnectDyadCollectiveWisdomPage';
-import VoicesFromFieldPage from './components/VoicesFromFieldPage';
 import ExploreCatalystPage from './components/ExploreCatalystPage';
 import ExploreTriadDialoguePage from './components/ExploreTriadDialoguePage';
 import ExploreTriadSummaryPage from './components/ExploreTriadSummaryPage';
@@ -69,7 +68,7 @@ function App() {
   };
 
   const renderCurrentPage = () => {
-    const pages = ['landing', 'input', 'permissions', 'videoconference', 'connect-dyad', 'dyad-dialogue-connect', 'dyad-summary-review', 'connect-dyad-collective-wisdom', 'voices-from-field', 'explore-catalyst', 'explore-triad-dialogue', 'explore-triad-summary', 'explore-collective-wisdom', 'discover-fishbowl-catalyst', 'discover-kiva-dialogue', 'discover-kiva-summary', 'discover-collective-wisdom', 'harvest', 'reflection', 'summary', 'we-summary', 'new-insights', 'questions', 'talkabout', 'cantalk', 'emergingstory', 'ourstory', 'buildingcommunity'];
+    const pages = ['landing', 'input', 'permissions', 'videoconference', 'connect-dyad', 'dyad-dialogue-connect', 'dyad-summary-review', 'connect-dyad-collective-wisdom', 'explore-catalyst', 'explore-triad-dialogue', 'explore-triad-summary', 'explore-collective-wisdom', 'discover-fishbowl-catalyst', 'discover-kiva-dialogue', 'discover-kiva-summary', 'discover-collective-wisdom', 'harvest', 'reflection', 'summary', 'we-summary', 'new-insights', 'questions', 'talkabout', 'cantalk', 'emergingstory', 'ourstory', 'buildingcommunity'];
     const currentIndex = pages.indexOf(currentPage);
     
     const navigationProps = {
@@ -101,8 +100,6 @@ function App() {
         return <DyadSummaryReviewPage {...navigationProps} />;
       case 'connect-dyad-collective-wisdom':
         return <ConnectDyadCollectiveWisdomPage {...navigationProps} />;
-      case 'voices-from-field':
-        return <VoicesFromFieldPage {...navigationProps} />;
       case 'explore-catalyst':
         return <ExploreCatalystPage {...navigationProps} />;
       case 'explore-triad-dialogue':

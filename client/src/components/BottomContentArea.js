@@ -2464,20 +2464,6 @@ const BottomContentArea = ({
                     </div>
                   </div>
                 </div>
-              ) : currentPage === 'voices-from-field' ? (
-                /* Voices from the Field page content - Simplified version without AI transcript box */
-                <div className="dialogue-section">
-                  <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '20px'}}>Voices From the Field<br/>What are WE Saying?</h3>
-                  <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '20px'}}>
-                    Let us now hear from a small representative number <strong>(~six volunteers)</strong>. This is a way to 
-                    add to our sense of connection - the emerging WE - that has already begun to surface.
-                  </p>
-                  
-                  <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '30px'}}>
-                    Voices from volunteers will share their insights and aha moments from the dyad conversations, 
-                    building our collective understanding of what emerges through authentic human connection.
-                  </p>
-                </div>
               ) : currentPage === 'discover-collective-wisdom' && isDiscoverCollectiveWisdom ? (
                 /* DISCOVER Stage Collective Wisdom */
                 <div className="dialogue-section">
