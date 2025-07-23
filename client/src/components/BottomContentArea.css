@@ -462,12 +462,12 @@
 
 .media-controls {
   display: flex;
-  gap: 8px; /* Add consistent spacing between media control buttons */
+  gap: clamp(2px, 1vw, 8px); /* Responsive gap: 2px minimum on mobile, 8px maximum on desktop */
 }
 
 .navigation-controls {
   display: flex;
-  gap: 8px; /* Consistent spacing between navigation buttons */
+  gap: clamp(2px, 1vw, 8px); /* Responsive gap: 2px minimum on mobile, 8px maximum on desktop */
 }
 
 .control-button {
@@ -503,42 +503,26 @@
   transition: all 0.2s ease;
 }
 
+/* Responsive timer styles */
 .timer-display {
   display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.timer-cell {
-  margin: 0 15px;
+/* Desktop timer styles - show both times separately */
+.timer-cell-desktop {
+  margin: 0 6px;
   text-align: center;
-}
-
-.timer-label {
-  font-size: 14px; /* Increased from 11px to 14px */
-  opacity: 0.8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 2px; /* Reduced from 4px to 2px */
-}
-
-.timer-value {
-  font-size: 20px; /* Increased from 16px to 20px */
-  font-weight: 600;
-  color: #3E4C71;
-}
-
-/* Compact timer styles for desktop */
-.timer-cell-combined {
-  margin: 0 12px;
-  text-align: center;
-  min-width: 160px; /* Desktop width for combined display */
+  min-width: 90px; /* Smaller width for individual timers */
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center the timer content vertically */
+  justify-content: center;
 }
 
-.timer-label-combined {
-  font-size: 11px; /* Compact size */
-  margin-bottom: 1px; /* Minimal gap but prevents text crowding */
+.timer-cell-desktop .timer-label {
+  font-size: 11px;
+  margin-bottom: 1px;
   color: #666;
   font-weight: 500;
   letter-spacing: 0.5px;
@@ -546,13 +530,42 @@
   line-height: 1;
 }
 
-.timer-value-combined {
-  font-size: 16px; /* Compact but readable */
+.timer-cell-desktop .timer-value {
+  font-size: 16px;
   font-weight: 600;
   color: #333;
-  font-family: 'Courier New', monospace; /* Monospace for better time alignment */
+  font-family: 'Courier New', monospace;
   line-height: 1;
-  margin-top: 0; /* No extra margin */
+  margin-top: 0;
+}
+
+/* Mobile timer styles - show only total time */
+.timer-cell-mobile {
+  margin: 0 6px;
+  text-align: center;
+  min-width: 100px;
+  display: none; /* Hidden by default, shown only on mobile */
+  flex-direction: column;
+  justify-content: center;
+}
+
+.timer-cell-mobile .timer-label {
+  font-size: 10px;
+  margin-bottom: 0px;
+  color: #666;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.timer-cell-mobile .timer-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  font-family: 'Courier New', monospace;
+  line-height: 1;
+  margin-top: 0;
 }
 
 /* Spin animation for loading states */
@@ -573,33 +586,15 @@
     width: calc(100% + 60px);
   }
   
-  /* Compact timer display for mobile */
-  .timer-cell {
-    margin: 0 8px; /* Reduced from 15px to 8px */
+  /* Responsive timer display for mobile */
+  .timer-cell-desktop {
+    display: none !important; /* Hide separate desktop timers */
   }
   
-  .timer-label {
-    font-size: 11px; /* Smaller on mobile */
-    margin-bottom: 1px;
-  }
-  
-  .timer-value {
-    font-size: 16px; /* Smaller on mobile */
-  }
-
-  /* Override compact timer for mobile */
-  .timer-cell-combined {
-    margin: 0 6px !important; /* Tighter spacing on mobile */
-    min-width: 120px !important; /* Smaller minimum width for mobile */
-  }
-  
-  .timer-label-combined {
-    font-size: 10px !important; /* Smaller label on mobile */
-    margin-bottom: 0px !important; /* Tightest spacing for mobile */
-  }
-  
-  .timer-value-combined {
-    font-size: 14px !important; /* Smaller value on mobile but still readable */
+  .timer-cell-mobile {
+    display: flex !important; /* Show mobile total time only */
+    margin: 0 6px;
+    min-width: 100px;
   }
   
   .tab-navigation {
@@ -648,6 +643,13 @@
     top: auto !important; /* Reset positioning */
     margin: 0 !important; /* Remove all margins */
   }
+  
+  /* Move navigation controls 30px left to close gap with timer */
+  .navigation-controls {
+    transform: translateX(-30px); /* Move icons 30px to the left */
+  }
+  
+
   
   .timer-cell {
     margin: 0 10px;
@@ -977,3 +979,107 @@
 } /* Added blue pinstripes to tabs Sat Jul 19 01:10:32 EDT 2025 */
 /* Made pinstripes thinner and extended down sides Sat Jul 19 01:12:20 EDT 2025 */
 /* Simplified active tabs - removed orange pinstripes Sat Jul 19 01:14:33 EDT 2025 */
+
+/* Mobile responsive styles for tab controls */
+@media (max-width: 768px) {
+  .tab-navigation {
+    flex-direction: column; /* Stack tab navigation vertically */
+    align-items: stretch; /* Stretch both rows to full width */
+    padding: 8px 12px 0 1px;
+    border-bottom: none; /* Remove border from entire navigation */
+  }
+  
+  .tab-controls-left {
+    order: 1; /* Tabs go first */
+    justify-content: flex-start; /* Align tabs to left */
+    margin-bottom: 4px; /* Reduced space between rows */
+    border-bottom: 1px solid #ddd; /* Keep grey line only under tabs */
+    padding-bottom: 4px; /* Small padding under tabs before border */
+  }
+  
+  .tab-controls-right {
+    order: 2; /* Controls go second (below tabs) */
+    justify-content: flex-end; /* Right-justify the controls */
+    gap: clamp(6px, 2vw, 12px); /* Tighter spacing on mobile */
+    flex-shrink: 0; /* Don't allow shrinking */
+    min-width: auto; /* Reset min-width */
+    margin-bottom: 4px; /* Reduced margin to allow content to move up */
+    padding-top: 2px; /* Small top padding for icons */
+    border-bottom: none; /* Ensure no border under icons */
+  }
+  
+  /* Keep tab controls same height as desktop on mobile */
+  .transcription-control-btn {
+    height: 36px !important; /* Same as desktop, not taller */
+    padding: 8px 12px;
+    font-size: 14px;
+    min-height: auto; /* Remove min-height override */
+  }
+  
+  .transcription-status {
+    height: 36px !important; /* Same as desktop, not taller */
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    font-size: 14px;
+    min-height: auto; /* Remove min-height override */
+  }
+  
+  /* Responsive timer display for mobile */
+  .timer-cell-desktop {
+    display: none !important; /* Hide separate desktop timers */
+  }
+  
+  .timer-cell-mobile {
+    display: flex !important; /* Show mobile total time only */
+    margin: 0 3px; /* Reduced from 6px to 3px to close gap by about half */
+    min-width: 100px;
+  }
+}
+
+/* Even smaller screens - make controls more compact */
+@media (max-width: 480px) {
+  .tab-controls-left {
+    margin-bottom: 2px; /* Even tighter spacing */
+    padding-bottom: 2px;
+  }
+  
+  .tab-controls-right {
+    gap: clamp(4px, 1.5vw, 8px); /* Very tight spacing on small screens */
+    margin-bottom: 2px; /* Allow content closer */
+    padding-top: 1px;
+    border-bottom: none; /* Ensure no border under icons */
+  }
+  
+  .transcription-control-btn {
+    height: 36px !important; /* Keep same height even on very small screens */
+    padding: 6px 10px;
+    font-size: 13px;
+    min-height: auto; /* Remove min-height override */
+  }
+  
+  .transcription-status {
+    height: 36px !important; /* Keep same height even on very small screens */
+    padding: 6px 10px;
+    font-size: 13px;
+    min-height: auto; /* Remove min-height override */
+  }
+  
+  /* Hide button text on very small screens, keep only icons */
+  .btn-text {
+    display: none;
+  }
+  
+  .status-text {
+    display: none;
+  }
+  
+  /* Keep responsive timer behavior on very small screens */
+  .timer-cell-desktop {
+    display: none !important; /* Hide separate desktop timers */
+  }
+  
+  .timer-cell-mobile {
+    display: flex !important; /* Show mobile total time only */
+  }
+}

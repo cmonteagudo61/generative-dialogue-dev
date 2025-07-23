@@ -64,7 +64,7 @@
 .nav-controls {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: clamp(8px, 2vw, 15px); /* Responsive default with tighter minimum */
 }
 
 .control-button {
@@ -131,37 +131,40 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .footer-navigation {
-    padding: 8px 15px; /* Reduced padding to save space */
-    max-height: 20vh; /* Prevent footer from taking too much space */
-    overflow: visible; /* Ensure content isn't clipped */
+    padding: 6px 8px; /* More compact padding */
+    max-height: 20vh;
+    overflow: visible;
   }
 
   .footer-nav-content {
-    flex-direction: row; /* Keep horizontal layout on mobile */
-    gap: 8px;
+    flex-direction: row;
+    gap: 4px; /* Reduced from 8px to 4px */
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap; /* Allow wrapping if needed */
+    flex-wrap: nowrap; /* Prevent wrapping to keep everything on one line */
   }
 
   .page-indicators {
     order: 1;
-    gap: 6px;
+    gap: 2px; /* Reduced from 6px to 2px for tighter spacing */
     flex: 1;
     justify-content: center;
-    min-width: 0; /* Allow shrinking */
+    min-width: 0;
+    max-width: 60%; /* Limit page indicators to give space for nav controls */
   }
 
   .nav-controls {
     order: 2;
-    flex-shrink: 0; /* Prevent navigation controls from shrinking */
-    gap: 8px;
+    flex-shrink: 0;
+    gap: clamp(2px, 1vw, 4px); /* More flexible and tighter spacing */
+    display: flex;
+    align-items: center;
   }
 
   .dev-indicator {
     order: 3;
     font-size: 8px;
-    display: none; /* Hide on very small screens to save space */
+    display: none;
   }
 
   .page-label {
@@ -169,41 +172,31 @@
   }
 
   .page-indicator {
-    padding: 4px 6px; /* Smaller padding */
+    padding: 2px 4px; /* Reduced from 4px 6px */
+    min-width: 20px; /* Ensure minimum clickable area */
+  }
+
+  .page-dot {
+    width: 6px; /* Smaller dots */
+    height: 6px;
   }
 
   /* Ensure navigation buttons are always visible */
   .control-button {
-    min-width: 32px;
-    min-height: 32px;
-    padding: 6px;
+    min-width: 28px; /* Reduced from 32px */
+    min-height: 28px; /* Reduced from 32px */
+    padding: 4px; /* Reduced from 6px */
+    flex-shrink: 0; /* Never allow shrinking */
   }
 
   .nav-icon {
-    width: 20px;
-    height: 20px;
+    width: 18px; /* Reduced from 20px */
+    height: 18px; /* Reduced from 20px */
   }
 
   .current-page-info {
-    min-width: 60px; /* Smaller but still readable */
-  }
-}
-
-@media (max-width: 480px) {
-  .footer-navigation {
-    padding: 6px 10px; /* Even more compact */
-  }
-
-  .page-indicators {
-    gap: 4px;
-  }
-
-  .nav-controls {
-    gap: 6px;
-  }
-
-  .current-page-info {
-    min-width: 50px;
+    min-width: 45px; /* Reduced from 60px */
+    font-size: 10px; /* Smaller text */
   }
 
   .page-counter {
@@ -213,18 +206,64 @@
   .page-name {
     font-size: 8px;
   }
+}
 
-  /* Stack vertically only on very small screens if needed */
+@media (max-width: 480px) {
+  .footer-navigation {
+    padding: 4px 6px; /* Even more compact */
+  }
+
   .footer-nav-content {
-    flex-direction: column;
-    gap: 4px;
+    gap: 2px; /* Very tight spacing */
   }
 
   .page-indicators {
-    order: 2;
+    gap: 1px; /* Minimal gap between page indicators */
+    max-width: 50%; /* Give more space to nav controls on very small screens */
   }
 
   .nav-controls {
+    gap: clamp(1px, 0.5vw, 2px); /* Ultra-tight flexible spacing on very small screens */
+  }
+
+  .page-indicator {
+    padding: 1px 3px; /* Minimal padding */
+  }
+
+  .control-button {
+    min-width: 24px; /* Even smaller on very small screens */
+    min-height: 24px;
+    padding: 2px;
+  }
+
+  .nav-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .current-page-info {
+    min-width: 35px; /* Very compact */
+    font-size: 9px;
+  }
+
+  .page-counter {
+    font-size: 10px;
+  }
+
+  .page-name {
+    font-size: 7px;
+  }
+
+  /* Keep horizontal layout even on very small screens to preserve nav buttons */
+  .footer-nav-content {
+    flex-direction: row; /* Changed from column to row */
+  }
+
+  .page-indicators {
     order: 1;
+  }
+
+  .nav-controls {
+    order: 2;
   }
 } 

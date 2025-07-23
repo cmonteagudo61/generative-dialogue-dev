@@ -71,42 +71,58 @@ const BottomContentArea = ({
   const [showCameraTooltip, setShowCameraTooltip] = useState(false);
   const [showPersonTooltip, setShowPersonTooltip] = useState(false);
   const [showLoopTooltip, setShowLoopTooltip] = useState(false);
+  
+  // Add tooltip states for the actual UI buttons in tab-controls-right
+  const [showTabMicTooltip, setShowTabMicTooltip] = useState(false);
+  const [showTabClearTooltip, setShowTabClearTooltip] = useState(false);
+  const [showTabStatusTooltip, setShowTabStatusTooltip] = useState(false);
 
   // Timeout refs for tooltip delays
   const micTooltipTimeout = useRef(null);
   const cameraTooltipTimeout = useRef(null);
   const personTooltipTimeout = useRef(null);
   const loopTooltipTimeout = useRef(null);
+  
+  // Add timeout refs for the actual UI buttons
+  const tabMicTooltipTimeout = useRef(null);
+  const tabClearTooltipTimeout = useRef(null);
+  const tabStatusTooltipTimeout = useRef(null);
 
   // Press timeout refs for mobile long-press
   const micPressTimeout = useRef(null);
   const cameraPressTimeout = useRef(null);
   const personPressTimeout = useRef(null);
   const loopPressTimeout = useRef(null);
+  
+  // Add press timeout refs for the actual UI buttons
+  const tabMicPressTimeout = useRef(null);
+  const tabClearPressTimeout = useRef(null);
+  const tabStatusPressTimeout = useRef(null);
 
-  // Auto-hide timeout refs for mobile tooltips
+  // Auto-hide timeout refs for mobile
   const micAutoHideTimeout = useRef(null);
   const cameraAutoHideTimeout = useRef(null);
   const personAutoHideTimeout = useRef(null);
   const loopAutoHideTimeout = useRef(null);
+  
+  // Add auto-hide timeout refs for the actual UI buttons
+  const tabMicAutoHideTimeout = useRef(null);
+  const tabClearAutoHideTimeout = useRef(null);
+  const tabStatusAutoHideTimeout = useRef(null);
 
   // Utility functions for tooltip management
   const showTooltipWithDelay = (setTooltip, timeoutRef, delay = 2000) => {
-    console.log('⏰ showTooltipWithDelay called with delay:', delay);
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
-      console.log('⏰ TIMEOUT FIRED: Setting tooltip to true');
       setTooltip(true);
     }, delay);
   };
 
   const showTooltipImmediately = (setTooltip) => {
-    console.log('⚡ showTooltipImmediately called');
     setTooltip(true);
   };
 
   const hideTooltipImmediately = (setTooltip, timeoutRef, pressTimeoutRef = null, autoHideTimeoutRef = null) => {
-    console.log('❌ hideTooltipImmediately called');
     clearTimeout(timeoutRef.current);
     if (pressTimeoutRef) clearTimeout(pressTimeoutRef.current);
     if (autoHideTimeoutRef) clearTimeout(autoHideTimeoutRef.current);
@@ -123,17 +139,49 @@ const BottomContentArea = ({
     const rect = button.getBoundingClientRect();
     const buttonCenterY = rect.top + rect.height / 2;
     const buttonRight = rect.right;
+    const buttonLeft = rect.left;
     const viewportHeight = window.innerHeight;
     
-    // Position tooltip to the right of the button
-    let leftPosition = buttonRight + 15; // 15px gap from button
-    let topPosition = buttonCenterY;
+    // For tab control buttons, always position to the LEFT of the button
+    const isTabControlButton = buttonId.startsWith('tab-');
     
-    // Check if tooltip would go off the right edge
-    const tooltipWidth = 200;
-    if (leftPosition + tooltipWidth > window.innerWidth - 10) {
-      // If not enough space on right, position to the left of button
-      leftPosition = rect.left - tooltipWidth - 15;
+    let leftPosition, topPosition;
+    
+    if (isTabControlButton) {
+      const tooltipWidth = 200;
+      
+      // Different positioning for each button based on user feedback
+      let iconWidthGap;
+      if (buttonId === 'tab-status-indicator') {
+        // Status indicator: move 5px more to the left (increase gap)
+        iconWidthGap = 130; // 125 + 5 = 130px gap
+      } else {
+        // Mic and Clear buttons: move 20px to the left (increase gap)
+        iconWidthGap = 40; // 20 + 20 = 40px gap
+      }
+      
+      leftPosition = buttonLeft - tooltipWidth - iconWidthGap;
+      
+      // If it would go off screen, position it as far left as possible
+      if (leftPosition < 10) {
+        leftPosition = 10;
+      }
+      
+      topPosition = buttonCenterY;
+    } else {
+      // Original logic for other buttons - position to the right
+      // Adjusted: 3px left (15-3=12) and 2px down
+      leftPosition = buttonRight + 12; // 12px gap from button (was 15, moved 3px left)
+      
+      // Check if tooltip would go off the right edge
+      const tooltipWidth = 200;
+      if (leftPosition + tooltipWidth > window.innerWidth - 10) {
+        // If not enough space on right, position to the left of button
+        // Also moved 3px left here
+        leftPosition = rect.left - tooltipWidth - 18; // was -15, now -18 (3px more left)
+      }
+      
+      topPosition = buttonCenterY + 2; // Moved 2px down for bottom controls only
     }
     
     // Check if tooltip would go off the top or bottom
@@ -148,69 +196,59 @@ const BottomContentArea = ({
     const position = {
       left: `${leftPosition}px`,
       top: `${topPosition}px`,
-      transform: 'translateY(-50%)' // Center vertically
+      // Center all tooltips vertically since all are positioned to the side now
+      transform: 'translateY(-50%)'
     };
     
     return position;
   };
 
   // Smart device detection - use touch capability, not just window width
-  const [forceMobileMode, setForceMobileMode] = useState(false);
-  const isTouchDevice = forceMobileMode || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   const isSmallScreen = window.innerWidth <= 768;
   
   // Universal event handlers that work on both desktop and mobile
   const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef) => ({
     // Desktop hover events
     onMouseEnter: () => {
-      console.log('🖱️ HOVER START - Width:', window.innerWidth, 'Touch device?', isTouchDevice, 'Small screen?', isSmallScreen);
-      if (!isTouchDevice) { // Desktop/laptop with mouse - always use hover
-        console.log('🖱️ DESKTOP: Starting 2s delay for tooltip');
+      if (!isTouchDevice) { // Desktop/laptop with mouse
         showTooltipWithDelay(setTooltip, timeoutRef);
-      } else {
-        console.log('🖱️ TOUCH DEVICE: Ignoring hover (use touch instead)');
       }
     },
     onMouseLeave: () => {
-      console.log('🖱️ HOVER END - Width:', window.innerWidth);
       if (!isTouchDevice) { // Desktop/laptop with mouse
-        console.log('🖱️ DESKTOP: Hiding tooltip immediately');
         hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
       }
     },
     // Mobile/tablet touch events
     onTouchStart: () => {
-      console.log('👆 TOUCH START - Touch device?', isTouchDevice);
       if (isTouchDevice) { // Only on actual touch devices
         // Clear any existing timeouts
         clearTimeout(pressTimeoutRef.current);
         clearTimeout(autoHideTimeoutRef.current);
         
-        console.log('👆 TOUCH DEVICE: Starting 1s press timeout');
         pressTimeoutRef.current = setTimeout(() => {
-          console.log('👆 TOUCH DEVICE: Long press detected, showing tooltip');
-          showTooltipImmediately(setTooltip);
+          setTooltip(true);
           
           // Auto-hide after 4 seconds on mobile
           autoHideTimeoutRef.current = setTimeout(() => {
-            console.log('👆 MOBILE: Auto-hiding tooltip after 4s');
-            hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
+            setTooltip(false);
           }, 4000);
-        }, 1000);
+        }, 1000); // 1 second long-press
       }
     },
     onTouchEnd: () => {
-      console.log('👆 TOUCH END');
-      if (isTouchDevice) { // Only on actual touch devices
-        // Clear the press timeout (in case user released before 1s)
+      if (isTouchDevice) {
         clearTimeout(pressTimeoutRef.current);
-        // Don't clear autoHideTimeoutRef here - let it continue if tooltip is already showing
+        // Keep the tooltip visible if it was already shown, 
+        // let auto-hide handle it
       }
     },
     onTouchCancel: () => {
-      console.log('👆 TOUCH CANCEL');
-      if (isTouchDevice) { // Only on actual touch devices
-        hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
+      if (isTouchDevice) {
+        clearTimeout(pressTimeoutRef.current);
+        clearTimeout(autoHideTimeoutRef.current);
+        setTooltip(false);
       }
     }
   });
@@ -230,6 +268,15 @@ const BottomContentArea = ({
       clearTimeout(cameraAutoHideTimeout.current);
       clearTimeout(personAutoHideTimeout.current);
       clearTimeout(loopAutoHideTimeout.current);
+      clearTimeout(tabMicTooltipTimeout.current);
+      clearTimeout(tabClearTooltipTimeout.current);
+      clearTimeout(tabStatusTooltipTimeout.current);
+      clearTimeout(tabMicPressTimeout.current);
+      clearTimeout(tabClearPressTimeout.current);
+      clearTimeout(tabStatusPressTimeout.current);
+      clearTimeout(tabMicAutoHideTimeout.current);
+      clearTimeout(tabClearAutoHideTimeout.current);
+      clearTimeout(tabStatusAutoHideTimeout.current);
     };
   }, []);
 
@@ -421,11 +468,7 @@ const BottomContentArea = ({
   };
 
   const submitTranscriptForAI = () => {
-    // Here you would typically send the edited transcript to your backend
-    console.log('Submitting transcript for AI processing:', editableTranscript);
-    setTranscriptSubmitted(true);
-    setIsEditingTranscript(false);
-    // In a real implementation, this would trigger navigation to summary page
+    setSummarySubmitted(true);
   };
 
   // Check if dialogue time has ended
@@ -440,9 +483,6 @@ const BottomContentArea = ({
   };
 
   const submitSummaryForCompilation = () => {
-    console.log('Submitting summary for collective compilation:', {
-      votes: participantVotes
-    });
     setSummarySubmitted(true);
   };
 
@@ -760,9 +800,6 @@ const BottomContentArea = ({
    };
 
    const submitKivaSummaryForCompilation = () => {
-     console.log('Submitting KIVA summary for collective compilation:', {
-       votes: kivaParticipantVotes
-     });
      setKivaSummarySubmitted(true);
    };
 
@@ -820,20 +857,15 @@ const BottomContentArea = ({
 
   const toggleLoop = () => {
     const newLoopState = !isLoopActive;
-    console.log(`🔄 LOOP TOGGLE: ${isLoopActive} → ${newLoopState}`);
     setIsLoopActive(newLoopState);
     setIsLoopHover(false); // Reset hover state after click
     hideTooltipImmediately(setShowLoopTooltip, loopTooltipTimeout, loopPressTimeout, loopAutoHideTimeout);
     if (onLoopToggle) {
-      console.log(`📡 CALLING onLoopToggle with: ${newLoopState}`);
       onLoopToggle(newLoopState);
-    } else {
-      console.log('❌ onLoopToggle callback not provided');
     }
   };
 
   const vote = (direction) => {
-    console.log(`Voted ${direction}`);
     // Toggle vote state - if same direction, remove vote, otherwise set new vote
     setVoteState(voteState === direction ? null : direction);
   };
@@ -846,7 +878,6 @@ const BottomContentArea = ({
       setTimeout(() => setBackButtonState('off'), 200);
     } else {
       // Normal mode: toggle button state
-      console.log('Back button clicked');
       const newBackState = backButtonState === 'on' ? 'off' : 'on';
       setBackButtonState(newBackState);
       
@@ -864,7 +895,6 @@ const BottomContentArea = ({
       setTimeout(() => setForwardButtonState('off'), 200);
     } else {
       // Normal mode: toggle button state
-      console.log('Forward button clicked');
       const newForwardState = forwardButtonState === 'on' ? 'off' : 'on';
       setForwardButtonState(newForwardState);
       
@@ -875,7 +905,6 @@ const BottomContentArea = ({
   };
 
   const handleThumbsUpClick = () => {
-    console.log('Thumbs up clicked');
     const newThumbsUpState = thumbsUpButtonState === 'on' ? 'off' : 'on';
     setThumbsUpButtonState(newThumbsUpState);
     
@@ -885,7 +914,6 @@ const BottomContentArea = ({
   };
 
   const handleThumbsDownClick = () => {
-    console.log('Thumbs down clicked');
     const newThumbsDownState = thumbsDownButtonState === 'on' ? 'off' : 'on';
     setThumbsDownButtonState(newThumbsDownState);
     
@@ -961,22 +989,30 @@ const BottomContentArea = ({
           {/* Transcription Controls */}
           <div className="tab-controls-right">
             <button 
+              id="tab-mic-btn"
               className={`transcription-control-btn ${isRecording ? 'danger' : 'primary'}`}
               onClick={isRecording ? stopRecording : startRecording}
+              {...createTooltipHandlers(setShowTabMicTooltip, tabMicTooltipTimeout, tabMicPressTimeout, tabMicAutoHideTimeout)}
             >
               <span className="btn-icon">{isRecording ? '⏹' : '🎤'}</span>
               <span className="btn-text">{isRecording ? ' Stop Recording' : ' Start Live Transcription'}</span>
             </button>
             
             <button 
+              id="tab-clear-btn"
               className="transcription-control-btn warning"
               onClick={clearTranscription}
+              {...createTooltipHandlers(setShowTabClearTooltip, tabClearTooltipTimeout, tabClearPressTimeout, tabClearAutoHideTimeout)}
             >
               <span className="btn-icon">🗑</span>
               <span className="btn-text"> Clear</span>
             </button>
             
-            <div className={`transcription-status ${getStatusClass()}`}>
+            <div 
+              id="tab-status-indicator"
+              className={`transcription-status ${getStatusClass()}`}
+              {...createTooltipHandlers(setShowTabStatusTooltip, tabStatusTooltipTimeout, tabStatusPressTimeout, tabStatusAutoHideTimeout)}
+            >
               <span className="status-icon">🚫</span>
               <span className="status-text">{transcriptionError || transcriptionStatus}</span>
             </div>
@@ -3187,49 +3223,13 @@ const BottomContentArea = ({
       
       {/* Control bar */}
       <div className="control-bar">
-        {/* Debug State Display */}
-        <div style={{
-          position: 'fixed',
-          top: '10px',
-          right: '10px',
-          background: 'rgba(0,0,0,0.8)',
-          color: 'white',
-          padding: '8px',
-          borderRadius: '4px',
-          fontSize: '12px',
-          zIndex: 99999,
-          fontFamily: 'monospace'
-        }}>
-          <div>🖥️ Width: {window.innerWidth}px</div>
-          <div>📱 Touch Device: {isTouchDevice ? 'YES' : 'NO'}</div>
-          <div>📏 Small Screen: {isSmallScreen ? 'YES' : 'NO'}</div>
-          <div>🎯 Event Mode: {isTouchDevice ? 'TOUCH' : 'HOVER'}</div>
-          <div style={{
-            padding: '4px 0',
-            borderTop: '1px solid #444',
-            marginTop: '4px',
-            cursor: 'pointer',
-            textAlign: 'center',
-            backgroundColor: forceMobileMode ? '#2563eb' : 'transparent',
-            borderRadius: '2px'
-          }} onClick={() => setForceMobileMode(!forceMobileMode)}>
-            {forceMobileMode ? '📱 FORCE MOBILE ON' : '🖱️ FORCE MOBILE OFF'}
-          </div>
-          <div>📷 Camera: {showCameraTooltip ? 'ON' : 'OFF'}</div>
-          <div>🎤 Mic: {showMicTooltip ? 'ON' : 'OFF'}</div>
-          <div>👤 Person: {showPersonTooltip ? 'ON' : 'OFF'}</div>
-          <div>🔄 Loop: {showLoopTooltip ? 'ON' : 'OFF'}</div>
-        </div>
-        
         {/* Media controls - Left group */}
         <div className="media-controls">
           <button 
             id="camera-btn" 
             className="control-button"
             onClick={(e) => {
-              console.log('🔥 CAMERA BUTTON CLICKED!'); // Debug test
-              hideTooltipImmediately(setShowCameraTooltip, cameraTooltipTimeout, cameraPressTimeout, cameraAutoHideTimeout);
-              toggleCamera(e);
+              toggleCamera();
             }}
             {...createTooltipHandlers(setShowCameraTooltip, cameraTooltipTimeout, cameraPressTimeout, cameraAutoHideTimeout)}
             style={{
@@ -3343,12 +3343,28 @@ const BottomContentArea = ({
           </button>
         </div>
         
-        {/* Timer display - Optimized compact format */}
+        {/* Timer display - Responsive: separate times for desktop, total only for mobile */}
         <div className="timer-display">
-          <div className="timer-cell-combined">
-            <div className="timer-label-combined">TOTAL / SEGMENT TIME</div>
-            <div className="timer-value-combined" id="combined-time">
-              {totalTime.replace(/^0+:/, '').replace(/^0/, '') || totalTime} / {segmentTime}
+          {/* Desktop view: show both times separately */}
+          <div className="timer-cell-desktop timer-total">
+            <div className="timer-label">TOTAL TIME</div>
+            <div className="timer-value" id="total-time">
+              {totalTime.replace(/^0+:/, '').replace(/^0/, '') || totalTime}
+            </div>
+          </div>
+          
+          <div className="timer-cell-desktop timer-segment">
+            <div className="timer-label">SEGMENT TIME</div>
+            <div className="timer-value" id="segment-time">
+              {segmentTime}
+            </div>
+          </div>
+          
+          {/* Mobile view: show only total time */}
+          <div className="timer-cell-mobile">
+            <div className="timer-label">TOTAL TIME</div>
+            <div className="timer-value" id="mobile-total-time">
+              {totalTime.replace(/^0+:/, '').replace(/^0/, '') || totalTime}
             </div>
           </div>
         </div>
@@ -3426,8 +3442,7 @@ const BottomContentArea = ({
               borderRadius: '50%',
               boxShadow: 'none',
               opacity: (developmentMode && !canGoBack) ? 0.4 : 1,
-              cursor: (developmentMode && !canGoBack) ? 'not-allowed' : 'pointer',
-              marginLeft: '8px'
+              cursor: (developmentMode && !canGoBack) ? 'not-allowed' : 'pointer'
             }}
           >
             <img 
@@ -3598,6 +3613,106 @@ const BottomContentArea = ({
             borderTop: '6px solid transparent',
             borderBottom: '6px solid transparent',
             borderRight: '6px solid rgba(0, 0, 0, 0.9)'
+          }} />
+        </div>
+      )}
+
+      {/* Tab Control Tooltips */}
+      {showTabMicTooltip && (
+        <div style={{
+          position: 'fixed',
+          ...getTooltipPosition('tab-mic-btn'),
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          color: 'white',
+          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
+          borderRadius: '8px',
+          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
+          fontWeight: '600',
+          whiteSpace: 'nowrap',
+          zIndex: 99999,
+          pointerEvents: 'none',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
+          textAlign: 'center'
+        }}>
+          {isRecording ? '⏹ Stop recording audio' : '🎤 Start live transcription'}
+          {/* Right-pointing tooltip arrow for tab controls */}
+          <div style={{
+            position: 'absolute',
+            right: '-6px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '0',
+            height: '0',
+            borderTop: '6px solid transparent',
+            borderBottom: '6px solid transparent',
+            borderLeft: '6px solid rgba(0, 0, 0, 0.9)'
+          }} />
+        </div>
+      )}
+
+      {showTabClearTooltip && (
+        <div style={{
+          position: 'fixed',
+          ...getTooltipPosition('tab-clear-btn'),
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          color: 'white',
+          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
+          borderRadius: '8px',
+          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
+          fontWeight: '600',
+          whiteSpace: 'nowrap',
+          zIndex: 99999,
+          pointerEvents: 'none',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
+          textAlign: 'center'
+        }}>
+          🗑 Clear all transcriptions
+          {/* Right-pointing tooltip arrow for tab controls */}
+          <div style={{
+            position: 'absolute',
+            right: '-6px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '0',
+            height: '0',
+            borderTop: '6px solid transparent',
+            borderBottom: '6px solid transparent',
+            borderLeft: '6px solid rgba(0, 0, 0, 0.9)'
+          }} />
+        </div>
+      )}
+
+      {showTabStatusTooltip && (
+        <div style={{
+          position: 'fixed',
+          ...getTooltipPosition('tab-status-indicator'),
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          color: 'white',
+          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
+          borderRadius: '8px',
+          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
+          fontWeight: '600',
+          whiteSpace: 'nowrap',
+          zIndex: 99999,
+          pointerEvents: 'none',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
+          textAlign: 'center'
+        }}>
+          🚫 Transcription status: {transcriptionError || transcriptionStatus}
+          {/* Right-pointing tooltip arrow for status indicator (positioned to left) */}
+          <div style={{
+            position: 'absolute',
+            right: '-6px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '0',
+            height: '0',
+            borderTop: '6px solid transparent',
+            borderBottom: '6px solid transparent',
+            borderLeft: '6px solid rgba(0, 0, 0, 0.9)'
           }} />
         </div>
       )}

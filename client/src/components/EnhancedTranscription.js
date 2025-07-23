@@ -474,23 +474,12 @@ const EnhancedTranscription = ({
                 borderRadius: '8px'
               }}
               onMouseEnter={() => {
-                console.log('🖱️ DIRECT MIC HOVER - Touch device?', isTouchDevice);
-                if (!isTouchDevice) {
-                  console.log('🖱️ DIRECT MIC: Starting tooltip delay');
-                  showTooltipWithDelay(setShowMicTooltip, micTooltipTimeout);
-                }
+                console.log('🖱️ SIMPLE MIC HOVER START');
+                showTooltipWithDelay(setShowMicTooltip, micTooltipTimeout);
               }}
               onMouseLeave={() => {
-                console.log('🖱️ DIRECT MIC HOVER END');
-                if (!isTouchDevice) {
-                  hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout);
-                }
-              }}
-              onTouchStart={() => {
-                console.log('👆 DIRECT MIC TOUCH START');
-                if (isTouchDevice) {
-                  setShowMicTooltip(true);
-                }
+                console.log('🖱️ SIMPLE MIC HOVER END');
+                hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout);
               }}
             >
               {isRecording ? '⏹ Stop Recording' : '🎤 Start Live Transcription'}
@@ -508,7 +497,14 @@ const EnhancedTranscription = ({
                 cursor: 'pointer',
                 display: 'inline-block'
               }}
-              {...createTooltipHandlers(setShowUploadTooltip, uploadTooltipTimeout, uploadPressTimeout, uploadAutoHideTimeout)}
+              onMouseEnter={() => {
+                console.log('🖱️ SIMPLE UPLOAD HOVER START');
+                showTooltipWithDelay(setShowUploadTooltip, uploadTooltipTimeout);
+              }}
+              onMouseLeave={() => {
+                console.log('🖱️ SIMPLE UPLOAD HOVER END');
+                hideTooltipImmediately(setShowUploadTooltip, uploadTooltipTimeout, uploadPressTimeout, uploadAutoHideTimeout);
+              }}
             >
               📁 Upload Audio File
               <input 
@@ -538,7 +534,14 @@ const EnhancedTranscription = ({
                 border: '3px solid #000',
                 borderRadius: '8px'
               }}
-              {...createTooltipHandlers(setShowClearTooltip, clearTooltipTimeout, clearPressTimeout, clearAutoHideTimeout)}
+              onMouseEnter={() => {
+                console.log('🖱️ SIMPLE CLEAR HOVER START');
+                showTooltipWithDelay(setShowClearTooltip, clearTooltipTimeout);
+              }}
+              onMouseLeave={() => {
+                console.log('🖱️ SIMPLE CLEAR HOVER END');
+                hideTooltipImmediately(setShowClearTooltip, clearTooltipTimeout, clearPressTimeout, clearAutoHideTimeout);
+              }}
             >
               🗑 Clear All Transcriptions
             </button>
