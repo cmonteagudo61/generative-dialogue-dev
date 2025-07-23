@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual-Transcript Speech Recognition Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .transcript-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .transcript-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .transcript-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .realtime-transcript {
+            height: 120px;
+            overflow-y: auto;
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+            border: 2px solid #3498db;
+        }
+
+        .final-transcript {
+            min-height: 300px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #27ae60;
+            font-size: 16px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .speaker-tag {
+            font-weight: bold;
+            color: #e74c3c;
+            margin-right: 8px;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 6px;
+            background: #ecf0f1;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e74c3c, #f39c12, #27ae60);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+
+        .status-info {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .chunk-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .processing-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .settings {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .setting-item label {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .setting-item input, .setting-item select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .transcript-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎙️ Dual-Transcript Speech Recognition</h1>
+        <p>Real-time feedback + High-quality final transcripts with speaker detection</p>
+    </div>
+
+    <div class="controls">
+        <div class="settings">
+            <h4>⚙️ Session Settings</h4>
+            <div class="setting-item">
+                <label>Chunk Duration (minutes):</label>
+                <select id="chunkDuration">
+                    <option value="2">2 minutes</option>
+                    <option value="3">3 minutes</option>
+                    <option value="5" selected>5 minutes</option>
+                    <option value="10">10 minutes</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>Speaker Detection:</label>
+                <select id="speakerDetection">
+                    <option value="auto" selected>Auto-detect speakers</option>
+                    <option value="2">2 speakers</option>
+                    <option value="3">3 speakers</option>
+                    <option value="4">4 speakers</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>Real-time Model:</label>
+                <select id="realtimeModel">
+                    <option value="nova-2" selected>Nova-2 (Fastest)</option>
+                    <option value="nova">Nova (Balanced)</option>
+                    <option value="enhanced">Enhanced (Accurate)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <button id="startSession" class="btn btn-success">🎯 Start Dialogue Session</button>
+            <button id="pauseSession" class="btn btn-warning" disabled>⏸️ Pause</button>
+            <button id="stopSession" class="btn btn-danger" disabled>⏹️ Stop & Process</button>
+            <button id="exportTranscript" class="btn btn-primary" disabled>📄 Export Final Transcript</button>
+        </div>
+
+        <div id="sessionStatus" class="status status-info" style="display: none;">
+            <span id="statusText">Ready to start</span>
+        </div>
+        
+        <div id="systemHealth" class="status status-info" style="font-size: 12px;">
+            <span>🔍 Checking system health...</span>
+        </div>
+
+        <div id="chunkInfo" class="chunk-info" style="display: none;">
+            <strong>Current Chunk:</strong> <span id="currentChunk">1</span> of <span id="totalChunks">?</span> 
+            | <strong>Duration:</strong> <span id="chunkTimer">00:00</span>
+            | <strong>Processing Queue:</strong> <span id="processingQueue">0</span> chunks
+        </div>
+    </div>
+
+    <div class="transcript-container">
+        <div class="transcript-section">
+            <h3>🔴 Real-time Transcript</h3>
+            <p style="margin-bottom: 15px; color: #7f8c8d; font-size: 14px;">
+                Immediate feedback for speakers (may contain errors)
+            </p>
+            <div id="realtimeTranscript" class="realtime-transcript">
+                <div style="color: #888;">Waiting for speech...</div>
+            </div>
+            <div class="confidence-bar">
+                <div id="realtimeConfidence" class="confidence-fill" style="width: 0%"></div>
+            </div>
+            <small style="color: #7f8c8d;">Confidence: <span id="confidenceText">0%</span></small>
+        </div>
+
+        <div class="transcript-section">
+            <h3>✅ Final Transcript</h3>
+            <p style="margin-bottom: 15px; color: #7f8c8d; font-size: 14px;">
+                High-quality, speaker-differentiated transcript for editing
+            </p>
+            <div id="finalTranscript" class="final-transcript" contenteditable="true" placeholder="Final transcript will appear here after processing...">
+            </div>
+            <div style="margin-top: 15px;">
+                <button id="editTranscript" class="btn btn-primary" disabled>✏️ Edit Mode</button>
+                <button id="sendToAI" class="btn btn-success" disabled>🤖 Send to AI Agents</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <h4>🔧 Test Individual Components</h4>
+        <div class="control-group">
+            <button id="testRealtime" class="btn btn-primary">🎤 Test Real-time Stream</button>
+            <button id="testBatch" class="btn btn-primary">📁 Test Batch Processing</button>
+            <button id="testSpeakerDetection" class="btn btn-primary">👥 Test Speaker Detection</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>🎯 Primary Test - Dual Stream Dialogue Session</h3>
+        <p>Real-time feedback + Final transcript with speaker detection</p>
+        
+        <div class="controls">
+            <label for="chunkDuration">Chunk Duration:</label>
+            <select id="chunkDuration">
+                <option value="0.25">15 seconds</option>
+                <option value="0.5">30 seconds</option>
+                <option value="1">1 minute</option>
+                <option value="2" selected>2 minutes</option>
+                <option value="5">5 minutes</option>
+            </select>
+            
+            <button id="startDialogueBtn" class="btn btn-primary">🎯 Start Dialogue Session</button>
+            <button id="pauseBtn" class="btn btn-secondary" disabled>⏸️ Pause</button>
+            <button id="stopBtn" class="btn btn-danger" disabled>⏹️ Stop Session</button>
+        </div>
+    </div>
+
+    <!-- NEW BATCH-ONLY TEST -->
+    <div class="test-section" style="border-top: 2px solid #444; margin-top: 20px; padding-top: 20px;">
+        <h3>🔧 Debug Test - Batch Recording Only</h3>
+        <p>Test batch recording in isolation (no real-time stream conflict)</p>
+        
+        <div class="controls">
+            <button id="testBatchBtn" class="btn btn-primary">🔧 Test Batch Only</button>
+            <button id="stopBatchBtn" class="btn btn-danger" disabled>⏹️ Stop Batch Test</button>
+        </div>
+    </div>
+
+    <script>
+        class DualTranscriptManager {
+            constructor() {
+                this.mediaRecorder = null;
+                this.audioChunks = [];
+                this.websocket = null;
+                this.isRecording = false;
+                this.isSimulating = false;
+                this.sessionStartTime = null;
+                this.currentChunkStartTime = null;
+                this.chunkNumber = 1;
+                this.processingQueue = [];
+                this.finalTranscriptParts = [];
+                this.healthCheckInterval = null;
+                this.systemHealth = {
+                    server: 'unknown',
+                    deepgram: 'unknown',
+                    websocket: 'unknown',
+                    lastCheck: null
+                };
+                
+                this.setupEventListeners();
+                this.updateUI();
+                this.startHealthMonitoring();
+            }
+
+            startHealthMonitoring() {
+                // Initial health check
+                this.performHealthCheck();
+                
+                // Set up periodic health checks every 30 seconds
+                this.healthCheckInterval = setInterval(() => {
+                    this.performHealthCheck();
+                }, 30000);
+            }
+
+            async performHealthCheck() {
+                try {
+                    const response = await fetch('/health');
+                    const health = await response.json();
+                    
+                    this.systemHealth = {
+                        server: response.ok ? 'healthy' : 'error',
+                        deepgram: health.deepgram || 'unknown',
+                        websocket: this.websocket?.readyState === WebSocket.OPEN ? 'connected' : 'disconnected',
+                        lastCheck: new Date().toISOString()
+                    };
+                    
+                    console.log('✅ Server health check:', health);
+                    this.updateHealthDisplay();
+                    
+                } catch (error) {
+                    console.error('❌ Health check failed:', error);
+                    this.systemHealth.server = 'error';
+                    this.systemHealth.lastCheck = new Date().toISOString();
+                    this.updateHealthDisplay();
+                }
+            }
+
+            updateHealthDisplay() {
+                // Update status in the UI if there's a health indicator
+                const healthElement = document.getElementById('systemHealth');
+                if (healthElement) {
+                    const statusIcon = this.systemHealth.server === 'healthy' ? '✅' : '❌';
+                    healthElement.innerHTML = `${statusIcon} System: ${this.systemHealth.server} | Deepgram: ${this.systemHealth.deepgram} | WebSocket: ${this.systemHealth.websocket}`;
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('startSession').addEventListener('click', () => this.startSession());
+                document.getElementById('pauseSession').addEventListener('click', () => this.pauseSession());
+                document.getElementById('stopSession').addEventListener('click', () => this.stopSession());
+                document.getElementById('exportTranscript').addEventListener('click', () => this.exportTranscript());
+                
+                document.getElementById('testRealtime').addEventListener('click', () => this.testRealtimeStream());
+                document.getElementById('testBatch').addEventListener('click', () => this.testBatchProcessing());
+                document.getElementById('testSpeakerDetection').addEventListener('click', () => this.testSpeakerDetection());
+                
+                document.getElementById('editTranscript').addEventListener('click', () => this.toggleEditMode());
+                document.getElementById('sendToAI').addEventListener('click', () => this.sendToAIAgents());
+            }
+
+            async startSession() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            sampleRate: 44100
+                        } 
+                    });
+                    
+                    this.sessionStartTime = Date.now();
+                    this.currentChunkStartTime = Date.now();
+                    this.chunkNumber = 1;
+                    this.isRecording = true;
+                    
+                    // Start real-time streaming
+                    this.startRealtimeStream(stream);
+                    
+                    // Start batch recording
+                    this.startBatchRecording(stream);
+                    
+                    // Start chunk timer
+                    this.startChunkTimer();
+                    
+                    this.updateStatus('🔴 Recording in progress...', 'info');
+                    this.updateUI();
+                    
+                } catch (error) {
+                    console.error('Error starting session:', error);
+                    this.updateStatus('❌ Failed to start session: ' + error.message, 'error');
+                }
+            }
+
+            startRealtimeStream(stream) {
+                // Real Deepgram WebSocket streaming via our server
+                this.connectRealTimeWebSocket(stream);
+            }
+
+            connectRealTimeWebSocket(stream) {
+                // Connect to our WebSocket endpoint
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/realtime`;
+                
+                this.websocket = new WebSocket(wsUrl);
+                
+                this.websocket.onopen = () => {
+                    console.log('🔌 Connected to real-time WebSocket');
+                    this.updateStatus('🔌 Connected to real-time transcription...', 'info');
+                    
+                    // Start streaming
+                    this.websocket.send(JSON.stringify({ type: 'start' }));
+                    this.startAudioStreaming(stream);
+                };
+                
+                this.websocket.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        
+                        if (data.type === 'transcript') {
+                            this.handleRealtimeTranscript(data);
+                        } else if (data.type === 'status') {
+                            console.log('Status:', data.message);
+                        } else if (data.type === 'error') {
+                            console.error('WebSocket error:', data.message);
+                            this.updateStatus(`❌ Real-time error: ${data.message}`, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error parsing WebSocket message:', error);
+                    }
+                };
+                
+                this.websocket.onerror = (error) => {
+                    console.error('WebSocket connection error:', error);
+                    this.updateStatus('❌ Real-time connection failed', 'error');
+                    
+                    // Attempt to fall back to simulation if real-time fails
+                    if (this.isRecording && !this.isSimulating) {
+                        console.log('🔄 Falling back to simulation due to WebSocket error');
+                        this.startSimulation();
+                    }
+                };
+                
+                this.websocket.onclose = (event) => {
+                    console.log('🔌 WebSocket connection closed', event.code, event.reason);
+                    this.updateStatus('🔌 Real-time connection closed', 'warning');
+                    
+                    // Attempt reconnection if unexpected closure
+                    if (this.isRecording && event.code !== 1000) { // 1000 = normal closure
+                        console.log('🔄 Attempting to reconnect WebSocket...');
+                        setTimeout(() => {
+                            if (this.isRecording) {
+                                this.connectWebSocket();
+                            }
+                        }, 2000);
+                    }
+                };
+            }
+            
+            startAudioStreaming(stream) {
+                console.log('🎵 Starting audio streaming for real-time transcription...');
+                
+                // Use AudioContext for better control over audio data
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                    sampleRate: 16000
+                });
+                
+                this.source = this.audioContext.createMediaStreamSource(stream);
+                this.processor = this.audioContext.createScriptProcessor(4096, 1, 1);
+                
+                this.processor.onaudioprocess = (event) => {
+                    if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                        const inputData = event.inputBuffer.getChannelData(0);
+                        
+                        // Convert float32 to int16 (linear16 format for Deepgram)
+                        const int16Array = new Int16Array(inputData.length);
+                        for (let i = 0; i < inputData.length; i++) {
+                            int16Array[i] = Math.max(-32768, Math.min(32767, Math.floor(inputData[i] * 32768)));
+                        }
+                        
+                        // Send raw audio data
+                        this.websocket.send(int16Array.buffer);
+                    }
+                };
+                
+                this.source.connect(this.processor);
+                this.processor.connect(this.audioContext.destination);
+                
+                console.log('🎤 Real-time audio streaming active');
+            }
+            
+            handleRealtimeTranscript(data) {
+                const realtimeElement = document.getElementById('realtimeTranscript');
+                const { transcript, confidence, isFinal } = data;
+                
+                if (!transcript || !transcript.trim()) return;
+                
+                console.log(`📝 Real-time transcript: "${transcript}" (confidence: ${confidence}, final: ${isFinal})`);
+                
+                // Update confidence meter
+                this.updateConfidence((confidence || 0) * 100);
+                
+                // Clear the "Waiting for speech..." message if it exists
+                if (realtimeElement.innerHTML.includes('Waiting for speech...')) {
+                    realtimeElement.innerHTML = '';
+                }
+                
+                if (isFinal) {
+                    // Add final transcript to the display
+                    const lines = realtimeElement.innerHTML.split('<br>').filter(line => line.trim());
+                    const timestamp = new Date().toLocaleTimeString();
+                    lines.push(`<div style="margin: 5px 0;"><span style="color: #00ff00; font-weight: bold;">[${timestamp}]</span> <span style="color: #fff;">${transcript}</span></div>`);
+                    
+                    // Keep only last 8 lines for better visibility  
+                    if (lines.length > 8) {
+                        lines.shift();
+                    }
+                    
+                    realtimeElement.innerHTML = lines.join('');
+                    realtimeElement.scrollTop = realtimeElement.scrollHeight;
+                } else {
+                    // Show interim results
+                    const lines = realtimeElement.innerHTML.split('<div').filter(line => line.trim());
+                    
+                    // Remove previous interim result if exists
+                    if (lines.length > 0 && lines[lines.length - 1].includes('[INTERIM]')) {
+                        lines.pop();
+                    }
+                    
+                    lines.push(`<div style="margin: 5px 0;"><span style="color: #888; font-style: italic;">[INTERIM]</span> <span style="color: #ccc;">${transcript}</span></div>`);
+                    
+                    // Keep only last 8 lines
+                    if (lines.length > 8) {
+                        lines.shift();
+                    }
+                    
+                    // Reconstruct the HTML properly
+                    const reconstructedHTML = lines.map(line => {
+                        if (line.startsWith('<div')) return line;
+                        return '<div' + line;
+                    }).join('');
+                    
+                    realtimeElement.innerHTML = reconstructedHTML;
+                    realtimeElement.scrollTop = realtimeElement.scrollHeight;
+                }
+            }
+
+            simulateRealtimeTranscription() {
+                // Fallback simulation for testing
+                const realtimeElement = document.getElementById('realtimeTranscript');
+                const phrases = [
+                    "Hello everyone, welcome to today's dialogue session.",
+                    "I think we should focus on the key issues first.",
+                    "That's an interesting perspective, can you elaborate?",
+                    "Let me build on what you just said about collaboration.",
+                    "I appreciate your input on this complex topic.",
+                    "How do others feel about this approach?",
+                    "This conversation is really valuable for our understanding.",
+                    "I'd like to hear more diverse viewpoints on this matter."
+                ];
+                
+                let currentLine = '';
+                let lineCount = 0;
+                let phraseIndex = 0;
+                
+                const addWord = () => {
+                    if (!this.isSimulating || (!this.isRecording && phraseIndex > 0)) return;
+                    
+                    if (Math.random() < 0.3 && phraseIndex < phrases.length) {
+                        const phrase = phrases[phraseIndex];
+                        const words = phrase.split(' ');
+                        
+                        words.forEach((word, index) => {
+                            setTimeout(() => {
+                                if (!this.isSimulating) return;
+                                
+                                currentLine += word + ' ';
+                                
+                                // Update confidence
+                                const confidence = Math.random() * 40 + 60; // 60-100%
+                                this.updateConfidence(confidence);
+                                
+                                // Check if line is getting too long
+                                if (currentLine.length > 60 || index === words.length - 1) {
+                                    const lines = realtimeElement.innerHTML.split('<br>').filter(line => line.trim());
+                                    lines.push(currentLine.trim());
+                                    
+                                    // Keep only last 6 lines (3 visible, 3 for context)
+                                    if (lines.length > 6) {
+                                        lines.shift();
+                                    }
+                                    
+                                    realtimeElement.innerHTML = lines.join('<br>');
+                                    realtimeElement.scrollTop = realtimeElement.scrollHeight;
+                                    
+                                    currentLine = '';
+                                    lineCount++;
+                                }
+                            }, index * 300);
+                        });
+                        
+                        phraseIndex++;
+                    }
+                    
+                    if (this.isSimulating) {
+                        setTimeout(addWord, Math.random() * 2000 + 1000);
+                    }
+                };
+                
+                addWord();
+            }
+
+            startBatchRecording(stream) {
+                console.log('🎬 Starting batch recording for final transcription...');
+                
+                // Try formats that Deepgram supports better
+                let mimeType;
+                const supportedFormats = [
+                    'audio/mp4',
+                    'audio/mpeg', 
+                    'audio/wav',
+                    'audio/ogg',
+                    'audio/webm'
+                ];
+                
+                // Use consistent format throughout session
+                if (!this.sessionMimeType) {
+                    for (const format of supportedFormats) {
+                        if (MediaRecorder.isTypeSupported(format)) {
+                            mimeType = format;
+                            console.log(`📊 Using ${format} format for Deepgram compatibility`);
+                            break;
+                        }
+                    }
+                    
+                    if (!mimeType) {
+                        mimeType = 'audio/webm'; // fallback
+                        console.warn('⚠️ Using WebM fallback format');
+                    }
+                    
+                    this.sessionMimeType = mimeType;
+                    console.log(`🔧 Session format locked to: ${this.sessionMimeType}`);
+                } else {
+                    mimeType = this.sessionMimeType;
+                    console.log(`🔧 Using consistent session format: ${mimeType}`);
+                }
+                
+                const mediaRecorderOptions = mimeType ? { mimeType } : {};
+                this.mediaRecorder = new MediaRecorder(stream, mediaRecorderOptions);
+                
+                // Store the current mime type for consistent blob creation
+                this.currentMimeType = mimeType;
+                
+                console.log(`🎥 MediaRecorder initialized with mimeType: ${mimeType || 'default'}`);
+                
+                this.audioChunks = [];
+                this.lastBatchProcess = Date.now();
+                this.shouldRestart = false;
+                
+                this.mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        this.audioChunks.push(event.data);
+                        console.log(`📝 Audio chunk received: ${event.data.size} bytes, total chunks: ${this.audioChunks.length}`);
+                        
+                        // Process chunks every 10 seconds instead of waiting for full duration
+                        const timeSinceLastProcess = Date.now() - this.lastBatchProcess;
+                        if (timeSinceLastProcess > 10000 && this.audioChunks.length > 0) { // 10 seconds
+                            console.log('⏰ Auto-processing chunk due to time interval');
+                            this.processAndRestartRecording();
+                        }
+                    }
+                };
+                
+                this.mediaRecorder.onstop = () => {
+                    console.log('⏹️ MediaRecorder stopped, processing chunk...');
+                    
+                    // Process any remaining audio when recording stops
+                    if (this.audioChunks.length > 0) {
+                        this.processCurrentChunk();
+                    }
+                    
+                    // If this was a planned restart (not final stop), restart recording
+                    if (this.isRecording && this.shouldRestart) {
+                        console.log('🔄 Restarting MediaRecorder for next chunk...');
+                        this.shouldRestart = false;
+                        
+                        // Small delay to ensure clean restart
+                        setTimeout(() => {
+                            if (this.isRecording && this.mediaRecorder.state === 'inactive') {
+                                this.mediaRecorder.start(1000);
+                                console.log('🎥 MediaRecorder restarted for next chunk');
+                            }
+                        }, 100);
+                    }
+                };
+                
+                this.mediaRecorder.onerror = (event) => {
+                    console.error('❌ MediaRecorder error:', event.error);
+                };
+                
+                // Start recording with frequent data events (every 1 second)
+                this.mediaRecorder.start(1000);
+                console.log('🎥 Batch MediaRecorder started with 1-second intervals');
+                
+                // Set up automatic chunking but more frequently
+                const chunkDuration = Math.min(parseInt(document.getElementById('chunkDuration').value) * 60 * 1000, 30000); // Max 30 seconds
+                this.chunkInterval = setInterval(() => {
+                    if (this.isRecording && this.audioChunks.length > 0) {
+                        console.log('⏰ Scheduled chunk processing...');
+                        this.processAndRestartRecording();
+                    }
+                }, chunkDuration);
+            }
+
+            processCurrentChunk() {
+                if (this.audioChunks.length > 0) {
+                    // Use the same format as MediaRecorder
+                    const chunkBlob = new Blob(this.audioChunks, { type: this.currentMimeType || 'audio/webm' });
+                    console.log(`🔄 Processing chunk ${this.chunkNumber}: ${chunkBlob.size} bytes from ${this.audioChunks.length} audio chunks`);
+                    console.log(`📋 Using format: ${this.currentMimeType || 'audio/webm'}`);
+                    
+                    // Validate chunk quality before processing
+                    const chunkDuration = Date.now() - this.currentChunkStartTime;
+                    const minChunkSize = 5000; // Minimum 5KB for a meaningful audio chunk
+                    const minDuration = 500; // Minimum 0.5 seconds
+                    
+                    if (chunkBlob.size < minChunkSize || chunkDuration < minDuration) {
+                        console.log(`⚠️ Skipping chunk ${this.chunkNumber}: too small (${chunkBlob.size} bytes, ${chunkDuration}ms) - likely corrupted`);
+                        this.audioChunks = [];
+                        return;
+                    }
+                    
+                    this.processingQueue.push({
+                        chunkNumber: this.chunkNumber,
+                        audioBlob: chunkBlob,
+                        startTime: this.currentChunkStartTime,
+                        endTime: Date.now()
+                    });
+                    
+                    // Process the chunk
+                    this.processBatchChunk(chunkBlob, this.chunkNumber);
+                    
+                    // Reset for next chunk
+                    this.audioChunks = [];
+                    this.chunkNumber++;
+                    this.currentChunkStartTime = Date.now();
+                    this.lastBatchProcess = Date.now();
+                    
+                    this.updateChunkInfo();
+                } else {
+                    console.log('⚠️ No audio chunks to process');
+                }
+            }
+
+            processAndRestartRecording() {
+                if (!this.isRecording) return;
+                
+                console.log('🔄 Processing chunk and restarting recording for clean audio files...');
+                
+                // Set flag to indicate this is a planned restart
+                this.shouldRestart = true;
+                
+                // Stop current recording to get a complete audio file
+                this.mediaRecorder.stop();
+                
+                // The onstop event will handle processing and restarting
+            }
+
+            async processBatchChunk(audioBlob, chunkNumber) {
+                try {
+                    console.log(`🚀 Sending chunk ${chunkNumber} to server for transcription...`);
+                    
+                    // Determine file extension based on mime type
+                    const fileExtension = this.currentMimeType?.includes('mp4') ? 'mp4' : 'webm';
+                    
+                    const formData = new FormData();
+                    formData.append('audio', audioBlob, `chunk_${chunkNumber}.${fileExtension}`);
+                    
+                    const response = await fetch('/api/transcribe', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    console.log(`📡 Response status for chunk ${chunkNumber}: ${response.status}`);
+                    
+                    if (!response.ok) {
+                        // Handle specific error cases
+                        if (response.status === 400) {
+                            const errorText = await response.text();
+                            console.log(`❌ Chunk ${chunkNumber} rejected by Deepgram (likely corrupted audio):`, errorText);
+                            throw new Error(`Audio chunk corrupted - skipping chunk ${chunkNumber}`);
+                        }
+                        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const result = await response.json();
+                    console.log(`📋 Transcription result for chunk ${chunkNumber}:`, result);
+                    
+                    if (result.success) {
+                        // Use real speaker diarization from Deepgram or fallback
+                        const processedTranscript = result.speakerTranscript || 
+                                                   this.addSpeakerDetection(result.transcript, chunkNumber);
+                        this.addToFinalTranscript(processedTranscript, chunkNumber);
+                        
+                        console.log(`✅ Chunk ${chunkNumber} processed successfully with ${result.utterances ? result.utterances.length : 0} utterances`);
+                        this.updateStatus(`✅ Processed chunk ${chunkNumber}`, 'info');
+                    } else {
+                        throw new Error(result.error || 'Transcription failed');
+                    }
+                    
+                    // Remove from processing queue
+                    this.processingQueue = this.processingQueue.filter(item => item.chunkNumber !== chunkNumber);
+                    this.updateChunkInfo();
+                    
+                } catch (error) {
+                    console.error(`❌ Error processing chunk ${chunkNumber}:`, error);
+                    this.updateStatus(`❌ Error processing chunk ${chunkNumber}: ${error.message}`, 'error');
+                    
+                    // Still remove from queue to prevent getting stuck
+                    this.processingQueue = this.processingQueue.filter(item => item.chunkNumber !== chunkNumber);
+                    this.updateChunkInfo();
+                }
+            }
+
+            addSpeakerDetection(transcript, chunkNumber) {
+                // Simulate speaker detection
+                const speakers = ['Speaker A', 'Speaker B', 'Speaker C'];
+                const sentences = transcript.split(/[.!?]+/).filter(s => s.trim());
+                
+                return sentences.map(sentence => {
+                    const speaker = speakers[Math.floor(Math.random() * speakers.length)];
+                    return `<span class="speaker-tag">[${speaker}]</span>${sentence.trim()}.`;
+                }).join('\n\n');
+            }
+
+            addToFinalTranscript(processedText, chunkNumber) {
+                this.finalTranscriptParts[chunkNumber - 1] = processedText;
+                
+                // Rebuild final transcript
+                const finalElement = document.getElementById('finalTranscript');
+                finalElement.innerHTML = this.finalTranscriptParts.filter(part => part).join('\n\n');
+                
+                // Enable edit/export buttons
+                document.getElementById('editTranscript').disabled = false;
+                document.getElementById('exportTranscript').disabled = false;
+                document.getElementById('sendToAI').disabled = false;
+            }
+
+            updateConfidence(confidence) {
+                const confidenceBar = document.getElementById('realtimeConfidence');
+                const confidenceText = document.getElementById('confidenceText');
+                
+                confidenceBar.style.width = confidence + '%';
+                confidenceText.textContent = Math.round(confidence) + '%';
+            }
+
+            startChunkTimer() {
+                this.timerInterval = setInterval(() => {
+                    if (this.isRecording && this.currentChunkStartTime) {
+                        const elapsed = Date.now() - this.currentChunkStartTime;
+                        const minutes = Math.floor(elapsed / 60000);
+                        const seconds = Math.floor((elapsed % 60000) / 1000);
+                        
+                        document.getElementById('chunkTimer').textContent = 
+                            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    }
+                }, 1000);
+            }
+
+            updateChunkInfo() {
+                const chunkInfo = document.getElementById('chunkInfo');
+                const chunkDuration = parseInt(document.getElementById('chunkDuration').value);
+                const totalExpectedTime = 10; // 10 minutes typical dialogue
+                const expectedChunks = Math.ceil(totalExpectedTime / chunkDuration);
+                
+                document.getElementById('currentChunk').textContent = this.chunkNumber;
+                document.getElementById('totalChunks').textContent = expectedChunks;
+                document.getElementById('processingQueue').textContent = this.processingQueue.length;
+                
+                chunkInfo.style.display = 'block';
+            }
+
+            pauseSession() {
+                // Implementation for pause functionality
+                this.updateStatus('⏸️ Session paused', 'warning');
+            }
+
+            stopSession() {
+                this.isRecording = false;
+                this.isSimulating = false;
+                this.shouldRestart = false; // Prevent automatic restart
+                
+                console.log('🛑 Stopping session and cleaning up resources...');
+                
+                // Clear intervals first
+                if (this.chunkInterval) {
+                    clearInterval(this.chunkInterval);
+                    this.chunkInterval = null;
+                }
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                }
+                
+                // Stop batch recording gracefully
+                if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+                    // Only process chunk if it has meaningful audio data (>1 second of recording)
+                    const currentChunkDuration = Date.now() - this.currentChunkStartTime;
+                    if (currentChunkDuration > 1000 && this.audioChunks.length > 1) {
+                        console.log('📝 Processing final chunk before stopping...');
+                        this.mediaRecorder.stop(); // This will trigger processCurrentChunk
+                    } else {
+                        console.log('⚠️ Discarding incomplete final chunk (too short)');
+                        this.mediaRecorder.stop();
+                        this.audioChunks = []; // Clear short/empty chunks
+                    }
+                } else if (this.mediaRecorder && this.mediaRecorder.state === 'paused') {
+                    this.mediaRecorder.stop();
+                }
+                
+                // Stop real-time streaming
+                if (this.processor) {
+                    this.processor.disconnect();
+                }
+                if (this.source) {
+                    this.source.disconnect();
+                }
+                if (this.audioContext && this.audioContext.state !== 'closed') {
+                    this.audioContext.close();
+                }
+                
+                // Stop WebSocket
+                if (this.websocket) {
+                    this.websocket.send(JSON.stringify({ type: 'stop' }));
+                    this.websocket.close();
+                    this.websocket = null;
+                }
+                
+                // Clear intervals
+                clearInterval(this.chunkInterval);
+                clearInterval(this.timerInterval);
+                
+                // Stop health monitoring
+                if (this.healthCheckInterval) {
+                    clearInterval(this.healthCheckInterval);
+                    this.healthCheckInterval = null;
+                }
+                
+                // Process final chunk
+                if (this.audioChunks.length > 0) {
+                    this.processCurrentChunk();
+                }
+                
+                this.updateStatus('✅ Session completed. Processing final chunks...', 'info');
+                this.updateUI();
+            }
+
+            exportTranscript() {
+                const finalText = this.finalTranscriptParts.join('\n\n');
+                const blob = new Blob([finalText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `dialogue_transcript_${new Date().toISOString().slice(0, 19)}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            toggleEditMode() {
+                const finalElement = document.getElementById('finalTranscript');
+                const button = document.getElementById('editTranscript');
+                
+                if (finalElement.contentEditable === 'true') {
+                    finalElement.contentEditable = 'false';
+                    finalElement.style.border = '2px solid #27ae60';
+                    button.textContent = '✏️ Edit Mode';
+                    button.className = 'btn btn-primary';
+                } else {
+                    finalElement.contentEditable = 'true';
+                    finalElement.style.border = '2px solid #e74c3c';
+                    finalElement.focus();
+                    button.textContent = '💾 Save Changes';
+                    button.className = 'btn btn-success';
+                }
+            }
+
+            async sendToAIAgents() {
+                const finalElement = document.getElementById('finalTranscript');
+                const finalText = finalElement.textContent || finalElement.innerText;
+                
+                if (!finalText.trim()) {
+                    this.updateStatus('❌ No transcript available for AI processing', 'error');
+                    return;
+                }
+                
+                this.updateStatus('🤖 Sending transcript to AI agents for processing...', 'info');
+                
+                try {
+                    const response = await fetch('/api/ai-agents', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            transcript: finalText,
+                            agents: ['summary', 'sentiment', 'keywords', 'action_items']
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.displayAIResults(result.results);
+                        this.updateStatus('✅ AI agent processing completed successfully!', 'info');
+                    } else {
+                        throw new Error(result.error || 'AI processing failed');
+                    }
+                } catch (error) {
+                    console.error('AI agent processing error:', error);
+                    this.updateStatus(`❌ AI processing failed: ${error.message}`, 'error');
+                }
+            }
+            
+            displayAIResults(results) {
+                // Create or update AI results display
+                let resultsContainer = document.getElementById('aiResults');
+                if (!resultsContainer) {
+                    resultsContainer = document.createElement('div');
+                    resultsContainer.id = 'aiResults';
+                    resultsContainer.className = 'ai-results-container';
+                    resultsContainer.innerHTML = `
+                        <div class="ai-results-header">
+                            <h3>🤖 AI Agent Processing Results</h3>
+                            <button onclick="this.parentElement.parentElement.style.display='none'" class="btn btn-sm">✖️ Close</button>
+                        </div>
+                        <div class="ai-results-content"></div>
+                    `;
+                    
+                    // Add CSS styles
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .ai-results-container {
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            width: 80%;
+                            max-width: 800px;
+                            max-height: 80vh;
+                            background: white;
+                            border-radius: 12px;
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                            z-index: 1000;
+                            overflow-y: auto;
+                        }
+                        .ai-results-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 20px;
+                            border-bottom: 1px solid #eee;
+                            background: #f8f9fa;
+                            border-radius: 12px 12px 0 0;
+                        }
+                        .ai-results-content {
+                            padding: 20px;
+                        }
+                        .ai-result-section {
+                            margin-bottom: 20px;
+                            padding: 15px;
+                            border: 1px solid #ddd;
+                            border-radius: 8px;
+                        }
+                        .ai-result-title {
+                            font-weight: bold;
+                            color: #2c3e50;
+                            margin-bottom: 10px;
+                        }
+                        .keyword-list {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 5px;
+                        }
+                        .keyword-tag {
+                            background: #3498db;
+                            color: white;
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            font-size: 12px;
+                        }
+                        .action-item {
+                            padding: 8px;
+                            margin: 5px 0;
+                            background: #f8f9fa;
+                            border-left: 3px solid #27ae60;
+                            border-radius: 4px;
+                        }
+                        .btn-sm {
+                            padding: 5px 10px;
+                            font-size: 12px;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                    
+                    document.body.appendChild(resultsContainer);
+                }
+                
+                const contentDiv = resultsContainer.querySelector('.ai-results-content');
+                let content = '';
+                
+                // Display Summary
+                if (results.summary) {
+                    content += `
+                        <div class="ai-result-section">
+                            <div class="ai-result-title">📄 Summary</div>
+                            <p><strong>Overview:</strong> ${results.summary.summary}</p>
+                            <p><strong>Duration:</strong> ${results.summary.duration}</p>
+                            <div><strong>Key Points:</strong></div>
+                            <ul>
+                                ${results.summary.keyPoints.map(point => `<li>${point}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Display Sentiment
+                if (results.sentiment) {
+                    const sentimentColor = results.sentiment.overall === 'positive' ? '#27ae60' : 
+                                         results.sentiment.overall === 'negative' ? '#e74c3c' : '#f39c12';
+                    content += `
+                        <div class="ai-result-section">
+                            <div class="ai-result-title">💭 Sentiment Analysis</div>
+                            <p><strong>Overall:</strong> <span style="color: ${sentimentColor}; text-transform: capitalize;">${results.sentiment.overall}</span></p>
+                            <p><strong>Confidence:</strong> ${Math.round(results.sentiment.confidence * 100)}%</p>
+                            <p><strong>Positive indicators:</strong> ${results.sentiment.positive} | <strong>Negative indicators:</strong> ${results.sentiment.negative}</p>
+                        </div>
+                    `;
+                }
+                
+                // Display Keywords
+                if (results.keywords) {
+                    content += `
+                        <div class="ai-result-section">
+                            <div class="ai-result-title">🔑 Key Topics</div>
+                            <div class="keyword-list">
+                                ${results.keywords.map(item => `<span class="keyword-tag">${item.word} (${item.count})</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Display Action Items
+                if (results.actionItems) {
+                    content += `
+                        <div class="ai-result-section">
+                            <div class="ai-result-title">✅ Action Items</div>
+                            ${results.actionItems.map(item => `
+                                <div class="action-item">
+                                    <strong>Priority: ${item.priority.toUpperCase()}</strong><br>
+                                    ${item.text}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                
+                contentDiv.innerHTML = content;
+                resultsContainer.style.display = 'block';
+            }
+
+            // Test methods
+            async testRealtimeStream() {
+                this.updateStatus('🧪 Testing real-time stream simulation...', 'info');
+                
+                // Start the real-time simulation
+                this.isSimulating = true;
+                this.simulateRealtimeTranscription();
+                
+                setTimeout(() => {
+                    this.isSimulating = false;
+                    this.updateStatus('✅ Real-time stream test completed!', 'info');
+                }, 10000);
+            }
+
+            async testBatchProcessing() {
+                this.updateStatus('🧪 Testing batch processing with file upload...', 'info');
+                
+                // Create file upload dialog
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'audio/*';
+                
+                input.onchange = async (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        this.updateStatus(`📁 Processing file: ${file.name}`, 'info');
+                        
+                        try {
+                            const formData = new FormData();
+                            formData.append('audio', file);
+                            
+                            const response = await fetch('/api/transcribe', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                const processedTranscript = this.addSpeakerDetection(result.transcript, 'TEST');
+                                document.getElementById('finalTranscript').innerHTML = processedTranscript;
+                                this.updateStatus('✅ Batch processing test successful!', 'info');
+                                
+                                // Enable buttons
+                                document.getElementById('editTranscript').disabled = false;
+                                document.getElementById('exportTranscript').disabled = false;
+                                document.getElementById('sendToAI').disabled = false;
+                            } else {
+                                throw new Error(result.error || 'Transcription failed');
+                            }
+                        } catch (error) {
+                            this.updateStatus(`❌ Batch processing test failed: ${error.message}`, 'error');
+                        }
+                    }
+                };
+                
+                input.click();
+            }
+
+            async testSpeakerDetection() {
+                this.updateStatus('🧪 Testing speaker detection with sample text...', 'info');
+                
+                // Sample transcript to demonstrate speaker detection
+                const sampleTranscript = "Welcome everyone to today's meeting. I'm excited to discuss our project progress. That sounds great, I think we've made significant improvements since last week. I agree, the new features are working well. Let me share some feedback from our users. The response has been very positive overall.";
+                
+                setTimeout(() => {
+                    const processedTranscript = this.addSpeakerDetection(sampleTranscript, 'DEMO');
+                    document.getElementById('finalTranscript').innerHTML = processedTranscript;
+                    
+                    this.updateStatus('✅ Speaker detection test completed! Check the final transcript.', 'info');
+                    
+                    // Enable buttons
+                    document.getElementById('editTranscript').disabled = false;
+                    document.getElementById('exportTranscript').disabled = false;
+                    document.getElementById('sendToAI').disabled = false;
+                }, 2000);
+            }
+
+            updateStatus(message, type) {
+                const statusElement = document.getElementById('sessionStatus');
+                const statusText = document.getElementById('statusText');
+                
+                statusElement.className = `status status-${type}`;
+                statusText.innerHTML = message;
+                statusElement.style.display = 'block';
+            }
+
+            updateUI() {
+                const isRecording = this.isRecording;
+                
+                document.getElementById('startSession').disabled = isRecording;
+                document.getElementById('pauseSession').disabled = !isRecording;
+                document.getElementById('stopSession').disabled = !isRecording;
+            }
+
+            // NEW: Batch-only test methods to isolate recording issues
+            async startBatchOnlyTest() {
+                console.log('🔧 Starting batch-only test (no real-time stream)...');
+                
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            sampleRate: 16000,
+                            channelCount: 1,
+                            echoCancellation: true,
+                            noiseSuppression: true
+                        }
+                    });
+                    
+                    // Initialize for batch-only mode
+                    this.sessionStartTime = Date.now();
+                    this.currentChunkStartTime = Date.now();
+                    this.chunkNumber = 1;
+                    this.isRecording = true;
+                    this.audioChunks = [];
+                    this.finalTranscriptParts = [];
+                    this.processingQueue = [];
+                    
+                    // ONLY start batch recording (no real-time stream)
+                    console.log('🎬 Starting ONLY batch recording...');
+                    this.startBatchRecording(stream);
+                    
+                    // Update UI
+                    document.getElementById('testBatchBtn').disabled = true;
+                    document.getElementById('stopBatchBtn').disabled = false;
+                    
+                    this.updateStatus('🔴 Batch-only recording in progress (10-second chunks)...', 'info');
+                    console.log('✅ Batch-only test started successfully');
+                    
+                } catch (error) {
+                    console.error('❌ Error starting batch-only test:', error);
+                    this.updateStatus('❌ Failed to start batch-only test: ' + error.message, 'error');
+                }
+            }
+
+            stopBatchOnlyTest() {
+                console.log('🛑 Stopping batch-only test...');
+                
+                this.isRecording = false;
+                
+                if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+                    this.mediaRecorder.stop();
+                }
+                
+                clearInterval(this.chunkInterval);
+                
+                // Process final chunk if any
+                if (this.audioChunks.length > 0) {
+                    console.log('🔄 Processing final chunk...');
+                    this.processCurrentChunk();
+                }
+                
+                // Update UI
+                document.getElementById('testBatchBtn').disabled = false;
+                document.getElementById('stopBatchBtn').disabled = true;
+                
+                this.updateStatus('⏹️ Batch-only test stopped', 'info');
+                console.log('✅ Batch-only test stopped successfully');
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            window.transcriptManager = new DualTranscriptManager();
+            
+            // Add event listeners for new batch-only test buttons
+            document.getElementById('testBatchBtn').addEventListener('click', () => {
+                window.transcriptManager.startBatchOnlyTest();
+            });
+            
+            document.getElementById('stopBatchBtn').addEventListener('click', () => {
+                window.transcriptManager.stopBatchOnlyTest();
+            });
+            
+            // Health check
+            fetch('/health')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('✅ Server health check:', data);
+                })
+                .catch(error => {
+                    console.error('❌ Server health check failed:', error);
+                });
+        });
+    </script>
+</body>
+</html> 

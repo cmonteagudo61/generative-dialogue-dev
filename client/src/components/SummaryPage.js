@@ -97,6 +97,7 @@ const SummaryPage = ({
 
   return (
     <AppLayout
+      activeSize={1}
       viewMode="summary"
       participantCount={participantCount}
       canGoBack={canGoBack}

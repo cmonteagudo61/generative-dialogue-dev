@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Format Test</title>
+</head>
+<body>
+    <h1>🧪 Audio Format Test for Deepgram</h1>
+    
+    <button id="testBtn">Test Current WebM Format</button>
+    <button id="uploadBtn">Test with Known Good Audio File</button>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+
+    <script>
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                
+                const chunks = [];
+                recorder.ondataavailable = (e) => chunks.push(e.data);
+                
+                recorder.onstop = async () => {
+                    const blob = new Blob(chunks, { type: 'audio/webm' });
+                    await testWithDeepgram(blob, 'Current WebM');
+                };
+                
+                recorder.start();
+                setTimeout(() => recorder.stop(), 3000); // 3 second test
+                
+                document.getElementById('result').innerHTML = '🎤 Recording 3 seconds...';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '❌ Error: ' + error.message;
+            }
+        });
+        
+        document.getElementById('uploadBtn').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'audio/*';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await testWithDeepgram(file, `Uploaded ${file.type}`);
+                }
+            };
+            input.click();
+        });
+        
+        async function testWithDeepgram(audioData, formatName) {
+            try {
+                document.getElementById('result').innerHTML = `🚀 Testing ${formatName} with Deepgram...`;
+                
+                const formData = new FormData();
+                formData.append('audio', audioData, `test.${formatName.includes('webm') ? 'webm' : 'audio'}`);
+                
+                const response = await fetch('/api/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    document.getElementById('result').innerHTML = `
+                        ✅ <strong>${formatName} WORKS!</strong><br>
+                        📝 Transcript: "${result.transcript}"<br>
+                        🎭 Speakers: ${result.utterances ? result.utterances.length : 0}
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        ❌ <strong>${formatName} FAILED</strong><br>
+                        📡 Status: ${response.status}<br>
+                        🚨 Error: ${result.error || result.err_msg || 'Unknown error'}
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `❌ Request failed: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html> 

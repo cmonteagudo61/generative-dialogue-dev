@@ -97,6 +97,7 @@ const TalkAboutPage = ({
 
   return (
     <AppLayout 
+      activeSize={1}
       viewMode="reflection"
       participantCount={participantCount}
       onViewModeChange={() => {}}

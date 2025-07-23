@@ -1,0 +1,5310 @@
+🚀 Speech Recognition Test Server starting...
+📍 Port: 8080
+🔑 Deepgram API: ✅ Configured
+🚀 Speech Recognition Test Server running!
+📍 URL: http://localhost:8080
+🔑 Deepgram API: ✅ Configured
+🔌 WebSocket: ✅ Real-time streaming enabled
+🤖 AI Agents: ✅ Processing endpoints ready
+🎯 Ready for testing!
+🔌 WebSocket connection established for real-time transcription
+📨 Received command: { type: 'start' }
+🚀 Connecting to Deepgram WebSocket...
+⚠️ Deepgram WebSocket not ready, dropping audio data
+✅ Connected to Deepgram WebSocket
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.024,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Up the compute." (confidence: 0.6665039, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.048,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Up the compute, maybe five or six times." (confidence: 0.9863281, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.816,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Up the compute maybe five or six times in the" (confidence: 0.98535156, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.84,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Up the compute maybe five or six times in the same power envelope and may" (confidence: 0.9921875, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.864,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Up the compute maybe five or six times in the same power envelope, and maybe that's enough." (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.61,
+  start: 0,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Up the compute maybe five or six times in the same power envelope, and maybe that's enough." (confidence: 0.99902344, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.0219998,
+  start: 4.61,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "These are all" (confidence: 0.9873047, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.9299998,
+  start: 4.61,
+  is_final: true,
+  speech_final: true,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "These are all" (confidence: 0.9980469, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.1399999,
+  start: 6.54,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "a lot of these decisions" (confidence: 0.9970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.1640005,
+  start: 6.54,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "a lot of these decisions you know, there's this" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.1879997,
+  start: 6.54,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "a lot of these decisions you know, there's this trade off between the amount of" (confidence: 0.9980469, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_1.mp4 (166998 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166998 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166998,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.212,
+  start: 6.54,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "a lot of these decisions you know, there's this trade off between the amount of compute you use and the act" (confidence: 0.99853516, final: false)
+📡 Deepgram response status: 200
+✅ Transcription successful: "Up the compute maybe five or six times in the same power envelope, and maybe that's enough. These are all a lot of these decisions, you know, there's this trade off between the amount of compute."
+🎭 Found 3 speaker utterances
+🎭 Processed speaker transcript with 3 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.88,
+  start: 6.54,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "a lot of these decisions you know, there's this trade off between the amount of compute you use and the accuracy" (confidence: 1, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.1239996,
+  start: 11.42,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and the" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.1479998,
+  start: 11.42,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and the and that trade off" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.172,
+  start: 11.42,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and the and that trade off between compute and" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.196,
+  start: 11.42,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and the and that trade off between compute and accuracy as a technology" (confidence: 0.9970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.9699993,
+  start: 11.42,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and the and that trade off between compute and accuracy as the technology gets better" (confidence: 1, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.0180016,
+  start: 16.39,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you just you get" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.0419998,
+  start: 16.39,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you just you get better and better accuracy." (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.066,
+  start: 16.39,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you just you get better and better accuracy at a fixed amount of" (confidence: 1, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_2.mp4 (165390 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 165390 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 165390,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.8340015,
+  start: 16.39,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you just you get better and better accuracy at a fixed amount of compute. So" (confidence: 1, final: false)
+📡 Deepgram response status: 400
+❌ Deepgram error: 400 {
+  err_code: 'Bad Request',
+  err_msg: 'Bad Request: failed to process audio: corrupt or unsupported data',
+  request_id: 'a0503dc0-2d8f-4cb3-b3ee-168ccd2942f9'
+}
+❌ Response headers: {
+  'content-type': 'application/json',
+  'dg-error': 'Bad Request: failed to process audio: corrupt or unsupported data',
+  vary: 'origin, access-control-request-method, access-control-request-headers, accept-encoding',
+  'access-control-allow-credentials': 'true',
+  'access-control-expose-headers': 'dg-model-name,dg-model-uuid,dg-char-count,dg-request-id,dg-error',
+  'dg-request-id': 'a0503dc0-2d8f-4cb3-b3ee-168ccd2942f9',
+  'content-length': '156',
+  date: 'Tue, 01 Jul 2025 02:43:25 GMT'
+}
+❌ Full response data: {"err_code":"Bad Request","err_msg":"Bad Request: failed to process audio: corrupt or unsupported data","request_id":"a0503dc0-2d8f-4cb3-b3ee-168ccd2942f9"}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.858,
+  start: 16.39,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you just you get better and better accuracy at a fixed amount of compute. So" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.4300003,
+  start: 16.39,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you just you get better and better accuracy at a fixed amount of compute. So" (confidence: 1, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.196001,
+  start: 20.82,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and and it" (confidence: 0.9873047, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.2200012,
+  start: 20.82,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and and it and you don't know." (confidence: 0.9921875, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.2439995,
+  start: 20.82,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and and it and you don't know exactly what that number is gonna" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.2679996,
+  start: 20.82,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and and it and you don't know exactly what that number is gonna be. So" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.1000004,
+  start: 20.82,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and and it and you don't know exactly what that number is gonna be." (confidence: 1, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.1900005,
+  start: 24.92,
+  is_final: true,
+  speech_final: true,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "So" (confidence: 1, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.0259991,
+  start: 26.11,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "there's" (confidence: 0.9951172, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.0499992,
+  start: 26.11,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "there's there's a there's" (confidence: 0.9946289, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0739994,
+  start: 26.11,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "there's there's a there's an economic incentive" (confidence: 0.9975586, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_3.mp4 (148851 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 148851 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 148851,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response status: 400
+❌ Deepgram error: 400 {
+  err_code: 'Bad Request',
+  err_msg: 'Bad Request: failed to process audio: corrupt or unsupported data',
+  request_id: '66e3cb5f-943d-4dd2-bd7f-fed78ee4e0a2'
+}
+❌ Response headers: {
+  'content-type': 'application/json',
+  'dg-error': 'Bad Request: failed to process audio: corrupt or unsupported data',
+  vary: 'origin, access-control-request-method, access-control-request-headers, accept-encoding',
+  'access-control-allow-credentials': 'true',
+  'access-control-expose-headers': 'dg-model-name,dg-model-uuid,dg-char-count,dg-request-id,dg-error',
+  'dg-request-id': '66e3cb5f-943d-4dd2-bd7f-fed78ee4e0a2',
+  'content-length': '156',
+  date: 'Tue, 01 Jul 2025 02:43:34 GMT'
+}
+❌ Full response data: {"err_code":"Bad Request","err_msg":"Bad Request: failed to process audio: corrupt or unsupported data","request_id":"66e3cb5f-943d-4dd2-bd7f-fed78ee4e0a2"}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.0979996,
+  start: 26.11,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "there's there's a there's an economic incentive to put off the decision" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.67,
+  start: 26.11,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "there's there's a there's an economic incentive to put off the decision until you" (confidence: 1, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.2199993,
+  start: 30.78,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "understand what the trade off" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.2439976,
+  start: 30.78,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "understand what the trade off is gonna be as well as" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.2679996,
+  start: 30.78,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "understand what the trade off is gonna be as well as possible. But you" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.291998,
+  start: 30.78,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "understand what the trade off is gonna be as well as possible, but you wanna be able to make" (confidence: 0.9970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0199986,
+  start: 30.78,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "understand what the trade off is gonna be as well as possible." (confidence: 1, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.040001,
+  start: 33.8,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "But you wanna be able to make the decision" (confidence: 0.9970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0639992,
+  start: 33.8,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "But you wanna be able to make the decision soon enough that" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.170002,
+  start: 33.8,
+  is_final: true,
+  speech_final: true,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "But you wanna be able to make the decision soon enough that you can" (confidence: 0.99902344, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.197998,
+  start: 37.97,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "that you can do the thing." (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.7999992,
+  start: 37.97,
+  is_final: true,
+  speech_final: true,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "that you can do the thing." (confidence: 1, final: true)
+📡 Received transcription request...
+📁 Original file: chunk_4.mp4 (181929 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 181929 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 181929,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.4459991,
+  start: 39.77,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "And not" (confidence: 1, final: false)
+📡 Deepgram response status: 400
+❌ Deepgram error: 400 {
+  err_code: 'Bad Request',
+  err_msg: 'Bad Request: failed to process audio: corrupt or unsupported data',
+  request_id: '0d4e8317-1fb5-466a-a186-8b9d6de6e928'
+}
+❌ Response headers: {
+  'content-type': 'application/json',
+  'dg-error': 'Bad Request: failed to process audio: corrupt or unsupported data',
+  vary: 'origin, access-control-request-method, access-control-request-headers, accept-encoding',
+  'access-control-allow-credentials': 'true',
+  'access-control-expose-headers': 'dg-model-name,dg-model-uuid,dg-char-count,dg-request-id,dg-error',
+  'dg-request-id': '0d4e8317-1fb5-466a-a186-8b9d6de6e928',
+  'content-length': '156',
+  date: 'Tue, 01 Jul 2025 02:43:45 GMT'
+}
+❌ Full response data: {"err_code":"Bad Request","err_msg":"Bad Request: failed to process audio: corrupt or unsupported data","request_id":"0d4e8317-1fb5-466a-a186-8b9d6de6e928"}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.6899986,
+  start: 39.77,
+  is_final: true,
+  speech_final: true,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "And not you know, it" (confidence: 0.99902344, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.0600014,
+  start: 42.46,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, my my" (confidence: 0.9970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.0839996,
+  start: 42.46,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, my my math says that" (confidence: 0.99609375, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.1080017,
+  start: 42.46,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, my my math says that when Tesla starts scaling" (confidence: 0.98461914, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.132,
+  start: 42.46,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, my my math says that when Tesla starts scaling, they're gonna" (confidence: 0.9941406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.6399994,
+  start: 42.46,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, my my math says that when Tesla starts scaling, they're gonna" (confidence: 0.9941406, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.0279999,
+  start: 47.1,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "they're going to" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.052002,
+  start: 47.1,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'b91c71c7-550d-4078-a67c-9adf2bf3b9d6',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "they're going to net. So" (confidence: 1, final: false)
+📨 Received command: { type: 'stop' }
+📡 Received transcription request...
+📁 Original file: chunk_5.mp4 (132312 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 132312 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 132312,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+🔌 Client WebSocket disconnected
+📡 Received transcription request...
+📁 Original file: chunk_6.mp4 (10737 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 10737 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 10737,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+🔌 Deepgram WebSocket closed (code: 1005, reason: )
+📡 Deepgram response status: 400
+❌ Deepgram error: 400 {
+  err_code: 'Bad Request',
+  err_msg: 'Bad Request: failed to process audio: corrupt or unsupported data',
+  request_id: 'c655e0b0-2b00-4e01-81a6-49b7f6aca15b'
+}
+❌ Response headers: {
+  'content-type': 'application/json',
+  'dg-error': 'Bad Request: failed to process audio: corrupt or unsupported data',
+  vary: 'origin, access-control-request-method, access-control-request-headers, accept-encoding',
+  'access-control-allow-credentials': 'true',
+  'access-control-expose-headers': 'dg-model-name,dg-model-uuid,dg-char-count,dg-request-id,dg-error',
+  'dg-request-id': 'c655e0b0-2b00-4e01-81a6-49b7f6aca15b',
+  'content-length': '156',
+  date: 'Tue, 01 Jul 2025 02:43:53 GMT'
+}
+❌ Full response data: {"err_code":"Bad Request","err_msg":"Bad Request: failed to process audio: corrupt or unsupported data","request_id":"c655e0b0-2b00-4e01-81a6-49b7f6aca15b"}
+📡 Deepgram response status: 400
+❌ Deepgram error: 400 {
+  err_code: 'Bad Request',
+  err_msg: 'Bad Request: failed to process audio: corrupt or unsupported data',
+  request_id: '16f91579-2c34-4d02-a460-db5ce24aa456'
+}
+❌ Response headers: {
+  'content-type': 'application/json',
+  'dg-error': 'Bad Request: failed to process audio: corrupt or unsupported data',
+  vary: 'origin, access-control-request-method, access-control-request-headers, accept-encoding',
+  'access-control-allow-credentials': 'true',
+  'access-control-expose-headers': 'dg-model-name,dg-model-uuid,dg-char-count,dg-request-id,dg-error',
+  'dg-request-id': '16f91579-2c34-4d02-a460-db5ce24aa456',
+  'content-length': '156',
+  date: 'Tue, 01 Jul 2025 02:43:54 GMT'
+}
+❌ Full response data: {"err_code":"Bad Request","err_msg":"Bad Request: failed to process audio: corrupt or unsupported data","request_id":"16f91579-2c34-4d02-a460-db5ce24aa456"}
+🚀 Speech Recognition Test Server starting...
+📍 Port: 8080
+🔑 Deepgram API: ✅ Configured
+🚀 Speech Recognition Test Server running!
+📍 URL: http://localhost:8080
+🔑 Deepgram API: ✅ Configured
+🔌 WebSocket: ✅ Real-time streaming enabled
+🤖 AI Agents: ✅ Processing endpoints ready
+🎯 Ready for testing!
+🔌 WebSocket connection established for real-time transcription
+📨 Received command: { type: 'start' }
+🚀 Connecting to Deepgram WebSocket...
+⚠️ Deepgram WebSocket not ready, dropping audio data
+✅ Connected to Deepgram WebSocket
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.024,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Factor ten" (confidence: 0.9838867, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.048,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Doctor ten. Yeah." (confidence: 0.6405029, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.072,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Factor 10. Yeah. You know? You can predict" (confidence: 0.8491211, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.096,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Factor 10. Yeah. You know? You can predict way ahead of time. Well, I" (confidence: 0.84472656, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.02,
+  start: 0,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Factor 10. Yeah. You know? You can predict" (confidence: 0.8432617, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.1,
+  start: 3.02,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "way ahead of time. Well, I know how this is. This is" (confidence: 0.98095703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.124,
+  start: 3.02,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "way ahead of time. Well, I know how this is. It's gonna go away." (confidence: 0.9892578, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.1480002,
+  start: 3.02,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "way ahead of time. Well, I know how this is. It's gonna go away when this time becomes." (confidence: 0.96972656, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.97,
+  start: 3.02,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "way ahead of time. Well, I know how this is initially gonna go away when this time becomes. Right? Yep." (confidence: 0.96875, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.4820004,
+  start: 7.99,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "And this is like" (confidence: 0.99316406, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_1.mp4 (166684 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166684 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166684,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response status: 200
+✅ Transcription successful: "Factor 10. Yeah. You can predict way ahead of time. Well, I know how this is gonna go when when this time remounts. Right? Yep. And this is, like, when it's"
+🎭 Found 3 speaker utterances
+🎭 Processed speaker transcript with 3 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.5060005,
+  start: 7.99,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "And this is like, it's a weird" (confidence: 0.99316406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.5300007,
+  start: 7.99,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "And this is like, it's a weird space." (confidence: 0.9941406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.554,
+  start: 7.99,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "And this is like it's a weird space that we're in." (confidence: 0.9921875, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.88,
+  start: 7.99,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "And this is like it's a weird space that we're in." (confidence: 0.99316406, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.21,
+  start: 12.87,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "That this" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.2340002,
+  start: 12.87,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "That that that it's" (confidence: 0.92578125, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.2580004,
+  start: 12.87,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "That that that it's rare when you" (confidence: 0.9536133, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.2820005,
+  start: 12.87,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "That that that it's rare when you have, you know, more" (confidence: 0.9790039, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.71,
+  start: 12.87,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "That that that it's rare when you have" (confidence: 0.98291016, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.3400002,
+  start: 16.58,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, market opportunity" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.3640003,
+  start: 16.58,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, market opportunities where" (confidence: 0.99609375, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.3880005,
+  start: 16.58,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, market opportunities where" (confidence: 0.9951172, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_2.mp4 (166998 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166998 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166998,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response status: 200
+✅ Transcription successful: "Space that we're in that that that it it it's rare when you have, you know, market opportunities where"
+🎭 Found 4 speaker utterances
+🎭 Processed speaker transcript with 4 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.4120007,
+  start: 16.58,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, market opportunities where, you know," (confidence: 0.9863281, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.4699993,
+  start: 16.58,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, market opportunities where" (confidence: 0.9941406, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.710001,
+  start: 20.05,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, the plus one" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.7340012,
+  start: 20.05,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, the plus minus is a factor. It's" (confidence: 0.9863281, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.7580013,
+  start: 20.05,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, the plus minus is a factor of 10 as opposed to ten" (confidence: 0.9941406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.7820015,
+  start: 20.05,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, the plus minus is a factor of 10 as opposed to 10% of it." (confidence: 0.98828125, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.8600006,
+  start: 20.05,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you know, the plus minus is a factor of 10 as opposed to 10%." (confidence: 0.9892578, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.1779995,
+  start: 23.91,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.2019997,
+  start: 23.91,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Of it. But it it the thing" (confidence: 0.8457031, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.2259998,
+  start: 23.91,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Of it. But it it the thing is it makes certain" (confidence: 0.9838867, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.25,
+  start: 23.91,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Of it. But it it the thing is it makes certain certain things get really" (confidence: 0.98291016, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.5,
+  start: 23.91,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Of it. But it it the thing is it makes certain certain" (confidence: 0.99121094, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.5179996,
+  start: 27.41,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "things get really easy to predict." (confidence: 0.9941406, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_3.mp4 (150459 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 150459 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 150459,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.5419998,
+  start: 27.41,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "things get really easy to predict when you're in that situation." (confidence: 0.99609375, final: false)
+📡 Deepgram response status: 200
+✅ Transcription successful: "You know, the plus minus is a factor of 10 as opposed to 10%. But it the thing is, it makes certain certain things get really easy to predict when you're in that"
+🎭 Found 2 speaker utterances
+🎭 Processed speaker transcript with 2 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.566,
+  start: 27.41,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "things get really easy to predict when you're in that situation, and that's or" (confidence: 0.9921875, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.59,
+  start: 27.41,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "things get really easy to predict when you're in that situation, and that's where we are now." (confidence: 0.99121094, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.3099995,
+  start: 27.41,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "things get really easy to predict when you're in that situation, and that's where we are now." (confidence: 0.99316406, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.0480022,
+  start: 31.72,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.328001,
+  start: 31.72,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "So if" (confidence: 0.9658203, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.3519993,
+  start: 31.72,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "So if if those things are true" (confidence: 0.9980469, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.3760014,
+  start: 31.72,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "So if if those things are true, I think my" (confidence: 0.9980469, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.8900013,
+  start: 31.72,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "So if if those things are true, I think" (confidence: 0.9970703, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.2539978,
+  start: 35.61,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "I guess," (confidence: 0.9980469, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.2779999,
+  start: 35.61,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "I guess, I'll start with the" (confidence: 0.9980469, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.3019981,
+  start: 35.61,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "I guess, I'll start with the" (confidence: 0.9980469, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.326,
+  start: 35.61,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "I guess, I'll start with the" (confidence: 0.99902344, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_4.mp4 (166998 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166998 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166998,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response status: 200
+✅ Transcription successful: "And then that's where we are now. So if if those things are true, I think I guess, I'll start with the"
+🎭 Found 3 speaker utterances
+🎭 Processed speaker transcript with 3 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0499992,
+  start: 35.61,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "I guess, I'll start with the" (confidence: 0.9980469, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.0439987,
+  start: 38.66,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "camera" (confidence: 0.99609375, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0680008,
+  start: 38.66,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "camera" (confidence: 0.9980469, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.091999,
+  start: 38.66,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "camera. It" (confidence: 0.9604492, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0499992,
+  start: 38.66,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "camera" (confidence: 0.9980469, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.066002,
+  start: 41.71,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "issue" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.3460007,
+  start: 41.71,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "issue. Yeah. To me, it's" (confidence: 0.95581055, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.3700027,
+  start: 41.71,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "issue. Yeah. To me, it added complexity" (confidence: 0.984375, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0200005,
+  start: 41.71,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "issue. Yeah. To me," (confidence: 0.99316406, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.118,
+  start: 44.73,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "the added complexity of doing a" (confidence: 0.9770508, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.142002,
+  start: 44.73,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "the added complexity of doing a camera" (confidence: 0.9902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.1660004,
+  start: 44.73,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "the added complexity of doing a camera installation" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0200005,
+  start: 44.73,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "the added complexity of doing a camera" (confidence: 0.99121094, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.1699982,
+  start: 47.75,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "installation, I guess, may" (confidence: 0.94921875, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_5.mp4 (166998 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166998 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166998,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.1940002,
+  start: 47.75,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "installation, I guess maybe there's a very simple" (confidence: 0.9921875, final: false)
+📡 Deepgram response status: 200
+✅ Transcription successful: "Issue. You know, to me, out of complexity of doing a camera installation, I guess maybe"
+🎭 Found 5 speaker utterances
+🎭 Processed speaker transcript with 5 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.2179985,
+  start: 47.75,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "installation, I guess maybe They're so very simple. You know, they just copy" (confidence: 0.9013672, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.5600014,
+  start: 47.75,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "installation, I guess maybe They're so very simple. You know, they just" (confidence: 0.890625, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.6819992,
+  start: 51.31,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "pop out and the new one snaps in." (confidence: 0.84814453, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.0200005,
+  start: 51.31,
+  is_final: true,
+  speech_final: true,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "pop out and the new one snaps in." (confidence: 0.88134766, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.197998,
+  start: 53.33,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "On all" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.2219963,
+  start: 53.33,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "On all all the cameras." (confidence: 0.9770508, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.2459984,
+  start: 53.33,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "On all All the cameras. All of them. All Yeah." (confidence: 0.9819336, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.2699966,
+  start: 53.33,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "On all All the cameras. All of them. All Yeah. They're designed to be replicas." (confidence: 0.98828125, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.039997,
+  start: 53.33,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "On all All the cameras. All of them. All Yeah. They're designed to be" (confidence: 0.99365234, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.2540016,
+  start: 57.37,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "replaced if you fail around." (confidence: 0.94189453, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.0219994,
+  start: 57.37,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "replaced if you fail around." (confidence: 0.91845703, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_6.mp4 (148525 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 148525 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 148525,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0460014,
+  start: 57.37,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "replaced if you fail around. So how much set" (confidence: 0.95947266, final: false)
+📡 Deepgram response status: 200
+✅ Transcription successful: "Simple. You know, they just pop out the new one's Snapchat on all all the cameras. All of them? All of them? Yeah. They're designed to be replaced if you fail around."
+🎭 Found 2 speaker utterances
+🎭 Processed speaker transcript with 2 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.0699997,
+  start: 57.37,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "replaced if you fail around. So how much set like, if you if it was thirty" (confidence: 0.95532227, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.6200027,
+  start: 57.37,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "replaced if you fail around. So how much set like, if you" (confidence: 0.9797363, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.473999,
+  start: 60.99,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "it was thirty minutes before to" (confidence: 0.9970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.4979973,
+  start: 60.99,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "it was thirty minutes before to do a complete" (confidence: 0.98095703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.5219994,
+  start: 60.99,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "it was thirty minutes before to do a computer, it'd go into" (confidence: 0.984375, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.5460014,
+  start: 60.99,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "it was thirty minutes before to do a computer if going into a computer and cameras, do you go" (confidence: 0.9819336, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.4999962,
+  start: 60.99,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "it was thirty minutes before to do a computer, it'd go into" (confidence: 0.984375, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.5579987,
+  start: 64.49,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "cameras, do you go from thirty minutes" (confidence: 0.94384766, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.5820007,
+  start: 64.49,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "cameras, you go from thirty minutes to an hour." (confidence: 0.99316406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.6060028,
+  start: 64.49,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and cameras, do you go from thirty minutes to an hour forty five? And" (confidence: 0.99316406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.8860016,
+  start: 64.49,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and cameras, do you go from thirty minutes to an hour, 45 an hour? Okay. Yeah." (confidence: 0.9875488, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.970001,
+  start: 64.49,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "and cameras, do you go from thirty minutes to an hour, 45 an hour? Okay." (confidence: 0.9873047, final: true)
+📡 Received transcription request...
+📁 Original file: chunk_7.mp4 (166998 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166998 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166998,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response status: 200
+✅ Transcription successful: "Much is that like, if you if it was thirty minutes before to do a computer in order to do computer cameras, do you go from thirty minutes to an hour forty five an hour? Okay. So"
+🎭 Found 2 speaker utterances
+🎭 Processed speaker transcript with 2 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.1959991,
+  start: 69.46,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "So, yes, like," (confidence: 0.8964844, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.9640045,
+  start: 69.46,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: 'f9725a7a-282d-483e-97ed-a936c0ca5dcc',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "So yes. Like, but" (confidence: 0.9199219, final: false)
+📨 Received command: { type: 'stop' }
+📡 Received transcription request...
+📁 Original file: chunk_8.mp4 (641 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 641 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 641,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+🔌 Client WebSocket disconnected
+📡 Received transcription request...
+📁 Original file: chunk_9.mp4 (28243 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 28243 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 28243,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response status: 400
+❌ Deepgram error: 400 {
+  err_code: 'Bad Request',
+  err_msg: 'Bad Request: failed to process audio: corrupt or unsupported data',
+  request_id: 'd4e6bc73-ef1f-4018-a05a-f853aae88b4b'
+}
+❌ Response headers: {
+  'content-type': 'application/json',
+  'dg-error': 'Bad Request: failed to process audio: corrupt or unsupported data',
+  vary: 'origin, access-control-request-method, access-control-request-headers, accept-encoding',
+  'access-control-allow-credentials': 'true',
+  'access-control-expose-headers': 'dg-model-name,dg-model-uuid,dg-char-count,dg-request-id,dg-error',
+  'dg-request-id': 'd4e6bc73-ef1f-4018-a05a-f853aae88b4b',
+  'content-length': '156',
+  date: 'Tue, 01 Jul 2025 02:50:05 GMT'
+}
+❌ Full response data: {"err_code":"Bad Request","err_msg":"Bad Request: failed to process audio: corrupt or unsupported data","request_id":"d4e6bc73-ef1f-4018-a05a-f853aae88b4b"}
+🔌 Deepgram WebSocket closed (code: 1005, reason: )
+📡 Deepgram response status: 200
+✅ Transcription successful: ""
+🎭 Found 0 speaker utterances
+⚠️ No utterances found, using fallback speaker detection
+🤖 Received AI agent processing request...
+🤖 Processed transcript with 4 AI agents
+🔌 WebSocket connection established for real-time transcription
+📨 Received command: { type: 'start' }
+🚀 Connecting to Deepgram WebSocket...
+✅ Connected to Deepgram WebSocket
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.024,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.048,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.072,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.096,
+  start: 0,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.02,
+  start: 0,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.1,
+  start: 3.02,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.124,
+  start: 3.02,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.1480002,
+  start: 3.02,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.02,
+  start: 3.02,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.1520004,
+  start: 6.04,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "They're not gonna waste their lifetime" (confidence: 0.9941406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.6800003,
+  start: 6.04,
+  is_final: true,
+  speech_final: true,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "They're not gonna waste their life." (confidence: 0.99121094, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.0079994,
+  start: 8.72,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Received transcription request...
+📁 Original file: chunk_1.mp4 (166998 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166998 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166998,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.0319996,
+  start: 8.72,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response status: 200
+✅ Transcription successful: "They're not gonna waste their lifetime."
+🎭 Found 1 speaker utterances
+🎭 Processed speaker transcript with 1 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0559998,
+  start: 8.72,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Yeah. And there" (confidence: 0.94970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.16,
+  start: 8.72,
+  is_final: true,
+  speech_final: true,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Yeah. And there is, like, a" (confidence: 0.9550781, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.1999998,
+  start: 12.88,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "a level" (confidence: 0.9970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.2480001,
+  start: 12.88,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "a level of" (confidence: 0.99609375, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.2720003,
+  start: 12.88,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "a level of" (confidence: 0.9921875, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.0099993,
+  start: 12.88,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "a level of" (confidence: 0.9941406, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.0300007,
+  start: 16.89,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.0540009,
+  start: 16.89,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "I think," (confidence: 0.97509766, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.078001,
+  start: 16.89,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "I think, credibility that's" (confidence: 0.9926758, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_2.mp4 (166998 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166998 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166998,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.102001,
+  start: 16.89,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "I think, credibility that's given, you know, people" (confidence: 0.9873047, final: false)
+📡 Deepgram response status: 200
+✅ Transcription successful: "Yeah. And there is, like, a a level of, I think, credibility that's given."
+🎭 Found 4 speaker utterances
+🎭 Processed speaker transcript with 4 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.7300014,
+  start: 16.89,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "I think, credibility that's given. You know, people just gonna see" (confidence: 0.93969727, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.4200001,
+  start: 21.62,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "like if someone's really with" (confidence: 0.64697266, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.4439983,
+  start: 21.62,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "like, if someone's really willing to" (confidence: 0.9951172, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.4679985,
+  start: 21.62,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "like, if someone's really willing to spend this much" (confidence: 0.9970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.4919987,
+  start: 21.62,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "like, if someone's really willing to spend this much time, energy," (confidence: 0.9970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.9699993,
+  start: 21.62,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "like, if someone's really willing to spend this much time, energy, and effort" (confidence: 0.9980469, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.0580006,
+  start: 26.59,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "waste it" (confidence: 0.9873047, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.0820007,
+  start: 26.59,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "hoisted on this thing? It must be" (confidence: 0.9980469, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.619999,
+  start: 26.59,
+  is_final: true,
+  speech_final: true,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "hoisted on this thing, it must be" (confidence: 0.9980469, final: true)
+📡 Received transcription request...
+📁 Original file: chunk_3.mp4 (150459 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 150459 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 150459,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.2540016,
+  start: 29.21,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "for a legit" (confidence: 0.52783203, final: false)
+📡 Deepgram response status: 200
+✅ Transcription successful: "Just gonna assume, like, if someone's really willing to spend this much time and energy and effort wasted on this thing, it must be for"
+🎭 Found 4 speaker utterances
+🎭 Processed speaker transcript with 4 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.2780018,
+  start: 29.21,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "for a legitimate reason." (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.302002,
+  start: 29.21,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "for a legitimate reason. And" (confidence: 0.99316406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.326,
+  start: 29.21,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "for a legitimate reason. And even if, like, even if you don't" (confidence: 0.9873047, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.2299995,
+  start: 29.21,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "for a legitimate reason. And" (confidence: 0.9951172, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.8640022,
+  start: 32.44,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "know, but even if you don't understand it," (confidence: 0.99121094, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.8880005,
+  start: 32.44,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "know, but even if you don't understand it and you see some" (confidence: 0.94189453, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.9120026,
+  start: 32.44,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "know, but even if you don't understand it and you see someone who's willing to sacrifice" (confidence: 0.98291016, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.936001,
+  start: 32.44,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "know, but even if you don't understand it and you see someone who's willing to sacrifice a lot" (confidence: 0.98828125, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.8500023,
+  start: 32.44,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "know, but even if you don't understand it and you see someone who's willing to sacrifice a lot," (confidence: 0.9838867, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.1100006,
+  start: 37.29,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "in" (confidence: 0.69873047, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.1339989,
+  start: 37.29,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "And whether you process" (confidence: 0.9770508, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_4.mp4 (166998 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166998 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166998,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.158001,
+  start: 37.29,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "And whether you process it as sacrifice or" (confidence: 0.984375, final: false)
+📡 Deepgram response status: 200
+✅ Transcription successful: "A legitimate reason. And, you know, like, even if you don't understand it and you see someone who's willing to sacrifice a lot, and whether you process it as sacrifice"
+🎭 Found 2 speaker utterances
+🎭 Processed speaker transcript with 2 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.181999,
+  start: 37.29,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "in whether you process it as sacrifice or not, but just the" (confidence: 0.9604492, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.950001,
+  start: 37.29,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "in whether you process it as sacrifice or not, but just the" (confidence: 0.9536133, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.579998,
+  start: 37.29,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "in whether you process it as sacrifice or not, but just the" (confidence: 0.95703125, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.1380005,
+  start: 41.87,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "that's" (confidence: 0.9284668, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.1620026,
+  start: 41.87,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "that's a much more" (confidence: 0.9892578, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.1860008,
+  start: 41.87,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "that's a much more prone to thinking it just" (confidence: 0.85839844, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.210003,
+  start: 41.87,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "that's a much more prone to thinking it just the cycle lot the cycle" (confidence: 0.9404297, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.1100006,
+  start: 41.87,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "that's a much more front to thinking it to" (confidence: 0.7758789, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.1240005,
+  start: 44.98,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "the psycholog the psychology of propaganda" (confidence: 0.9951172, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.1479988,
+  start: 44.98,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "the psycholot the psychology of propaganda applies. Right?" (confidence: 0.9951172, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.172001,
+  start: 44.98,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "the psycholot the psychology of propaganda applies. Right? And" (confidence: 0.9819336, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.760002,
+  start: 44.98,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "the psycholot the psychology of propaganda applies. Right? And, you know," (confidence: 0.97509766, final: true)
+📡 Received transcription request...
+📁 Original file: chunk_5.mp4 (166998 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166998 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166998,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.2039986,
+  start: 49.74,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "know," (confidence: 0.9567871, final: false)
+📡 Deepgram response status: 200
+✅ Transcription successful: "But just the that's I'm much more prone to thinking it. Just the cycle of the psychology of propaganda applies. Right? And, you know,"
+🎭 Found 4 speaker utterances
+🎭 Processed speaker transcript with 4 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.2279968,
+  start: 49.74,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "know, like," (confidence: 0.98339844, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.251999,
+  start: 49.74,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "know, like, even if you know something" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.275997,
+  start: 49.74,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "know, like, even if you know something is false, if you keep hearing" (confidence: 0.99609375, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.079998,
+  start: 49.74,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "know, like, even if you know some" (confidence: 0.99609375, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.9640007,
+  start: 52.82,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "is false, if you keep hearing it over and over and" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.987999,
+  start: 52.82,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "is false, if you keep hearing it over and over and over again, you start to make" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.012001,
+  start: 52.82,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "is false, if you keep hearing it over and over and over again, you start to make room for it in your" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.524002,
+  start: 52.82,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "is false, if you keep hearing it over and over and over again, you start to make room for it, and you're" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.369999,
+  start: 52.82,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "is false, if you keep hearing it over and over and over again, you start to make room for it, and you're" (confidence: 1, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.1780014,
+  start: 57.19,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "in your evaluation" (confidence: 0.9707031, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.2019997,
+  start: 57.19,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "in your evaluation of things. Like," (confidence: 0.99902344, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_6.mp4 (148525 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 148525 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 148525,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.4820023,
+  start: 57.19,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "in your evaluation of things. Like, you know, you" (confidence: 0.99316406, final: false)
+📡 Deepgram response status: 200
+✅ Transcription successful: "Like, even if you know something is false, if you keep hearing it over and over and over again, you start to make room for it in your in your evaluation of things. Like, you know,"
+🎭 Found 1 speaker utterances
+🎭 Processed speaker transcript with 1 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.25,
+  start: 57.19,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "in your evaluation of things. Like, you know, you can you" (confidence: 0.9970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.0699997,
+  start: 57.19,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "in your evaluation of things. Like, you know, you can" (confidence: 0.9980469, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.2040024,
+  start: 61.26,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you can rationally know" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.2280006,
+  start: 61.26,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you can rationally know something is false." (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.2520027,
+  start: 61.26,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you can rationally know something is false, and you still find yourself" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.276005,
+  start: 61.26,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you can rationally know something is false, and you still find yourself being persuaded by" (confidence: 1, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0200005,
+  start: 61.26,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "you can rationally know something is false, and you still find" (confidence: 0.99316406, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.024002,
+  start: 64.28,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "yourself being persuaded by it if you judge" (confidence: 0.9941406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0480042,
+  start: 64.28,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "something persuaded by it if you just get exposed" (confidence: 0.9951172, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.0719986,
+  start: 64.28,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "something persuaded by it if you just get exposed to that the story." (confidence: 0.9970703, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.9100037,
+  start: 64.28,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "something persuaded by it if you just get exposed to that the story enough." (confidence: 0.9980469, final: true)
+📡 Received transcription request...
+📁 Original file: chunk_7.mp4 (166998 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166998 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166998,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.2099991,
+  start: 69.19,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "One question" (confidence: 0.9902344, final: false)
+📡 Deepgram response status: 200
+✅ Transcription successful: "You can you can rationally know something is false, and you still find yourself being persuaded by it if you just get exposed to that the story enough. One question."
+🎭 Found 2 speaker utterances
+🎭 Processed speaker transcript with 2 utterances
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.2340012,
+  start: 69.19,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "One question, you'll still" (confidence: 0.91381836, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.2579956,
+  start: 69.19,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "When questioned, you'll still refute it." (confidence: 0.94873047, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.7699966,
+  start: 69.19,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "One question, you'll still refute it. But" (confidence: 0.82128906, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.7939987,
+  start: 69.19,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "When questioned, you'll still refute it, but your unconscious action" (confidence: 0.9902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.5899963,
+  start: 69.19,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "One question, you'll still refute it." (confidence: 0.8769531, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.4599991,
+  start: 72.78,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Your unconscious actions" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.4840012,
+  start: 72.78,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Your unconscious actions will be making space for" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.5080032,
+  start: 72.78,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "Your unconscious actions will be making space for it and allowing for the" (confidence: 0.9921875, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.5319977,
+  start: 72.78,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "But your unconscious actions will be making space for it and allowing for the possibility that it might be" (confidence: 0.99316406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0200043,
+  start: 72.78,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "But your unconscious actions will be making space for it and allowing" (confidence: 0.9980469, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.0239944,
+  start: 75.8,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "for the possibility that it might be true" (confidence: 0.99902344, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 2.5359955,
+  start: 75.8,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "for the possibility that it might be true, you know," (confidence: 0.9941406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 3.0479965,
+  start: 75.8,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "for the possibility that it might be true, you know," (confidence: 0.9941406, final: false)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.0719986,
+  start: 75.8,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "for the possibility that it might be true. You know?" (confidence: 0.99609375, final: false)
+📡 Received transcription request...
+📁 Original file: chunk_8.mp4 (166998 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 166998 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 166998,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 4.0399933,
+  start: 75.8,
+  is_final: true,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📝 Transcript: "for the possibility that it might be true. You know?" (confidence: 0.9970703, final: true)
+📡 Deepgram response: {
+  type: 'Results',
+  channel_index: [ 0, 1 ],
+  duration: 1.0560074,
+  start: 79.84,
+  is_final: false,
+  speech_final: false,
+  channel: { alternatives: [ [Object] ] },
+  metadata: {
+    request_id: '7f7f13b1-4410-4da8-9c3f-48b698365955',
+    model_info: {
+      name: '2-general-nova',
+      version: '2024-01-11.36317',
+      arch: 'nova-2'
+    },
+    model_uuid: '1dbdfb4d-85b2-4659-9831-16b3c76229aa'
+  },
+  from_finalize: false
+}
+📨 Received command: { type: 'stop' }
+🔌 Client WebSocket disconnected
+📡 Received transcription request...
+📁 Original file: chunk_9.mp4 (14279 bytes)
+📋 Original Content-Type: audio/mp4
+🔄 Adjusted MP4 Content-Type to: audio/mp4
+📤 Final Content-Type for Deepgram: audio/mp4
+🚀 Sending 14279 bytes to Deepgram with speaker diarization...
+📋 Request headers: {
+  'Content-Type': 'audio/mp4',
+  'Content-Length': 14279,
+  Authorization: 'Token 88714a9f03...'
+}
+📍 Request URL: https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true&language=en&diarize=true&utterances=true
+🔌 Deepgram WebSocket closed (code: 1005, reason: )
+📡 Deepgram response status: 200
+✅ Transcription successful: "Still refute it, but your unconscious actions will be making space for it and allowing for the possibility that it might be true. Yep."
+🎭 Found 1 speaker utterances
+🎭 Processed speaker transcript with 1 utterances
+📡 Deepgram response status: 200
+✅ Transcription successful: ""
+🎭 Found 0 speaker utterances
+⚠️ No utterances found, using fallback speaker detection

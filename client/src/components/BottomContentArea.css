@@ -649,6 +649,11 @@
     transform: translateX(-30px); /* Move icons 30px to the left */
   }
   
+  /* Move Loop icon specifically 4px further left in mobile view */
+  .control-button#loop-btn {
+    transform: translateX(-4px); /* Additional 4px left movement for Loop icon */
+  }
+  
 
   
   .timer-cell {
@@ -703,7 +708,7 @@
   box-sizing: border-box; /* Include padding in width calculation */
 }
 
-/* Desktop view - make all buttons identical and responsive */
+/* Desktop view - rectangular buttons with text content */
 .transcription-control-btn:not(.primary):not(.warning):not(.danger) {
   width: clamp(150px, 20vw, 200px) !important; /* Responsive width: 150px-200px */
   height: 36px !important;
@@ -720,6 +725,8 @@
   border: none !important;
   flex-shrink: 1 !important; /* Allow buttons to shrink */
 }
+
+
 
 /* Transcription status with grey background and blue border to match buttons */
 .transcription-status {
@@ -754,14 +761,14 @@
   flex-shrink: 1 !important;
 }
 
-  /* Mobile view - clean simple approach */
+  /* Mobile view - square icons only, hide text */
 @media (max-width: 1100px) {
   .tab-controls-right {
     gap: 2px;
   }
   
   .transcription-control-btn {
-    width: 32px !important;
+    width: 32px !important; /* Square size for mobile */
     height: 32px !important;
     padding: 0 !important;
     display: flex !important;
@@ -769,13 +776,14 @@
     justify-content: center !important;
   }
 
+  /* Hide text labels on mobile, show only icons */
   .transcription-control-btn .btn-text,
   .transcription-status .status-text {
     display: none;
   }
 
   .transcription-status {
-    width: 32px !important;
+    width: 32px !important; /* Square size for mobile */
     height: 32px !important;
     padding: 0 !important;
     display: flex !important;
@@ -789,7 +797,7 @@
   
   /* Force the disconnected status to be square like the buttons */
   .transcription-status.disconnected {
-    width: 32px !important;
+    width: 32px !important; /* Square size for mobile */
     height: 32px !important;
     padding: 0 !important;
     display: flex !important;

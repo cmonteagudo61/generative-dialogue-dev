@@ -14,7 +14,7 @@ import './IndividualReflectionPage.css';
   developmentMode
 }) => {
   // Set up for SELF view to make self button active
-  const [activeView, setActiveView] = useState('1'); // Self view (1 person)
+  const [activeView, setActiveView] = useState(1); // Self view (1 person)
   
   // Get participant count from VideoProvider
   const { realParticipants } = useVideo();

@@ -35,8 +35,8 @@ const HarvestPageInner = ({
   totalPages,
   developmentMode
 }) => {
-  // Start with community view for HARVEST stage
-  const [activeView, setActiveView] = useState('all'); // Community view
+  // Start with individual view for HARVEST stage
+  const [activeView, setActiveView] = useState(1); // Individual view (makes icon blue)
   const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [isLoopActive, setIsLoopActive] = useState(false);
   
@@ -75,14 +75,10 @@ const HarvestPageInner = ({
       defaultActiveTab="we" // WE tab is active
       isHarvestClosing={true}
     >
-      <VideoGrid 
-        participants={participants} 
-        layout={layout} 
-        showLabels={layout !== 'community'} 
-        selectedParticipants={selectedParticipants}
-        onParticipantSelect={handleParticipantSelect}
-        isLoopActive={isLoopActive}
-      />
+      {/* Hide video feed for individual harvest activities */}
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', background: '#f5f5f5', color: '#666' }}>
+        Individual Activity - No Video Feed Required
+      </div>
       {error && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
     </AppLayout>
   );
