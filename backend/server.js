@@ -363,7 +363,7 @@ app.ws('/realtime', (ws, req) => {
     }
     
     // Configure for PCM audio format from Web Audio API with enhanced accuracy
-    const deepgramUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=en-US&smart_format=true&interim_results=true&channels=1&diarize=true&utterances=true&encoding=linear16&sample_rate=16000&punctuate=true&profanity_filter=false&redact=false&filler_words=false&multichannel=false&alternatives=1&numerals=true&endpointing=300&vad_events=false`;
+    const deepgramUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=en-US&smart_format=true&interim_results=true&channels=1&diarize=true&utterances=true&encoding=opus&punctuate=true&profanity_filter=false&redact=false&filler_words=false&multichannel=false&alternatives=1&numerals=true&endpointing=300&vad_events=false`;
     
     console.log('🚀 Connecting to Deepgram WebSocket with enhanced diarization...');
     console.log(`🔑 Using API key: ${API_KEY.substring(0, 8)}...`);
@@ -467,31 +467,66 @@ app.ws('/realtime', (ws, req) => {
   
   // Handle incoming messages from client
   ws.on('message', (message) => {
+    // More robust check for JSON vs binary data
+    let isJSON = false;
+    
     try {
-      const data = JSON.parse(message);
-      console.log('📨 Received command:', data);
-      
-      if (data.type === 'start') {
-        connectToDeepgram();
-      } else if (data.type === 'stop') {
-        if (deepgramWs && isConnected) {
-          deepgramWs.close();
+      // Only attempt JSON detection on reasonably small messages
+      if (message.length < 1000) {
+        if (message instanceof Buffer) {
+          // Check if buffer contains valid UTF-8 text that looks like JSON
+          const text = message.toString('utf8');
+          // Verify it's valid UTF-8 and starts/ends with JSON delimiters
+          if (text === message.toString() && text.trim().startsWith('{') && text.trim().includes('}')) {
+            JSON.parse(text); // Validate it's actually valid JSON
+            isJSON = true;
+          }
+        } else if (typeof message === 'string') {
+          const trimmed = message.trim();
+          if (trimmed.startsWith('{') && trimmed.includes('}')) {
+            JSON.parse(trimmed); // Validate it's actually valid JSON
+            isJSON = true;
+          }
         }
-        if (keepAliveInterval) {
-          clearInterval(keepAliveInterval);
-          keepAliveInterval = null;
-        }
-      } else if (data.type === 'ping') {
-        ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
       }
     } catch (error) {
-      console.error('❌ Error parsing client message:', error);
-      // Send audio data directly to Deepgram if not JSON
-      if (deepgramWs && isConnected && message instanceof Buffer) {
-        deepgramWs.send(message);
-      } else {
-        console.log('⚠️ Deepgram WebSocket not ready, dropping audio data');
+      // If JSON parsing fails, it's definitely binary data
+      isJSON = false;
+    }
+    
+    if (isJSON) {
+      // Handle JSON control messages
+      try {
+        const data = JSON.parse(message);
+        console.log('📨 Received command:', data);
+        
+        if (data.type === 'start') {
+          connectToDeepgram();
+        } else if (data.type === 'stop') {
+          if (deepgramWs && isConnected) {
+            deepgramWs.close();
+          }
+          if (keepAliveInterval) {
+            clearInterval(keepAliveInterval);
+            keepAliveInterval = null;
+          }
+        } else if (data.type === 'ping') {
+          ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
+        }
+      } catch (error) {
+        console.error('❌ Error parsing JSON command:', error);
       }
+    } else {
+      // Handle binary audio data
+      if (deepgramWs && isConnected && message instanceof Buffer && message.length > 0) {
+        deepgramWs.send(message);
+      } else if (message.length > 1000) {
+        // Large messages are definitely audio data
+        if (deepgramWs && isConnected) {
+          deepgramWs.send(message);
+        }
+      }
+      // Silently ignore small binary messages that aren't JSON
     }
   });
   

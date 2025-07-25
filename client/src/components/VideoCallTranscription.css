@@ -1,0 +1,256 @@
+.video-call-transcription {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.transcription-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.transcription-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-indicator {
+  font-size: 16px;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.active {
+  color: #4CAF50;
+}
+
+.status-indicator.inactive {
+  color: #757575;
+  animation: none;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.status-text {
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.confidence {
+  font-size: 12px;
+  color: #666;
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.transcription-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.start-transcription-btn,
+.stop-transcription-btn {
+  background: linear-gradient(135deg, #2E5BBA, #1a3d82);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.start-transcription-btn:hover {
+  background: linear-gradient(135deg, #1a3d82, #2E5BBA);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(46, 91, 186, 0.3);
+}
+
+.stop-transcription-btn {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+}
+
+.stop-transcription-btn:hover {
+  background: linear-gradient(135deg, #d32f2f, #f44336);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.start-transcription-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.transcription-error {
+  background: #ffebee;
+  color: #c62828;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  border-left: 4px solid #f44336;
+}
+
+.transcript-display {
+  min-height: 80px;
+  max-height: 150px;
+  overflow-y: auto;
+  background: #fafafa;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.final-transcript {
+  color: #333;
+  line-height: 1.4;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.realtime-transcript {
+  color: #666;
+  font-style: italic;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.speaker-identification {
+  background: #f0f7ff;
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid #2E5BBA20;
+}
+
+.speaker-identification h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #2E5BBA;
+  font-weight: 600;
+}
+
+.speaker-mapping {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.ai-speaker {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  min-width: 70px;
+  text-align: center;
+}
+
+.arrow {
+  color: #666;
+  font-weight: bold;
+}
+
+.participant-name {
+  background: #e8f5e8;
+  color: #2e7d32;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  flex: 1;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .video-call-transcription {
+    margin: 8px;
+    padding: 12px;
+  }
+  
+  .transcription-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .transcription-controls {
+    width: 100%;
+  }
+  
+  .start-transcription-btn,
+  .stop-transcription-btn {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  
+  .speaker-mapping {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .arrow {
+    display: none;
+  }
+}
+
+/* Animation for new transcripts */
+.final-transcript {
+  animation: fadeInSlide 0.3s ease-out;
+}
+
+.realtime-transcript {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar styling */
+.transcript-display::-webkit-scrollbar {
+  width: 4px;
+}
+
+.transcript-display::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.transcript-display::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.transcript-display::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+} 

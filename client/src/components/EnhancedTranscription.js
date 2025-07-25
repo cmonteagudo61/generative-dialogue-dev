@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './EnhancedTranscription.css';
 
-const EnhancedTranscription = ({ 
-  isRecording: parentIsRecording, 
-  startRecording: parentStartRecording, 
-  stopRecording: parentStopRecording, 
-  clearTranscription: parentClearTranscription, 
-  getStatusClass: parentGetStatusClass 
+const EnhancedTranscription = ({
+  isRecording,
+  startRecording,
+  stopRecording,
+  clearTranscription,
+  getStatusClass,
+  onAITranscriptUpdate, // Callback for AI-enhanced transcript
+  onAISummaryUpdate     // Callback for AI summary
 }) => {
   // State management
-  const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [realtimeTranscript, setRealtimeTranscript] = useState('');
   const [finalTranscript, setFinalTranscript] = useState('');
@@ -20,6 +21,15 @@ const EnhancedTranscription = ({
   const [status, setStatus] = useState('Ready to transcribe');
   const [error, setError] = useState('');
 
+  // Enhanced transcript state
+  const [enhancedTranscript, setEnhancedTranscript] = useState('');
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [isEditingTranscript, setIsEditingTranscript] = useState(false);
+  const [editableTranscript, setEditableTranscript] = useState('');
+  const [aiSummary, setAiSummary] = useState('');
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [summaryVote, setSummaryVote] = useState(null); // 'up', 'down', or null
+  
   // Tooltip state for middle control buttons
   const [showMicTooltip, setShowMicTooltip] = useState(false);
   const [showUploadTooltip, setShowUploadTooltip] = useState(false);
@@ -50,6 +60,9 @@ const EnhancedTranscription = ({
 
   // Enhanced diarization server URL (from our speech-poc-test)
   const DIARIZATION_SERVER = 'http://localhost:8080';
+
+  // Server configuration
+  const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:8080';
 
   // Cleanup function
   useEffect(() => {
@@ -209,7 +222,7 @@ const EnhancedTranscription = ({
       streamRef.current = stream;
       
       // Connect to WebSocket for real-time streaming
-      const wsUrl = `ws://localhost:8080/ws/transcribe`;
+      const wsUrl = `ws://localhost:8080/realtime`;
       console.log('🔌 Attempting WebSocket connection to:', wsUrl);
       wsRef.current = new WebSocket(wsUrl);
       console.log('📡 WebSocket created, readyState:', wsRef.current.readyState);
@@ -225,7 +238,7 @@ const EnhancedTranscription = ({
         // Wait a moment for Deepgram to connect before starting recording
         setTimeout(() => {
           setStatus('Connected - Speaking...');
-          setIsRecording(true);
+          startRecording();
           
           // Start recording
           console.log('🎤 Creating MediaRecorder...');
@@ -300,7 +313,7 @@ const EnhancedTranscription = ({
           wasClean: event.wasClean
         });
         setStatus('Disconnected');
-        setIsRecording(false);
+        stopRecording();
       };
       
     } catch (error) {
@@ -329,7 +342,7 @@ const EnhancedTranscription = ({
       streamRef.current.getTracks().forEach(track => track.stop());
     }
     
-    setIsRecording(false);
+    stopRecording();
     setStatus('Stopped');
     setRealtimeTranscript(''); // Clear interim transcript
   };
@@ -384,168 +397,188 @@ const EnhancedTranscription = ({
     setStatus('Cleared');
   };
 
-  return (
-    <div className="enhanced-transcription">
-      {/* BRIGHT VISUAL INDICATOR - Component is visible! */}
-      <div style={{
-        backgroundColor: '#ff4444',
-        color: 'white',
-        padding: '15px',
-        textAlign: 'center',
-        fontSize: '18px',
-        fontWeight: 'bold',
-        border: '3px solid #ffffff',
-        borderRadius: '10px',
-        marginBottom: '20px',
-        boxShadow: '0 4px 12px rgba(255, 68, 68, 0.5)'
-      }}>
-        🎯 ENHANCED TRANSCRIPTION COMPONENT IS VISIBLE! 
-        <br/>You should see hover tooltips on the 3 buttons below this message.
-      </div>
-      {/* Controls Section */}
-      <div className="transcription-controls">
-        <h3>Transcription Controls</h3>
-        
-        {/* MAKE BUTTONS EXTRA VISIBLE FOR DEBUGGING */}
-        <div style={{
-          backgroundColor: '#f0f8ff', 
-          padding: '20px', 
-          border: '2px solid #007bff', 
-          borderRadius: '8px',
-          marginBottom: '20px'
-        }}>
-          <h4 style={{color: '#007bff', margin: '0 0 15px 0'}}>
-            🎯 CONTROL BUTTONS - Hover over these for tooltips:
-          </h4>
-          
-          <div className="control-group" style={{display: 'flex', gap: '15px', flexWrap: 'wrap'}}>
-            {/* TEMPORARY TEST BUTTONS FOR DEBUGGING */}
-            <div style={{
-              backgroundColor: '#ffffcc',
-              padding: '10px',
-              border: '1px solid #ffcc00',
-              borderRadius: '4px',
-              marginBottom: '10px'
-            }}>
-              <strong>🧪 DEBUG TESTS:</strong><br/>
-              <button 
-                style={{margin: '5px', padding: '5px 10px', fontSize: '12px'}}
-                onClick={() => {
-                  console.log('🧪 FORCE MIC TOOLTIP');
-                  setShowMicTooltip(!showMicTooltip);
-                }}
-              >
-                {showMicTooltip ? 'Hide' : 'Show'} Mic Tooltip
-              </button>
-              <button 
-                style={{margin: '5px', padding: '5px 10px', fontSize: '12px'}}
-                onClick={() => {
-                  console.log('🧪 FORCE UPLOAD TOOLTIP');
-                  setShowUploadTooltip(!showUploadTooltip);
-                }}
-              >
-                {showUploadTooltip ? 'Hide' : 'Show'} Upload Tooltip
-              </button>
-              <button 
-                style={{margin: '5px', padding: '5px 10px', fontSize: '12px'}}
-                onClick={() => {
-                  console.log('🧪 FORCE CLEAR TOOLTIP');
-                  setShowClearTooltip(!showClearTooltip);
-                }}
-              >
-                {showClearTooltip ? 'Hide' : 'Show'} Clear Tooltip
-              </button>
-            </div>
+  // AI Enhancement Functions
+  const enhanceTranscriptWithAI = async (rawTranscript) => {
+    if (!rawTranscript || rawTranscript.length < 10) return;
+    
+    console.log('🤖 Sending transcript for AI enhancement...');
+    setIsEnhancing(true);
+    
+    try {
+      const response = await fetch(`${SERVER_URL}/api/enhance-transcript`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          transcript: rawTranscript,
+          options: {
+            improvePunctuation: true,
+            fixGrammar: true,
+            enhanceReadability: true,
+            maintainSpeakerVoice: true,
+            addParagraphs: true
+          }
+        })
+      });
 
-            <button 
-              id="transcription-mic-btn"
-              className={`btn ${isRecording ? 'btn-danger' : 'btn-primary'}`}
-              onClick={(e) => {
-                console.log('🔥 MIC BUTTON CLICKED!');
-                hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout);
-                isRecording ? stopRealTimeTranscription() : startRealTimeTranscription();
-              }}
-              disabled={isTranscribing}
-              style={{
-                padding: '12px 20px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                border: '3px solid #000',
-                borderRadius: '8px'
-              }}
-              onMouseEnter={() => {
-                console.log('🖱️ SIMPLE MIC HOVER START');
-                showTooltipWithDelay(setShowMicTooltip, micTooltipTimeout);
-              }}
-              onMouseLeave={() => {
-                console.log('🖱️ SIMPLE MIC HOVER END');
-                hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout);
-              }}
-            >
-              {isRecording ? '⏹ Stop Recording' : '🎤 Start Live Transcription'}
-            </button>
-            
-            <label 
-              id="transcription-upload-btn"
-              className="btn btn-success"
-              style={{
-                padding: '12px 20px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                border: '3px solid #000',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                display: 'inline-block'
-              }}
-              onMouseEnter={() => {
-                console.log('🖱️ SIMPLE UPLOAD HOVER START');
-                showTooltipWithDelay(setShowUploadTooltip, uploadTooltipTimeout);
-              }}
-              onMouseLeave={() => {
-                console.log('🖱️ SIMPLE UPLOAD HOVER END');
-                hideTooltipImmediately(setShowUploadTooltip, uploadTooltipTimeout, uploadPressTimeout, uploadAutoHideTimeout);
-              }}
-            >
-              📁 Upload Audio File
-              <input 
-                type="file" 
-                accept="audio/*" 
-                onChange={(e) => {
-                  console.log('🔥 UPLOAD BUTTON USED!');
-                  hideTooltipImmediately(setShowUploadTooltip, uploadTooltipTimeout, uploadPressTimeout, uploadAutoHideTimeout);
-                  handleFileUpload(e);
-                }}
-                style={{display: 'none'}} 
-              />
-            </label>
-            
-            <button 
-              id="transcription-clear-btn"
-              className="btn btn-warning"
-              onClick={(e) => {
-                console.log('🔥 CLEAR BUTTON CLICKED!');
-                hideTooltipImmediately(setShowClearTooltip, clearTooltipTimeout, clearPressTimeout, clearAutoHideTimeout);
-                clearTranscripts();
-              }}
-              style={{
-                padding: '12px 20px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                border: '3px solid #000',
-                borderRadius: '8px'
-              }}
-              onMouseEnter={() => {
-                console.log('🖱️ SIMPLE CLEAR HOVER START');
-                showTooltipWithDelay(setShowClearTooltip, clearTooltipTimeout);
-              }}
-              onMouseLeave={() => {
-                console.log('🖱️ SIMPLE CLEAR HOVER END');
-                hideTooltipImmediately(setShowClearTooltip, clearTooltipTimeout, clearPressTimeout, clearAutoHideTimeout);
-              }}
-            >
-              🗑 Clear All Transcriptions
-            </button>
+      const result = await response.json();
+      
+      if (result.success) {
+        setEnhancedTranscript(result.enhanced);
+        setEditableTranscript(result.enhanced);
+        console.log('✅ AI enhancement complete');
+      } else {
+        console.error('❌ AI enhancement failed:', result.error);
+        setError('AI enhancement failed: ' + result.error);
+      }
+    } catch (error) {
+      console.error('❌ Enhancement error:', error);
+      setError('Failed to enhance transcript. Server may be unavailable.');
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  const generateAISummary = async (transcript) => {
+    if (!transcript || transcript.length < 20) return;
+    
+    console.log('📝 Generating AI summary...');
+    setIsGeneratingSummary(true);
+    
+    try {
+      const response = await fetch(`${SERVER_URL}/api/ai/summarize`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          transcript: transcript
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.summary) {
+        setAiSummary(result.summary);
+        console.log('✅ AI summary generated');
+      } else {
+        console.error('❌ Summary generation failed');
+        setError('Failed to generate AI summary');
+      }
+    } catch (error) {
+      console.error('❌ Summary error:', error);
+      setError('Failed to generate summary. Server may be unavailable.');
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
+  // Editing functions
+  const startEditingTranscript = () => {
+    setIsEditingTranscript(true);
+    setEditableTranscript(enhancedTranscript || finalTranscript);
+  };
+
+  const saveTranscriptEdits = () => {
+    setEnhancedTranscript(editableTranscript);
+    setIsEditingTranscript(false);
+    // Notify parent and auto-generate summary after editing
+    onAITranscriptUpdate?.(editableTranscript);
+    generateAISummary(editableTranscript);
+  };
+
+  const cancelTranscriptEdits = () => {
+    setEditableTranscript(enhancedTranscript || finalTranscript);
+    setIsEditingTranscript(false);
+  };
+
+  const submitForSummary = () => {
+    const transcriptToSummarize = enhancedTranscript || finalTranscript;
+    generateAISummary(transcriptToSummarize);
+  };
+
+  // Voting functions
+  const voteOnSummary = (vote) => {
+    setSummaryVote(vote);
+    console.log(`📊 Summary vote: ${vote}`);
+    // Here you could send the vote to the backend
+    // onSummaryVote?.(vote, aiSummary);
+  };
+
+  // Notify parent when AI enhancement is complete
+  useEffect(() => {
+    if (enhancedTranscript) {
+      onAITranscriptUpdate?.(enhancedTranscript);
+    }
+  }, [enhancedTranscript, onAITranscriptUpdate]);
+
+  // Notify parent when AI summary is generated
+  useEffect(() => {
+    if (aiSummary) {
+      onAISummaryUpdate?.(aiSummary);
+    }
+  }, [aiSummary, onAISummaryUpdate]);
+
+  // Auto-enhance transcript when final transcript is available
+  useEffect(() => {
+    if (finalTranscript && finalTranscript !== enhancedTranscript) {
+      // Debounce enhancement to avoid too many API calls
+      const timer = setTimeout(() => {
+        enhanceTranscriptWithAI(finalTranscript);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [finalTranscript, enhancedTranscript]);
+
+  return (
+    <div className="enhanced-transcription" style={{marginTop: '10px'}}>
+      {/* Clean Transcription Controls */}
+      <div className="transcription-controls">
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px'}}>
+          <button 
+            onClick={() => isRecording ? stopRealTimeTranscription() : startRealTimeTranscription()}
+            disabled={isTranscribing}
+            style={{
+              backgroundColor: isRecording ? '#dc3545' : '#28a745',
+              color: 'white',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: isTranscribing ? 'not-allowed' : 'pointer',
+              opacity: isTranscribing ? 0.6 : 1
+            }}
+          >
+            {isRecording ? '⏹ Stop Transcription' : '🎤 Start Live Transcription'}
+          </button>
+          
+          <div style={{
+            fontSize: '14px',
+            color: isRecording ? '#28a745' : error ? '#dc3545' : '#666',
+            fontWeight: '500'
+          }}>
+            {status}
           </div>
+          
+          {(realtimeTranscript || finalTranscript) && (
+            <button 
+              onClick={clearTranscripts}
+              style={{
+                backgroundColor: '#f8f9fa',
+                border: '1px solid #dee2e6',
+                color: '#666',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              Clear
+            </button>
+          )}
         </div>
         
         {/* Status and Stats */}
@@ -562,230 +595,370 @@ const EnhancedTranscription = ({
         </div>
       </div>
 
-      {/* Transcription Display */}
-      <div className="transcription-display">
-        {/* Real-time transcript (only shown during recording) */}
-        {isRecording && (
-          <div className="realtime-section">
-            <h4>🔴 Live Transcription</h4>
-            <div className="realtime-transcript">
-              {realtimeTranscript || 'Listening...'}
-            </div>
-          </div>
-        )}
+      {/* Error Display */}
+      {error && (
+        <div style={{
+          backgroundColor: '#f8d7da',
+          border: '1px solid #f5c6cb',
+          color: '#721c24',
+          padding: '10px',
+          borderRadius: '4px',
+          marginBottom: '15px',
+          fontSize: '14px'
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
 
-        {/* Final transcript with speaker separation */}
-        <div className="final-section">
-          <h4>📝 Speaker-Separated Transcript</h4>
-          <div className="final-transcript">
-            {finalTranscript ? (
-              <div style={{ whiteSpace: 'pre-wrap' }}>{finalTranscript}</div>
-            ) : (
-              <div className="placeholder">
-                Your transcription will appear here with timestamps...
-              </div>
-            )}
+      {/* Live Transcript Display */}
+      {isRecording && (
+        <div style={{
+          backgroundColor: '#f0f8ff',
+          border: '1px solid #b3d9ff',
+          borderRadius: '6px',
+          padding: '15px',
+          marginBottom: '15px'
+        }}>
+          <div style={{
+            fontSize: '12px',
+            fontWeight: '600',
+            color: '#0066cc',
+            marginBottom: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px'
+          }}>
+            <span style={{color: '#dc3545'}}>🔴</span>
+            Live Transcript (2-3 lines for confidence)
+          </div>
+          <div style={{
+            fontSize: '14px',
+            lineHeight: '1.5',
+            minHeight: '60px',
+            maxHeight: '90px', // Limit to ~3 lines
+            overflowY: 'auto',
+            color: realtimeTranscript ? '#333' : '#999',
+            fontStyle: realtimeTranscript ? 'normal' : 'italic',
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            padding: '8px',
+            borderRadius: '4px'
+          }}>
+            {realtimeTranscript || 'Listening for speech...'}
           </div>
         </div>
+      )}
 
-        {/* Speaker Statistics - Hidden for now until server provides this data */}
-        {false && Object.keys(speakerStats).length > 0 && (
-          <div className="speaker-analytics">
-            <h4>🎭 Speaker Analytics</h4>
-            <div className="speaker-stats-grid">
-              {Object.entries(speakerStats).map(([speaker, stats]) => (
-                <div key={speaker} className="speaker-stat-card">
-                  <div className="speaker-name">{speaker}</div>
-                  <div className="speaker-details">
-                    <span>🗣 {stats.utteranceCount} utterances</span>
-                    <span>⏱ {stats.totalDuration}s</span>
-                    <span>📊 {Math.round(stats.averageConfidence * 100)}% avg confidence</span>
-                  </div>
+      {/* Final Transcript Display - Raw from Deepgram */}
+      {finalTranscript && !enhancedTranscript && (
+        <div style={{
+          backgroundColor: '#f8f9fa',
+          border: '1px solid #dee2e6',
+          borderRadius: '6px',
+          padding: '15px',
+          marginBottom: '15px'
+        }}>
+          <div style={{
+            fontSize: '12px',
+            fontWeight: '600',
+            color: '#495057',
+            marginBottom: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <span>📝 Raw Transcript</span>
+            <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+              {confidence > 0 && (
+                <span style={{fontSize: '11px', color: '#666'}}>
+                  Confidence: {Math.round(confidence * 100)}%
+                </span>
+              )}
+              {isEnhancing && (
+                <span style={{fontSize: '11px', color: '#28a745'}}>🤖 AI Enhancing...</span>
+              )}
+            </div>
+          </div>
+          <div style={{
+            fontSize: '14px',
+            lineHeight: '1.6',
+            whiteSpace: 'pre-wrap',
+            maxHeight: '200px',
+            overflowY: 'auto',
+            backgroundColor: 'white',
+            padding: '10px',
+            borderRadius: '4px',
+            border: '1px solid #e9ecef'
+          }}>
+            {finalTranscript}
+          </div>
+        </div>
+      )}
+
+      {/* Enhanced Transcript Display */}
+      {enhancedTranscript && (
+        <div style={{
+          backgroundColor: '#e8f5e8',
+          border: '2px solid #28a745',
+          borderRadius: '6px',
+          padding: '15px',
+          marginBottom: '15px'
+        }}>
+          <div style={{
+            fontSize: '12px',
+            fontWeight: '600',
+            color: '#155724',
+            marginBottom: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <span>🤖 AI-Enhanced Transcript</span>
+            <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+              {!isEditingTranscript ? (
+                <>
+                  <button
+                    onClick={startEditingTranscript}
+                    style={{
+                      backgroundColor: '#ffc107',
+                      color: '#212529',
+                      border: 'none',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={submitForSummary}
+                    disabled={isGeneratingSummary}
+                    style={{
+                      backgroundColor: '#17a2b8',
+                      color: 'white',
+                      border: 'none',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      cursor: isGeneratingSummary ? 'not-allowed' : 'pointer',
+                      fontWeight: '600',
+                      opacity: isGeneratingSummary ? 0.6 : 1
+                    }}
+                  >
+                    {isGeneratingSummary ? 'Generating...' : 'Generate Summary'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={saveTranscriptEdits}
+                    style={{
+                      backgroundColor: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={cancelTranscriptEdits}
+                    style={{
+                      backgroundColor: '#6c757d',
+                      color: 'white',
+                      border: 'none',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+          
+          {isEditingTranscript ? (
+            <textarea
+              value={editableTranscript}
+              onChange={(e) => setEditableTranscript(e.target.value)}
+              style={{
+                width: '100%',
+                fontSize: '14px',
+                lineHeight: '1.6',
+                minHeight: '120px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                backgroundColor: 'white',
+                padding: '10px',
+                borderRadius: '4px',
+                border: '2px solid #28a745',
+                resize: 'vertical',
+                fontFamily: 'inherit'
+              }}
+              placeholder="Edit the enhanced transcript for accuracy..."
+            />
+          ) : (
+            <div style={{
+              fontSize: '14px',
+              lineHeight: '1.6',
+              whiteSpace: 'pre-wrap',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              backgroundColor: 'white',
+              padding: '10px',
+              borderRadius: '4px',
+              border: '1px solid #e9ecef'
+            }}>
+              {enhancedTranscript}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* AI Summary Display */}
+      {aiSummary && (
+        <div style={{
+          backgroundColor: '#d4edda',
+          border: '1px solid #c3e6cb',
+          borderRadius: '6px',
+          padding: '15px',
+          marginBottom: '15px'
+        }}>
+          <div style={{
+            fontSize: '12px',
+            fontWeight: '600',
+            color: '#155724',
+            marginBottom: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <span>📝 AI Summary</span>
+            <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+              {isGeneratingSummary && (
+                <span style={{fontSize: '11px', color: '#6c757d'}}>Generating...</span>
+              )}
+              {!isGeneratingSummary && (
+                <div style={{display: 'flex', gap: '4px', alignItems: 'center'}}>
+                  <span style={{fontSize: '11px', color: '#495057', marginRight: '4px'}}>
+                    Rate this summary:
+                  </span>
+                  <button
+                    onClick={() => voteOnSummary('up')}
+                    style={{
+                      backgroundColor: summaryVote === 'up' ? '#28a745' : '#f8f9fa',
+                      color: summaryVote === 'up' ? 'white' : '#28a745',
+                      border: `1px solid #28a745`,
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    👍
+                  </button>
+                  <button
+                    onClick={() => voteOnSummary('down')}
+                    style={{
+                      backgroundColor: summaryVote === 'down' ? '#dc3545' : '#f8f9fa',
+                      color: summaryVote === 'down' ? 'white' : '#dc3545',
+                      border: `1px solid #dc3545`,
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    👎
+                  </button>
+                  {summaryVote && (
+                    <span style={{fontSize: '11px', color: '#6c757d', marginLeft: '4px'}}>
+                      Thanks for voting!
+                    </span>
+                  )}
                 </div>
-              ))}
+              )}
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Tooltip Elements */}
-      {showMicTooltip && (
-        <div 
-          style={{
-            position: 'fixed',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: 'white',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            fontSize: '14px',
-            fontWeight: '500',
-            zIndex: 10000,
-            pointerEvents: 'none',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            ...getTooltipPosition('transcription-mic-btn')
-          }}
-        >
-          {isRecording ? '⏹ Stop audio recording' : '🎤 Start live transcription'}
           <div style={{
-            position: 'absolute',
-            left: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '0',
-            height: '0',
-            borderTop: '6px solid transparent',
-            borderBottom: '6px solid transparent',
-            borderRight: '6px solid rgba(0, 0, 0, 0.9)'
-          }} />
+            fontSize: '14px',
+            lineHeight: '1.6',
+            whiteSpace: 'pre-wrap',
+            maxHeight: '200px',
+            overflowY: 'auto',
+            backgroundColor: 'white',
+            padding: '10px',
+            borderRadius: '4px',
+            border: '1px solid #e9ecef'
+          }}>
+            {aiSummary}
+          </div>
         </div>
       )}
 
-      {showUploadTooltip && (
-        <div 
-          style={{
-            position: 'fixed',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: 'white',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            fontSize: '14px',
-            fontWeight: '500',
-            zIndex: 10000,
-            pointerEvents: 'none',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            ...getTooltipPosition('transcription-upload-btn')
-          }}
-        >
-          📁 Upload audio file for transcription
+      {/* Speaker Statistics */}
+      {Object.keys(speakerStats).length > 0 && (
+        <div style={{
+          backgroundColor: '#fff3cd',
+          border: '1px solid #ffeaa7',
+          borderRadius: '6px',
+          padding: '15px'
+        }}>
           <div style={{
-            position: 'absolute',
-            left: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '0',
-            height: '0',
-            borderTop: '6px solid transparent',
-            borderBottom: '6px solid transparent',
-            borderRight: '6px solid rgba(0, 0, 0, 0.9)'
-          }} />
+            fontSize: '12px',
+            fontWeight: '600',
+            color: '#856404',
+            marginBottom: '10px'
+          }}>
+            🎤 Speakers Identified: {Object.keys(speakerStats).length}
+          </div>
+          <div style={{display: 'grid', gap: '5px'}}>
+            {Object.entries(speakerStats).map(([speaker, stats]) => (
+              <div key={speaker} style={{
+                fontSize: '13px',
+                padding: '5px 8px',
+                backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                borderRadius: '4px',
+                display: 'flex',
+                justifyContent: 'space-between'
+              }}>
+                <span><strong>{speaker}</strong></span>
+                <span>{stats.duration}s</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {showClearTooltip && (
-        <div 
-          style={{
-            position: 'fixed',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: 'white',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            fontSize: '14px',
-            fontWeight: '500',
-            zIndex: 10000,
-            pointerEvents: 'none',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            ...getTooltipPosition('transcription-clear-btn')
-          }}
-        >
-          🗑 Clear all transcriptions
-          <div style={{
-            position: 'absolute',
-            left: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '0',
-            height: '0',
-            borderTop: '6px solid transparent',
-            borderBottom: '6px solid transparent',
-            borderRight: '6px solid rgba(0, 0, 0, 0.9)'
-          }} />
+      {/* Empty state when not recording and no transcript */}
+      {!isRecording && !finalTranscript && !error && (
+        <div style={{
+          textAlign: 'center',
+          padding: '40px 20px',
+          color: '#666',
+          fontSize: '14px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '6px',
+          border: '1px dashed #dee2e6'
+        }}>
+          <div style={{fontSize: '24px', marginBottom: '10px'}}>🎤</div>
+          <div style={{marginBottom: '5px'}}>Ready to start transcription</div>
+          <div style={{fontSize: '12px', color: '#999'}}>
+            Click "Start Live Transcription" to begin
+          </div>
         </div>
       )}
-
-      {/* Debug Display for Testing (can be removed later) */}
-      <div style={{
-        position: 'fixed',
-        top: '10px',
-        right: '10px',
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        padding: '8px',
-        borderRadius: '4px',
-        fontSize: '12px',
-        zIndex: 10001,
-        border: '1px solid #ccc'
-      }}>
-        🔧 TRANSCRIPTION TOOLTIPS<br/>
-        Width: {window.innerWidth}px<br/>
-        Touch Device: {isTouchDevice ? 'Yes' : 'No'}<br/>
-        <span 
-          style={{cursor: 'pointer', color: 'blue', textDecoration: 'underline'}}
-          onClick={() => setForceMobileMode(!forceMobileMode)}
-        >
-          Force Mobile: {forceMobileMode ? 'ON' : 'OFF'}
-        </span><br/>
-        Event Mode: {isTouchDevice ? 'TOUCH' : 'HOVER'}<br/>
-        <strong style={{color: 'red'}}>TOOLTIP STATES:</strong><br/>
-        Mic: {showMicTooltip ? '✅ VISIBLE' : '❌ hidden'}<br/>
-        Upload: {showUploadTooltip ? '✅ VISIBLE' : '❌ hidden'}<br/>
-        Clear: {showClearTooltip ? '✅ VISIBLE' : '❌ hidden'}
-      </div>
-
-      {/* Quick Test Buttons for Tooltip Debugging */}
-      <div style={{
-        backgroundColor: '#fff3cd',
-        border: '1px solid #ffeaa7',
-        borderRadius: '6px',
-        padding: '10px',
-        marginBottom: '15px',
-        fontSize: '13px'
-      }}>
-        <strong>🧪 Tooltip Test Controls:</strong><br/>
-        <button 
-          style={{
-            margin: '5px',
-            padding: '5px 10px',
-            backgroundColor: showMicTooltip ? '#28a745' : '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px'
-          }}
-          onClick={() => setShowMicTooltip(!showMicTooltip)}
-        >
-          {showMicTooltip ? 'Hide' : 'Show'} Mic Tooltip
-        </button>
-        <button 
-          style={{
-            margin: '5px',
-            padding: '5px 10px',
-            backgroundColor: showUploadTooltip ? '#28a745' : '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px'
-          }}
-          onClick={() => setShowUploadTooltip(!showUploadTooltip)}
-        >
-          {showUploadTooltip ? 'Hide' : 'Show'} Upload Tooltip
-        </button>
-        <button 
-          style={{
-            margin: '5px',
-            padding: '5px 10px',
-            backgroundColor: showClearTooltip ? '#28a745' : '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px'
-          }}
-          onClick={() => setShowClearTooltip(!showClearTooltip)}
-        >
-          {showClearTooltip ? 'Hide' : 'Show'} Clear Tooltip
-        </button>
-      </div>
     </div>
   );
 };

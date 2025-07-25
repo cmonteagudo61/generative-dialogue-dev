@@ -282,8 +282,12 @@ const BottomContentArea = ({
 
   // Transcription state
   const [isRecording, setIsRecording] = useState(false);
-  const [transcriptionStatus, setTranscriptionStatus] = useState('Disconnected');
+  const [transcriptionStatus, setTranscriptionStatus] = useState('Ready to transcribe');
   const [transcriptionError] = useState('');
+
+  // AI-enhanced transcript and summary state
+  const [aiEnhancedTranscript, setAiEnhancedTranscript] = useState('');
+  const [aiGeneratedSummary, setAiGeneratedSummary] = useState('');
 
   // Function to parse timeframe string to seconds
   const parseTimeframeToSeconds = (timeframe) => {
@@ -302,20 +306,6 @@ const BottomContentArea = ({
     
     return 1200; // Default fallback to 20 minutes
   };
-
-  // Dialogue-specific state
-  const [liveTranscript, setLiveTranscript] = useState('');
-  const [formattedTranscript, setFormattedTranscript] = useState([]);
-  const [dialogueTimeRemaining, setDialogueTimeRemaining] = useState(() => parseTimeframeToSeconds(dialogueTimeframe));
-  const [isEditingTranscript, setIsEditingTranscript] = useState(false);
-  const [editableTranscript, setEditableTranscript] = useState([]);
-  const [transcriptSubmitted, setTranscriptSubmitted] = useState(false);
-
-  // Update timer when timeframe prop changes
-  useEffect(() => {
-    const newTimeInSeconds = parseTimeframeToSeconds(dialogueTimeframe);
-    setDialogueTimeRemaining(newTimeInSeconds);
-  }, [dialogueTimeframe]);
 
   // Summary review state
   const [participantVotes, setParticipantVotes] = useState({
@@ -382,97 +372,27 @@ const BottomContentArea = ({
     return () => clearInterval(interval);
   }, []);
 
+  // Dialogue timer state - re-adding since it's used in UI
+  const [dialogueTimeRemaining, setDialogueTimeRemaining] = useState(() => parseTimeframeToSeconds(dialogueTimeframe));
+
+  // Update timer when timeframe prop changes
+  useEffect(() => {
+    const newTimeInSeconds = parseTimeframeToSeconds(dialogueTimeframe);
+    setDialogueTimeRemaining(newTimeInSeconds);
+  }, [dialogueTimeframe]);
+
   // Dialogue timer countdown
   useEffect(() => {
-    if (isDialogueActive && dialogueTimeRemaining > 0) {
+    if (isDialogueActive) {
       const timer = setInterval(() => {
-        setDialogueTimeRemaining(prev => prev - 1);
+        setDialogueTimeRemaining(prev => prev > 0 ? prev - 1 : 0);
       }, 1000);
       
       return () => clearInterval(timer);
     }
-  }, [isDialogueActive, dialogueTimeRemaining]);
-
-  // Mock dialogue transcript simulation
-  useEffect(() => {
-    if (isDialogueActive) {
-      // Simulate live transcript updates
-      const liveUpdates = [
-        "Sarah is speaking about community networks...",
-        "Marcus is responding to Sarah's point...",
-        "Elena is asking a clarifying question...",
-        "Group is discussing resilience strategies..."
-      ];
-
-      // Simulate formatted transcript entries
-      const mockTranscript = [
-        {
-          id: 1,
-          speaker: "Sarah",
-          timestamp: "15:32",
-          text: "I think community resilience starts with understanding our interconnectedness. When we know our neighbors and local resources, we're better prepared for any crisis."
-        },
-        {
-          id: 2,
-          speaker: "Marcus", 
-          timestamp: "15:34",
-          text: "That's a great point, Sarah. I'd like to build on that - in my experience working with local nonprofits, I've seen how crucial communication networks are. When people have multiple ways to stay connected, communities bounce back faster."
-        },
-        {
-          id: 3,
-          speaker: "Elena",
-          timestamp: "15:36", 
-          text: "Both of you raise important points about connection. I'm curious though - how do we balance self-reliance with community interdependence? Sometimes I worry that too much emphasis on community support might reduce individual preparedness."
-        }
-      ];
-
-      // Update live transcript every 3 seconds
-      const liveTimer = setInterval(() => {
-        const randomUpdate = liveUpdates[Math.floor(Math.random() * liveUpdates.length)];
-        setLiveTranscript(randomUpdate);
-      }, 3000);
-
-      // Add formatted transcript entries gradually
-      const transcriptTimer = setTimeout(() => {
-        setFormattedTranscript(mockTranscript);
-      }, 2000);
-
-      return () => {
-        clearInterval(liveTimer);
-        clearTimeout(transcriptTimer);
-      };
-    }
   }, [isDialogueActive]);
 
-  // Update editable transcript when formatted transcript changes
-  useEffect(() => {
-    setEditableTranscript([...formattedTranscript]);
-  }, [formattedTranscript]);
-
-  // Dialogue transcript editing functions
-  const startEditingTranscript = () => {
-    setIsEditingTranscript(true);
-  };
-
-  const cancelEditingTranscript = () => {
-    setIsEditingTranscript(false);
-    setEditableTranscript([...formattedTranscript]); // Reset to original
-  };
-
-  const updateTranscriptEntry = (entryId, newText) => {
-    setEditableTranscript(prev => 
-      prev.map(entry => 
-        entry.id === entryId ? { ...entry, text: newText } : entry
-      )
-    );
-  };
-
-  const submitTranscriptForAI = () => {
-    setSummarySubmitted(true);
-  };
-
-  // Check if dialogue time has ended
-  const isDialogueEnded = dialogueTimeRemaining === 0;
+  // Dialogue transcript editing functions are now handled by EnhancedTranscription component
 
   // Summary review functions
   const handleVote = (participant, vote) => {
@@ -813,24 +733,34 @@ const BottomContentArea = ({
    // Transcription functions - these will be passed to EnhancedTranscription
   const startRecording = () => {
     setIsRecording(true);
-    setTranscriptionStatus('Connected - Speaking...');
+    setTranscriptionStatus('Recording...');
   };
 
   const stopRecording = () => {
     setIsRecording(false);
-    setTranscriptionStatus('Disconnected');
+    setTranscriptionStatus('Processing...');
   };
 
   const clearTranscription = () => {
-    // This will be handled by EnhancedTranscription
-    setTranscriptionStatus('Cleared');
+    setIsRecording(false);
+    setTranscriptionStatus('Ready to transcribe');
+    setAiEnhancedTranscript('');
+    setAiGeneratedSummary('');
   };
 
   const getStatusClass = () => {
-    if (transcriptionError) return 'disconnected';
-    if (isRecording) return 'recording';
-    if (transcriptionStatus.includes('Connected')) return 'connected';
-    return 'disconnected';
+    return transcriptionStatus.toLowerCase().replace(' ', '-');
+  };
+
+  // AI callbacks
+  const handleAITranscriptUpdate = (enhancedTranscript) => {
+    setAiEnhancedTranscript(enhancedTranscript);
+    console.log('📝 AI Enhanced transcript received:', enhancedTranscript.substring(0, 100) + '...');
+  };
+
+  const handleAISummaryUpdate = (summary) => {
+    setAiGeneratedSummary(summary);
+    console.log('📊 AI Summary received:', summary.substring(0, 100) + '...');
   };
 
   const switchTab = (tabName) => {
@@ -1310,183 +1240,27 @@ const BottomContentArea = ({
                       </div>
                     </div>
 
-                    {/* Live Transcription Section */}
+                    {/* Live Transcription Section - Using EnhancedTranscription Component */}
                     <div>
-                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
-                        <h4 style={{color: '#E06D37', margin: 0, fontSize: '16px'}}>Live Dialogue Transcript</h4>
-                        
-                        {/* Edit/Submit Controls */}
-                        {!isDialogueEnded && formattedTranscript.length === 0 && (
-                          <span style={{fontSize: '12px', color: '#666'}}>Dialogue in progress...</span>
-                        )}
-                        
-                        {(isDialogueEnded || formattedTranscript.length > 0) && !transcriptSubmitted && (
-                          <div style={{display: 'flex', gap: '8px'}}>
-                            {!isEditingTranscript ? (
-                              <>
-                                <button
-                                  onClick={startEditingTranscript}
-                                  style={{
-                                    backgroundColor: '#f8f9fa',
-                                    border: '1px solid #E06D37',
-                                    color: '#E06D37',
-                                    padding: '4px 12px',
-                                    borderRadius: '4px',
-                                    fontSize: '12px',
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  Edit Transcript
-                                </button>
-                                <button
-                                  onClick={submitTranscriptForAI}
-                                  style={{
-                                    backgroundColor: '#28a745',
-                                    border: 'none',
-                                    color: 'white',
-                                    padding: '4px 12px',
-                                    borderRadius: '4px',
-                                    fontSize: '12px',
-                                    cursor: 'pointer',
-                                    fontWeight: '600'
-                                  }}
-                                >
-                                  Submit for AI Summary
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <button
-                                  onClick={cancelEditingTranscript}
-                                  style={{
-                                    backgroundColor: '#f8f9fa',
-                                    border: '1px solid #6c757d',
-                                    color: '#6c757d',
-                                    padding: '4px 12px',
-                                    borderRadius: '4px',
-                                    fontSize: '12px',
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  onClick={submitTranscriptForAI}
-                                  style={{
-                                    backgroundColor: '#28a745',
-                                    border: 'none',
-                                    color: 'white',
-                                    padding: '4px 12px',
-                                    borderRadius: '4px',
-                                    fontSize: '12px',
-                                    cursor: 'pointer',
-                                    fontWeight: '600'
-                                  }}
-                                >
-                                  Submit for AI Summary
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        )}
-                        
-                        {transcriptSubmitted && (
-                          <span style={{
-                            color: '#28a745',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            padding: '4px 8px',
-                            backgroundColor: '#d4edda',
-                            borderRadius: '4px'
-                          }}>
-                            ✓ Submitted for AI Processing
-                          </span>
-                        )}
+                      <div style={{marginBottom: '15px'}}>
+                        <h4 style={{color: '#E06D37', margin: 0, fontSize: '16px', marginBottom: '10px'}}>
+                          Live Dialogue Transcript
+                        </h4>
+                        <p style={{fontSize: '14px', color: '#666', margin: 0}}>
+                          Real-time AI transcription with speaker identification and editing capabilities
+                        </p>
                       </div>
                       
-                      {/* Live Transcript Lines (1-2 lines for visual feedback) */}
-                      {!isDialogueEnded && (
-                        <div style={{
-                          backgroundColor: '#fff8f0',
-                          padding: '8px',
-                          borderRadius: '4px',
-                          marginBottom: '10px',
-                          fontSize: '14px',
-                          fontStyle: 'italic',
-                          color: '#666',
-                          minHeight: '40px',
-                          display: 'flex',
-                          alignItems: 'center'
-                        }}>
-                          {liveTranscript ? (
-                            <>🔴 Live: {liveTranscript}</>
-                          ) : (
-                            <>🔴 Live transcript will appear here...</>
-                          )}
-                        </div>
-                      )}
-                      
-                      {/* Formatted Transcript (near real-time) */}
-                      <div style={{
-                        backgroundColor: transcriptSubmitted ? '#f8f9fa' : '#fff',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px',
-                        padding: '10px',
-                        maxHeight: '180px',
-                        overflowY: 'auto'
-                      }}>
-                        {formattedTranscript.length === 0 ? (
-                          <div style={{textAlign: 'center', color: '#999', fontStyle: 'italic', padding: '20px'}}>
-                            Formatted dialogue transcript will appear here in near real-time...
-                          </div>
-                        ) : (
-                          (isEditingTranscript ? editableTranscript : formattedTranscript).map((entry) => (
-                            <div key={entry.id} style={{marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #eee'}}>
-                              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
-                                <strong style={{color: '#E06D37', fontSize: '14px'}}>{entry.speaker}</strong>
-                                <span style={{color: '#666', fontSize: '12px'}}>{entry.timestamp}</span>
-                              </div>
-                              {isEditingTranscript ? (
-                                <textarea
-                                  value={entry.text}
-                                  onChange={(e) => updateTranscriptEntry(entry.id, e.target.value)}
-                                  style={{
-                                    width: '100%',
-                                    fontSize: '14px',
-                                    lineHeight: '1.4',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '3px',
-                                    padding: '4px',
-                                    resize: 'vertical',
-                                    minHeight: '60px',
-                                    fontFamily: 'inherit'
-                                  }}
-                                />
-                              ) : (
-                                <div style={{
-                                  fontSize: '14px', 
-                                  lineHeight: '1.4',
-                                  opacity: transcriptSubmitted ? 0.7 : 1
-                                }}>
-                                  {entry.text}
-                                </div>
-                              )}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                      
-                      {isEditingTranscript && (
-                        <div style={{
-                          fontSize: '12px',
-                          color: '#666',
-                          fontStyle: 'italic',
-                          marginTop: '8px',
-                          textAlign: 'center'
-                        }}>
-                          💡 Make small corrections for accuracy. Click "Submit for AI Summary" when ready.
-                        </div>
-                      )}
+                      {/* Enhanced Transcription Component */}
+                      <EnhancedTranscription
+                        isRecording={isRecording}
+                        startRecording={startRecording}
+                        stopRecording={stopRecording}
+                        clearTranscription={clearTranscription}
+                        getStatusClass={getStatusClass}
+                        onAITranscriptUpdate={handleAITranscriptUpdate}
+                        onAISummaryUpdate={handleAISummaryUpdate}
+                      />
                     </div>
                   </div>
                 ) : (
@@ -1567,183 +1341,27 @@ const BottomContentArea = ({
                     )}
                   </div>
 
-                  {/* Live Transcription Section */}
+                  {/* Live Transcription Section - Using EnhancedTranscription Component */}
                   <div>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
-                      <h4 style={{color: '#2E5BBA', margin: 0, fontSize: '16px'}}>Live Dialogue Transcript</h4>
-                      
-                      {/* Edit/Submit Controls */}
-                      {!isDialogueEnded && formattedTranscript.length === 0 && (
-                        <span style={{fontSize: '12px', color: '#666'}}>Dialogue in progress...</span>
-                      )}
-                      
-                      {(isDialogueEnded || formattedTranscript.length > 0) && !transcriptSubmitted && (
-                        <div style={{display: 'flex', gap: '8px'}}>
-                          {!isEditingTranscript ? (
-                            <>
-                              <button
-                                onClick={startEditingTranscript}
-                                style={{
-                                  backgroundColor: '#f8f9fa',
-                                  border: '1px solid #2E5BBA',
-                                  color: '#2E5BBA',
-                                  padding: '4px 12px',
-                                  borderRadius: '4px',
-                                  fontSize: '12px',
-                                  cursor: 'pointer'
-                                }}
-                              >
-                                Edit Transcript
-                              </button>
-                              <button
-                                onClick={submitTranscriptForAI}
-                                style={{
-                                  backgroundColor: '#28a745',
-                                  border: 'none',
-                                  color: 'white',
-                                  padding: '4px 12px',
-                                  borderRadius: '4px',
-                                  fontSize: '12px',
-                                  cursor: 'pointer',
-                                  fontWeight: '600'
-                                }}
-                              >
-                                Submit for AI Summary
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                onClick={cancelEditingTranscript}
-                                style={{
-                                  backgroundColor: '#f8f9fa',
-                                  border: '1px solid #6c757d',
-                                  color: '#6c757d',
-                                  padding: '4px 12px',
-                                  borderRadius: '4px',
-                                  fontSize: '12px',
-                                  cursor: 'pointer'
-                                }}
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={submitTranscriptForAI}
-                                style={{
-                                  backgroundColor: '#28a745',
-                                  border: 'none',
-                                  color: 'white',
-                                  padding: '4px 12px',
-                                  borderRadius: '4px',
-                                  fontSize: '12px',
-                                  cursor: 'pointer',
-                                  fontWeight: '600'
-                                }}
-                              >
-                                Submit for AI Summary
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      )}
-                      
-                      {transcriptSubmitted && (
-                        <span style={{
-                          color: '#28a745',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          padding: '4px 8px',
-                          backgroundColor: '#d4edda',
-                          borderRadius: '4px'
-                        }}>
-                          ✓ Submitted for AI Processing
-                        </span>
-                      )}
+                    <div style={{marginBottom: '15px'}}>
+                      <h4 style={{color: '#2E5BBA', margin: 0, fontSize: '16px', marginBottom: '10px'}}>
+                        Live Dialogue Transcript
+                      </h4>
+                      <p style={{fontSize: '14px', color: '#666', margin: 0}}>
+                        Real-time AI transcription with speaker identification and editing capabilities
+                      </p>
                     </div>
                     
-                    {/* Live Transcript Lines (1-2 lines for visual feedback) */}
-                    {!isDialogueEnded && (
-                      <div style={{
-                        backgroundColor: '#f0f8ff',
-                        padding: '8px',
-                        borderRadius: '4px',
-                        marginBottom: '10px',
-                        fontSize: '14px',
-                        fontStyle: 'italic',
-                        color: '#666',
-                        minHeight: '40px',
-                        display: 'flex',
-                        alignItems: 'center'
-                      }}>
-                        {liveTranscript ? (
-                          <>🔴 Live: {liveTranscript}</>
-                        ) : (
-                          <>🔴 Live transcript will appear here...</>
-                        )}
-                      </div>
-                    )}
-                    
-                    {/* Formatted Transcript (near real-time) */}
-                    <div style={{
-                      backgroundColor: transcriptSubmitted ? '#f8f9fa' : '#fff',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      padding: '10px',
-                      maxHeight: '180px',
-                      overflowY: 'auto'
-                    }}>
-                      {formattedTranscript.length === 0 ? (
-                        <div style={{textAlign: 'center', color: '#999', fontStyle: 'italic', padding: '20px'}}>
-                          Formatted dialogue transcript will appear here in near real-time...
-                        </div>
-                      ) : (
-                        (isEditingTranscript ? editableTranscript : formattedTranscript).map((entry) => (
-                          <div key={entry.id} style={{marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #eee'}}>
-                            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
-                              <strong style={{color: '#2E5BBA', fontSize: '14px'}}>{entry.speaker}</strong>
-                              <span style={{color: '#666', fontSize: '12px'}}>{entry.timestamp}</span>
-                            </div>
-                            {isEditingTranscript ? (
-                              <textarea
-                                value={entry.text}
-                                onChange={(e) => updateTranscriptEntry(entry.id, e.target.value)}
-                                style={{
-                                  width: '100%',
-                                  fontSize: '14px',
-                                  lineHeight: '1.4',
-                                  border: '1px solid #ddd',
-                                  borderRadius: '3px',
-                                  padding: '4px',
-                                  resize: 'vertical',
-                                  minHeight: '60px',
-                                  fontFamily: 'inherit'
-                                }}
-                              />
-                            ) : (
-                              <div style={{
-                                fontSize: '14px', 
-                                lineHeight: '1.4',
-                                opacity: transcriptSubmitted ? 0.7 : 1
-                              }}>
-                                {entry.text}
-                              </div>
-                            )}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                    
-                    {isEditingTranscript && (
-                      <div style={{
-                        fontSize: '12px',
-                        color: '#666',
-                        fontStyle: 'italic',
-                        marginTop: '8px',
-                        textAlign: 'center'
-                      }}>
-                        💡 Make small corrections for accuracy. Click "Submit for AI Summary" when ready.
-                      </div>
-                    )}
+                    {/* Enhanced Transcription Component */}
+                    <EnhancedTranscription
+                      isRecording={isRecording}
+                      startRecording={startRecording}
+                      stopRecording={stopRecording}
+                      clearTranscription={clearTranscription}
+                      getStatusClass={getStatusClass}
+                      onAITranscriptUpdate={handleAITranscriptUpdate}
+                      onAISummaryUpdate={handleAISummaryUpdate}
+                    />
                   </div>
                 </div>
               ) : currentPage === 'discover-kiva-dialogue' && isKivaDialogue ? (
@@ -1798,69 +1416,50 @@ const BottomContentArea = ({
                     </div>
                   </div>
 
-                  {/* Live Transcription Section */}
+                  {/* Live Transcription Section - Using EnhancedTranscription Component */}
                   <div>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
-                      <h4 style={{color: '#D2691E', margin: 0, fontSize: '16px'}}>KIVA Group Dialogue</h4>
+                    <div style={{marginBottom: '15px'}}>
+                      <h4 style={{color: '#D2691E', margin: 0, fontSize: '16px', marginBottom: '10px'}}>
+                        KIVA Group Dialogue Transcript
+                      </h4>
+                      <p style={{fontSize: '14px', color: '#666', margin: 0}}>
+                        Real-time AI transcription with speaker identification for KIVA group discussions
+                      </p>
                     </div>
                     
-                    {/* Live Transcript Lines (1-2 lines for visual feedback) */}
-                    <div style={{
-                      backgroundColor: '#f0f8ff',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      marginBottom: '10px',
-                      fontSize: '14px',
-                      fontStyle: 'italic',
-                      color: '#666',
-                      minHeight: '40px',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}>
-                      🔴 Live: KIVA groups building on fishbowl insights...
-                    </div>
-                    
-                    {/* Formatted Transcript (near real-time) */}
-                    <div style={{
-                      backgroundColor: '#fff',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      padding: '10px',
-                      maxHeight: '180px',
-                      overflowY: 'auto'
-                    }}>
-                      <div style={{textAlign: 'center', color: '#999', fontStyle: 'italic', padding: '20px'}}>
-                        KIVA dialogue transcript will appear here in near real-time...
-                      </div>
-                    </div>
+                    {/* Enhanced Transcription Component */}
+                    <EnhancedTranscription
+                      isRecording={isRecording}
+                      startRecording={startRecording}
+                      stopRecording={stopRecording}
+                      clearTranscription={clearTranscription}
+                      getStatusClass={getStatusClass}
+                      onAITranscriptUpdate={handleAITranscriptUpdate}
+                      onAISummaryUpdate={handleAISummaryUpdate}
+                    />
                   </div>
                 </div>
               ) : (
-                /* Enhanced Real-time Transcription for other pages */
-                <div>
-                  {/* Debug info to help user understand when this is visible */}
-                  <div style={{
-                    backgroundColor: '#e3f2fd',
-                    border: '2px solid #2196F3',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    marginBottom: '20px',
-                    fontSize: '14px'
-                  }}>
-                    <strong style={{color: '#1976D2'}}>🔧 ENHANCED TRANSCRIPTION DEBUG</strong><br/>
-                    Current Page: <code>{currentPage}</code><br/>
-                    Dialogue Active: <code>{isDialogueActive ? 'true' : 'false'}</code><br/>
-                    Kiva Dialogue: <code>{isKivaDialogue ? 'true' : 'false'}</code><br/>
-                    <strong style={{color: '#388E3C'}}>✅ EnhancedTranscription component is now visible!</strong><br/>
-                    <em>You should see the middle control buttons with tooltips below.</em>
+                /* Default dialogue content for pages without specific dialogue modes */
+                <div className="dialogue-section">
+                  <div style={{marginBottom: '15px'}}>
+                    <h4 style={{color: '#666', margin: 0, fontSize: '16px', marginBottom: '10px'}}>
+                      Live Dialogue Transcript
+                    </h4>
+                    <p style={{fontSize: '14px', color: '#666', margin: 0}}>
+                      Real-time AI transcription with speaker identification and editing capabilities
+                    </p>
                   </div>
                   
-                  <EnhancedTranscription 
+                  {/* Enhanced Transcription Component */}
+                  <EnhancedTranscription
                     isRecording={isRecording}
                     startRecording={startRecording}
                     stopRecording={stopRecording}
                     clearTranscription={clearTranscription}
                     getStatusClass={getStatusClass}
+                    onAITranscriptUpdate={handleAITranscriptUpdate}
+                    onAISummaryUpdate={handleAISummaryUpdate}
                   />
                 </div>
               )}
@@ -2278,58 +1877,127 @@ const BottomContentArea = ({
                 </div>
               ) : (
                 /* Default Summary content for other pages */
-                <>
-                  <div className="summary-card">
-                    <div className="summary-header">
-                      <div className="summary-title">Key Themes Emerging</div>
-                      <div className="ai-tag">AI Generated</div>
+                <div>
+                  {aiGeneratedSummary ? (
+                    /* Display Real AI Summary */
+                    <div className="summary-card">
+                      <div className="summary-header">
+                        <div className="summary-title">🤖 AI-Generated Summary</div>
+                        <div className="summary-status">Generated from enhanced transcript</div>
+                      </div>
+                      <div className="summary-content">
+                        <div style={{
+                          padding: '15px',
+                          backgroundColor: '#f8f9fa',
+                          borderRadius: '6px',
+                          lineHeight: '1.6',
+                          whiteSpace: 'pre-wrap'
+                        }}>
+                          {aiGeneratedSummary}
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className="summary-content">
-                      <p>The conversation centers on the concept of intergenerational responsibility and long-term thinking. Both speakers recognize the value of indigenous approaches to decision-making that consider impacts many generations into the future.</p>
-                      
-                      <p>There's an acknowledgment that current systems often lack this perspective, and there's interest in exploring how to incorporate this long-term, multigenerational viewpoint into modern governance structures.</p>
+                  ) : aiEnhancedTranscript ? (
+                    /* Show Enhanced Transcript if Summary not yet generated */
+                    <div className="summary-card">
+                      <div className="summary-header">
+                        <div className="summary-title">📝 Enhanced Transcript</div>
+                        <div className="summary-status">AI-processed for accuracy - Ready for summarization</div>
+                      </div>
+                      <div className="summary-content">
+                        <div style={{
+                          padding: '15px',
+                          backgroundColor: '#e8f5e8',
+                          borderRadius: '6px',
+                          lineHeight: '1.6',
+                          whiteSpace: 'pre-wrap',
+                          maxHeight: '300px',
+                          overflowY: 'auto'
+                        }}>
+                          {aiEnhancedTranscript}
+                        </div>
+                        <div style={{
+                          marginTop: '10px',
+                          padding: '10px',
+                          backgroundColor: '#d1ecf1',
+                          borderRadius: '4px',
+                          fontSize: '14px',
+                          color: '#0c5460'
+                        }}>
+                          💡 Go to the Dialogue tab and click "Generate Summary" to create an AI summary
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className="vote-controls">
-                      <span>Is this accurate?</span>
-                      <button 
-                        className={`vote-btn ${voteState === 'up' ? 'active' : ''}`} 
-                        onClick={() => vote('up')}
-                        onMouseEnter={(e) => e.target.querySelector('img').src = thumbsUpHover}
-                        onMouseLeave={(e) => e.target.querySelector('img').src = voteState === 'up' ? thumbsUpOn : thumbsUpOff}
-                      >
-                        <img src={voteState === 'up' ? thumbsUpOn : thumbsUpOff} alt="Thumbs Up" style={{width: '24px', height: '24px'}} /> 24
-                      </button>
-                      <button 
-                        className={`vote-btn ${voteState === 'down' ? 'active' : ''}`} 
-                        onClick={() => vote('down')}
-                        onMouseEnter={(e) => e.target.querySelector('img').src = thumbsDownHover}
-                        onMouseLeave={(e) => e.target.querySelector('img').src = voteState === 'down' ? thumbsDownOn : thumbsDownOff}
-                      >
-                        <img src={voteState === 'down' ? thumbsDownOn : thumbsDownOff} alt="Thumbs Down" style={{width: '24px', height: '24px'}} /> 3
-                      </button>
-                    </div>
-                  </div>
-                </>
+                  ) : (
+                    /* Default placeholder when no AI content available */
+                    <>
+                      <div className="summary-card">
+                        <div className="summary-header">
+                          <div className="summary-title">🎤 Live Dialogue Processing</div>
+                          <div className="summary-status">AI will analyze and summarize your conversation</div>
+                        </div>
+                        <div className="summary-content">
+                          <div style={{
+                            textAlign: 'center',
+                            padding: '40px 20px',
+                            color: '#666',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '6px',
+                            border: '1px dashed #dee2e6'
+                          }}>
+                            <div style={{fontSize: '48px', marginBottom: '15px'}}>🤖</div>
+                            <h4 style={{margin: '0 0 10px 0', color: '#495057'}}>AI Summary & Analysis</h4>
+                            <p style={{margin: '0 0 15px 0', lineHeight: '1.6'}}>
+                              Start recording in the Dialogue tab to generate:
+                            </p>
+                            <ul style={{textAlign: 'left', display: 'inline-block', margin: 0}}>
+                              <li>🔴 <strong>Live transcript</strong> - Real-time speech recognition</li>
+                              <li>🤖 <strong>AI-enhanced transcript</strong> - Improved accuracy & formatting</li>
+                              <li>📝 <strong>AI summary</strong> - Key themes and insights</li>
+                              <li>👥 <strong>Speaker identification</strong> - Who said what</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Show Original Summary Cards Only as Fallback */}
+                  {!aiGeneratedSummary && !aiEnhancedTranscript && (
+                    <>
+                      <div className="summary-card">
+                        <div className="summary-header">
+                          <div className="summary-title">Key Themes Emerging</div>
+                          <div className="summary-status">Based on conversation patterns</div>
+                        </div>
+                        <div className="summary-content">
+                          <div className="theme-item">
+                            <span className="theme-icon">🌱</span>
+                            <div className="theme-content">
+                              <div className="theme-title">Authentic Connection</div>
+                              <div className="theme-description">The conversation explores the depth of human connection beyond surface-level interactions.</div>
+                            </div>
+                          </div>
+                          <div className="theme-item">
+                            <span className="theme-icon">🔄</span>
+                            <div className="theme-content">
+                              <div className="theme-title">Mutual Understanding</div>
+                              <div className="theme-description">Participants are finding common ground through shared experiences and perspectives.</div>
+                            </div>
+                          </div>
+                          <div className="theme-item">
+                            <span className="theme-icon">💡</span>
+                            <div className="theme-content">
+                              <div className="theme-title">Emerging Insights</div>
+                              <div className="theme-description">New possibilities and questions are arising from the dialogue exchange.</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               )}
-              
-              <div className="summary-card">
-                <div className="summary-header">
-                  <div className="summary-title">Formatted Transcript</div>
-                  <div className="ai-tag">AI Enhanced</div>
-                </div>
-                
-                <div className="summary-content">
-                  <p><strong>Sarah Johnson:</strong> I think we need to consider how our actions today will impact future generations.</p>
-                  
-                  <p><strong>Michael Chen:</strong> That's an interesting point. I've been thinking about how indigenous cultures often make decisions based on the impact seven generations ahead.</p>
-                  
-                  <p><strong>Sarah Johnson:</strong> Exactly! That kind of long-term thinking seems missing from many of our current systems.</p>
-                  
-                  <p><strong>Michael Chen:</strong> I wonder if there are ways we could incorporate that perspective into our governance models?</p>
-                </div>
-              </div>
             </div>
           )}
           
