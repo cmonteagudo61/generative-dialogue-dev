@@ -353,7 +353,10 @@ app.ws('/realtime', (ws, req) => {
   let deepgramWs = null;
   let isConnected = false;
   let keepAliveInterval = null;
-  
+  let retryCount = 0;
+  const maxRetries = 5;
+  const baseRetryDelay = 1000; // 1 second
+
   // Connect to Deepgram WebSocket
   const connectToDeepgram = () => {
     if (!API_KEY) {
@@ -377,6 +380,7 @@ app.ws('/realtime', (ws, req) => {
     deepgramWs.on('open', () => {
       console.log('✅ Connected to Deepgram WebSocket');
       isConnected = true;
+      retryCount = 0; // Reset retry count on successful connection
       ws.send(JSON.stringify({ type: 'status', message: 'Connected to Deepgram', connected: true }));
       
       // Send keepalive pings
@@ -462,6 +466,17 @@ app.ws('/realtime', (ws, req) => {
         message: errorMessage,
         deepgramCode: code 
       }));
+
+      // Implement reconnection logic with exponential backoff
+      if (retryCount < maxRetries) {
+        retryCount++;
+        const delay = Math.pow(2, retryCount) * baseRetryDelay + Math.random() * 1000;
+        console.log(`🔌 Attempting to reconnect to Deepgram in ${delay.toFixed(0)}ms (attempt ${retryCount}/${maxRetries})...`);
+        setTimeout(connectToDeepgram, delay);
+      } else {
+        console.error(`❌ Max retries reached. Could not reconnect to Deepgram.`);
+        ws.send(JSON.stringify({ type: 'fatal_error', message: 'Could not reconnect to Deepgram after multiple attempts.' }));
+      }
     });
   };
   

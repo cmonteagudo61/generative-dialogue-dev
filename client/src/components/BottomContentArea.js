@@ -1,30 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './BottomContentArea.css';
 import EnhancedTranscription from './EnhancedTranscription';
+import { ReactComponent as LoopIcon } from '../assets/icons/loop-off.svg';
 import {
-  microphoneOff,
   microphoneOn,
-  microphoneHover,
-  cameraOff,
   cameraOn,
-  cameraHover,
-  dialoguePersonOff,
   dialoguePersonOn,
-  dialoguePersonHover,
-  thumbsUpOff,
   thumbsUpOn,
-  thumbsUpHover,
-  thumbsDownOff,
   thumbsDownOn,
-  thumbsDownHover,
-  directionBackwardOff,
   directionBackwardOn,
-  directionBackwardHover,
-  directionForwardOff,
   directionForwardOn,
-  directionForwardHover,
   loopOn,
-  loopHover
+  microphoneOff,
+  cameraOff,
+  dialoguePersonOff,
+  thumbsUpOff,
+  thumbsDownOff,
+  directionBackwardOff,
+  directionForwardOff,
+  loopOff,
+  loopHover,
+  defaultBlue,
+  defaultOrange,
+  microphoneHover,
+  cameraHover,
+  dialoguePersonHover,
+  thumbsUpHover,
+  thumbsDownHover,
+  directionBackwardHover,
+  directionForwardHover
 } from '../assets/icons';
 
 const BottomContentArea = ({ 
@@ -65,11 +69,217 @@ const BottomContentArea = ({
   const [isCameraHover, setIsCameraHover] = useState(false);
   const [isLoopActive, setIsLoopActive] = useState(false);
   const [isLoopHover, setIsLoopHover] = useState(false);
+  const [forceMobileMode, setForceMobileMode] = useState(false);
+  const [summaryVote, setSummaryVote] = useState(null);
+  const [realtimeLines, setRealtimeLines] = useState([]);
 
   // Transcription state
   const [isRecording, setIsRecording] = useState(false);
   const [transcriptionStatus, setTranscriptionStatus] = useState('Disconnected');
-  const [transcriptionError] = useState('');
+  const [transcriptionError, setTranscriptionError] = useState('');
+  const [realtimeTranscript, setRealtimeTranscript] = useState('');
+  const [finalTranscript, setFinalTranscript] = useState('');
+  const [enhancedTranscript, setEnhancedTranscript] = useState('');
+  const [aiGeneratedSummary, setAiGeneratedSummary] = useState('');
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [hasBeenEnhanced, setHasBeenEnhanced] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [lastConnectionAttempt, setLastConnectionAttempt] = useState(0);
+
+  const wsRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const connectionLockRef = useRef(false);
+  const CONNECTION_DEBOUNCE_MS = 2000;
+  
+  const stopRealTimeTranscription = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.close();
+    }
+    setIsRecording(false);
+  }, []);
+
+  const startRealTimeTranscription = useCallback(() => {
+    if (connectionLockRef.current || isConnecting) {
+      console.warn('⚠️ Connection attempt blocked by lock or already in progress.');
+      return;
+    }
+
+    const now = Date.now();
+    if (now - lastConnectionAttempt < CONNECTION_DEBOUNCE_MS) {
+      console.warn('⚠️ Connection attempt blocked by debounce.');
+      return;
+    }
+
+    connectionLockRef.current = true;
+    setIsConnecting(true);
+    setLastConnectionAttempt(now);
+    setTranscriptionStatus('Connecting...');
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        streamRef.current = stream;
+        const newMediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = newMediaRecorder;
+
+        wsRef.current = new WebSocket('ws://localhost:8080/realtime');
+
+        wsRef.current.onopen = () => {
+          console.log('🔌 WebSocket connection established.');
+          setTranscriptionStatus('Connected');
+          if (mediaRecorderRef.current) {
+            mediaRecorderRef.current.start(500); // Start sending data
+          }
+        };
+
+        wsRef.current.onmessage = event => {
+          const data = JSON.parse(event.data);
+          if (data.type === 'final') {
+            setFinalTranscript(prev => `${prev}\n${data.transcript}`);
+          } else {
+            setRealtimeTranscript(data.transcript);
+          }
+        };
+
+        wsRef.current.onerror = error => {
+          console.error('WebSocket Error:', error);
+          setTranscriptionError('WebSocket connection error.');
+          setTranscriptionStatus('Error');
+          stopRealTimeTranscription();
+        };
+
+        wsRef.current.onclose = () => {
+          console.log('🔌 WebSocket connection closed.');
+          setTranscriptionStatus('Disconnected');
+          stopRealTimeTranscription();
+        };
+
+        newMediaRecorder.ondataavailable = event => {
+          if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(event.data);
+          }
+        };
+
+        setIsRecording(true);
+      })
+      .catch(err => {
+        console.error('Error getting user media:', err);
+        setTranscriptionError('Could not access microphone.');
+        setTranscriptionStatus('Error');
+      })
+      .finally(() => {
+        connectionLockRef.current = false;
+        setIsConnecting(false);
+      });
+  }, [isConnecting, lastConnectionAttempt, stopRealTimeTranscription]);
+
+  const enhanceTranscriptWithAI = useCallback(async () => {
+    if (hasBeenEnhanced || !finalTranscript) return;
+    setIsEnhancing(true);
+    try {
+      const response = await fetch('http://localhost:8080/api/enhance-transcript', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcript: finalTranscript })
+      });
+      const data = await response.json();
+      setEnhancedTranscript(data.enhancedTranscript);
+      setHasBeenEnhanced(true);
+    } catch (error) {
+      console.error('Error enhancing transcript:', error);
+      setTranscriptionError('Error enhancing transcript.');
+    } finally {
+      setIsEnhancing(false);
+    }
+  }, [finalTranscript, hasBeenEnhanced]);
+
+  const generateAISummary = useCallback(async () => {
+    if (!enhancedTranscript) return;
+    setIsGeneratingSummary(true);
+    try {
+      const response = await fetch('http://localhost:8080/api/generate-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcript: enhancedTranscript })
+      });
+      const data = await response.json();
+      setAiGeneratedSummary(data.summary);
+    } catch (error) {
+      console.error('Error generating summary:', error);
+      setTranscriptionError('Error generating summary.');
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  }, [enhancedTranscript]);
+
+  const handleStartTranscription = () => {
+    if (!isRecording) {
+      startRealTimeTranscription();
+    }
+  };
+
+  const handleStopTranscription = () => {
+    if (isRecording) {
+      setIsRecording(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 768) {
+        setForceMobileMode(true);
+      } else {
+        setForceMobileMode(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  
+  // Load from localStorage on initial render
+  useEffect(() => {
+    const savedFinalTranscript = localStorage.getItem('finalTranscript');
+    if (savedFinalTranscript) setFinalTranscript(savedFinalTranscript);
+    const savedVote = localStorage.getItem('summaryVote');
+    if (savedVote) setVoteState(JSON.parse(savedVote));
+  }, []);
+
+  // Save to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('finalTranscript', finalTranscript);
+    localStorage.setItem('enhancedTranscript', enhancedTranscript);
+    localStorage.setItem('aiSummary', aiGeneratedSummary);
+  }, [finalTranscript, enhancedTranscript, aiGeneratedSummary]);
+
+  useEffect(() => {
+    if (finalTranscript && !hasBeenEnhanced) {
+      const timer = setTimeout(() => {
+        enhanceTranscriptWithAI();
+      }, 2000); // Debounce AI enhancement
+      return () => clearTimeout(timer);
+    }
+  }, [finalTranscript, hasBeenEnhanced, enhanceTranscriptWithAI]);
+  
+  useEffect(() => {
+    if (isRecording) {
+      startRealTimeTranscription();
+    } else {
+      stopRealTimeTranscription();
+    }
+  }, [isRecording, startRealTimeTranscription, stopRealTimeTranscription]);
 
   // Dialogue-specific state
   const [liveTranscript, setLiveTranscript] = useState('');
@@ -525,19 +735,21 @@ const BottomContentArea = ({
 
    // Transcription functions - these will be passed to EnhancedTranscription
   const startRecording = () => {
-    setIsRecording(true);
-    setTranscriptionStatus('Connected - Speaking...');
+    startRealTimeTranscription();
   };
 
   const stopRecording = () => {
-    setIsRecording(false);
-    setTranscriptionStatus('Disconnected');
+    stopRealTimeTranscription();
   };
 
-  const clearTranscription = () => {
-    // This will be handled by EnhancedTranscription
-    setTranscriptionStatus('Cleared');
-  };
+  const clearTranscription = useCallback(() => {
+    stopRealTimeTranscription();
+    setRealtimeTranscript('');
+    setFinalTranscript('');
+    setEnhancedTranscript('');
+    setAiGeneratedSummary('');
+    setHasBeenEnhanced(false);
+  }, [stopRealTimeTranscription]);
 
   const getStatusClass = () => {
     if (transcriptionError) return 'disconnected';
@@ -551,18 +763,15 @@ const BottomContentArea = ({
   };
 
   const toggleMic = () => {
-    setIsMuted(!isMuted);
-    setIsMicrophoneHover(false); // Reset hover state after click
+    setIsMuted(prev => !prev);
   };
 
   const toggleCamera = () => {
-    setIsCameraOff(!isCameraOff);
-    setIsCameraHover(false); // Reset hover state after click
+    setIsCameraOff(prev => !prev);
   };
 
   const toggleCall = () => {
-    setIsInCall(!isInCall);
-    setPersonHover(false); // Reset hover state after click
+    setIsInCall(prev => !prev);
   };
 
   const toggleLoop = () => {
@@ -586,74 +795,46 @@ const BottomContentArea = ({
 
   const handleBackClick = () => {
     if (developmentMode && canGoBack && onBack) {
-      // Development mode: navigate to previous page
-      setBackButtonState('on');
       onBack();
-      setTimeout(() => setBackButtonState('off'), 200);
     } else {
-      // Normal mode: toggle button state
       console.log('Back button clicked');
-      const newBackState = backButtonState === 'on' ? 'off' : 'on';
-      setBackButtonState(newBackState);
-      
-      if (newBackState === 'on') {
-        setForwardButtonState('off');
-      }
     }
   };
 
   const handleForwardClick = () => {
     if (developmentMode && canGoForward && onForward) {
-      // Development mode: navigate to next page
-      setForwardButtonState('on');
       onForward();
-      setTimeout(() => setForwardButtonState('off'), 200);
     } else {
-      // Normal mode: toggle button state
       console.log('Forward button clicked');
-      const newForwardState = forwardButtonState === 'on' ? 'off' : 'on';
-      setForwardButtonState(newForwardState);
-      
-      if (newForwardState === 'on') {
-        setBackButtonState('off');
-      }
     }
   };
 
   const handleThumbsUpClick = () => {
-    console.log('Thumbs up clicked');
     const newThumbsUpState = thumbsUpButtonState === 'on' ? 'off' : 'on';
     setThumbsUpButtonState(newThumbsUpState);
-    
     if (newThumbsUpState === 'on') {
-      setThumbsDownButtonState('off'); // Turn off thumbs down when thumbs up is on
+      setThumbsDownButtonState('off');
     }
   };
 
   const handleThumbsDownClick = () => {
-    console.log('Thumbs down clicked');
     const newThumbsDownState = thumbsDownButtonState === 'on' ? 'off' : 'on';
     setThumbsDownButtonState(newThumbsDownState);
-    
     if (newThumbsDownState === 'on') {
-      setThumbsUpButtonState('off'); // Turn off thumbs up when thumbs down is on
+      setThumbsUpButtonState('off');
     }
   };
 
   const getBackButtonIcon = () => {
-    switch (backButtonState) {
-      case 'on': return directionBackwardOn;
-      case 'hover': return directionBackwardHover;
-      default: return directionBackwardOff;
-    }
+    if (backButtonState === 'on') return directionBackwardOn;
+    if (backButtonState === 'hover') return directionBackwardHover;
+    return directionBackwardOff;
   };
 
   const getForwardButtonIcon = () => {
-    switch (forwardButtonState) {
-      case 'on': return directionForwardOn;
-      case 'hover': return directionForwardHover;
-      default: return directionForwardOff;
-    }
+    if (forwardButtonState === 'on') return directionForwardOn;
+    if (forwardButtonState === 'hover') return directionForwardHover;
+    return directionForwardOff;
   };
 
   const getThumbsUpButtonIcon = () => {
@@ -672,6 +853,16 @@ const BottomContentArea = ({
     }
   };
 
+  const getLoopIcon = () => {
+    if (isLoopActive) return loopOn;
+    if (isLoopHover) return loopHover;
+    return loopOff;
+  };
+
+  const handleEditTranscript = () => {
+    setIsEditingTranscript(true);
+  };
+
   return (
     <div className="bottom-content-area">
       {/* Tab area */}
@@ -681,7 +872,7 @@ const BottomContentArea = ({
             <div 
               className={`tab-btn ${activeTab === 'catalyst' ? 'active' : ''}`}
               onClick={() => switchTab('catalyst')}
-              title="Catalyst - Mindfulness exercises and connection activities"
+              title="Catalyst - instructions and activities to help catalyze an effective dialogue."
             >
               Catalyst
             </div>
@@ -1012,7 +1203,7 @@ const BottomContentArea = ({
                           {!isEditingTranscript ? (
                             <>
                               <button
-                                onClick={startEditingTranscript}
+                                onClick={handleEditTranscript}
                                 style={{
                                   backgroundColor: '#f8f9fa',
                                   border: '1px solid #2E5BBA',
@@ -1254,12 +1445,20 @@ const BottomContentArea = ({
                 </div>
               ) : (
                 /* Enhanced Real-time Transcription for other pages */
-                <EnhancedTranscription 
+                <EnhancedTranscription
+                  realtimeTranscript={realtimeTranscript}
+                  enhancedTranscript={enhancedTranscript}
+                  aiSummary={aiGeneratedSummary}
                   isRecording={isRecording}
-                  startRecording={startRecording}
-                  stopRecording={stopRecording}
-                  clearTranscription={clearTranscription}
-                  getStatusClass={getStatusClass}
+                  isTranscribing={isConnecting}
+                  isEnhancing={isEnhancing}
+                  isGeneratingSummary={isGeneratingSummary}
+                  onStartTranscription={startRecording}
+                  onStopTranscription={stopRecording}
+                  onClearTranscription={clearTranscription}
+                  onEditTranscript={(editedTranscript) => setEnhancedTranscript(editedTranscript)}
+                  onGenerateSummary={generateAISummary}
+                  onVoteOnSummary={(vote) => setVoteState(vote)}
                 />
               )}
             </div>
@@ -2431,21 +2630,14 @@ const BottomContentArea = ({
             onClick={toggleLoop}
             onMouseEnter={() => setIsLoopHover(true)}
             onMouseLeave={() => setIsLoopHover(false)}
-            title="Use the Loop to magnify video feeds"
+            title={isLoopActive ? 'Stop Loop' : 'Start Loop'}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
               outline: 'none' // Remove focus ring
             }}
           >
-            <img 
-              src={isLoopActive 
-                ? loopHover  // Always show blue with orange handle when active
-                : (isLoopHover ? loopHover : loopOn)
-              }
-              alt={isLoopActive ? 'Disable Loop' : 'Enable Loop'}
-              style={{width: '24px', height: '24px'}}
-            />
+            <img src={getLoopIcon()} alt="Loop" style={{ width: '24px', height: '24px' }} />
           </button>
         </div>
         
@@ -2497,8 +2689,8 @@ const BottomContentArea = ({
               src={getThumbsUpButtonIcon()} 
               alt="Thumbs Up" 
               style={{
-                width: '34px',
-                height: '34px',
+                width: '36px',
+                height: '36px',
                 borderRadius: '50%',
                 objectFit: 'cover',
                 display: 'block'
@@ -2526,8 +2718,8 @@ const BottomContentArea = ({
               src={getThumbsDownButtonIcon()} 
               alt="Thumbs Down" 
               style={{
-                width: '34px',
-                height: '34px',
+                width: '36px',
+                height: '36px',
                 borderRadius: '50%',
                 objectFit: 'cover',
                 display: 'block'
@@ -2539,8 +2731,8 @@ const BottomContentArea = ({
             id="back-btn" 
             className="control-button"
             onClick={handleBackClick}
-            onMouseEnter={() => (!developmentMode || canGoBack) && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
-            onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
+            onMouseEnter={() => setBackButtonState('hover')}
+            onMouseLeave={() => setBackButtonState('off')}
             disabled={developmentMode && !canGoBack}
             title={canGoBack ? 'Go back to the previous page' : 'Cannot go back - this is the first page'}
             style={{
@@ -2564,8 +2756,8 @@ const BottomContentArea = ({
             id="forward-btn" 
             className="control-button"
             onClick={handleForwardClick}
-            onMouseEnter={() => (!developmentMode || canGoForward) && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
-            onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
+            onMouseEnter={() => setForwardButtonState('hover')}
+            onMouseLeave={() => setForwardButtonState('off')}
             disabled={developmentMode && !canGoForward}
             title={canGoForward ? 'Continue to the next page' : 'Cannot proceed - complete the current phase first'}
             style={{
