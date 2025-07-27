@@ -681,24 +681,28 @@ const BottomContentArea = ({
             <div 
               className={`tab-btn ${activeTab === 'catalyst' ? 'active' : ''}`}
               onClick={() => switchTab('catalyst')}
+              title="Catalyst - Mindfulness exercises and connection activities"
             >
               Catalyst
             </div>
             <div 
               className={`tab-btn ${activeTab === 'dialogue' ? 'active' : ''}`}
               onClick={() => switchTab('dialogue')}
+              title="Dialogue - Live transcription and conversation content"
             >
               Dialogue
             </div>
             <div 
               className={`tab-btn ${activeTab === 'summary' ? 'active' : ''}`}
               onClick={() => switchTab('summary')}
+              title="Summary - AI-generated insights and voting"
             >
               Summary
             </div>
             <div 
               className={`tab-btn ${activeTab === 'we' ? 'active' : ''}`}
               onClick={() => switchTab('we')}
+              title="WE - Collective wisdom and voices from the field"
             >
               WE
             </div>
@@ -709,6 +713,7 @@ const BottomContentArea = ({
             <button 
               className={`transcription-control-btn ${isRecording ? 'danger' : 'primary'}`}
               onClick={isRecording ? stopRecording : startRecording}
+              title={isRecording ? 'Stop live transcription recording' : 'Start live transcription with AI processing'}
             >
               <span className="btn-icon">{isRecording ? '⏹' : '🎤'}</span>
               <span className="btn-text">{isRecording ? ' Stop Recording' : ' Start Live Transcription'}</span>
@@ -717,12 +722,13 @@ const BottomContentArea = ({
             <button 
               className="transcription-control-btn warning"
               onClick={clearTranscription}
+              title="Clear all transcription data and AI summaries"
             >
               <span className="btn-icon">🗑</span>
               <span className="btn-text"> Clear</span>
             </button>
             
-            <div className={`transcription-status ${getStatusClass()}`}>
+            <div className={`transcription-status ${getStatusClass()}`} title="Transcription status indicator">
               <span className="status-icon">🚫</span>
               <span className="status-text">{transcriptionError || transcriptionStatus}</span>
             </div>
@@ -2334,6 +2340,7 @@ const BottomContentArea = ({
             onClick={toggleCamera}
             onMouseEnter={() => setIsCameraHover(true)}
             onMouseLeave={() => setIsCameraHover(false)}
+            title={isCameraOff ? 'Turn camera on' : 'Turn camera off'}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -2362,6 +2369,7 @@ const BottomContentArea = ({
             onClick={toggleMic}
             onMouseEnter={() => setIsMicrophoneHover(true)}
             onMouseLeave={() => setIsMicrophoneHover(false)}
+            title={isMuted ? 'Unmute microphone' : 'Mute microphone'}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -2392,6 +2400,7 @@ const BottomContentArea = ({
             onClick={toggleCall}
             onMouseEnter={() => setPersonHover(true)}
             onMouseLeave={() => setPersonHover(false)}
+            title={isInCall ? 'Leave the dialogue session' : 'Join the dialogue session'}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -2422,6 +2431,7 @@ const BottomContentArea = ({
             onClick={toggleLoop}
             onMouseEnter={() => setIsLoopHover(true)}
             onMouseLeave={() => setIsLoopHover(false)}
+            title="Use the Loop to magnify video feeds"
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -2439,12 +2449,27 @@ const BottomContentArea = ({
           </button>
         </div>
         
-        {/* Timer display - Optimized compact format */}
+        {/* Timer display - Responsive layout */}
         <div className="timer-display">
-          <div className="timer-cell-combined">
-            <div className="timer-label-combined">TOTAL / SEGMENT TIME</div>
-            <div className="timer-value-combined" id="combined-time">
-              {totalTime.replace(/^0+:/, '').replace(/^0/, '') || totalTime} / {segmentTime}
+          {/* Desktop layout - separate timers */}
+          <div className="timer-cell-desktop">
+            <div className="timer-label">TOTAL TIME</div>
+            <div className="timer-value" id="total-time">
+              {totalTime.replace(/^0+:/, '').replace(/^0/, '') || totalTime}
+            </div>
+          </div>
+          <div className="timer-cell-desktop">
+            <div className="timer-label">SEGMENT TIME</div>
+            <div className="timer-value" id="segment-time">
+              {segmentTime}
+            </div>
+          </div>
+          
+          {/* Mobile layout - total time only */}
+          <div className="timer-cell-mobile">
+            <div className="timer-label">TOTAL TIME</div>
+            <div className="timer-value" id="total-time-mobile">
+              {totalTime.replace(/^0+:/, '').replace(/^0/, '') || totalTime}
             </div>
           </div>
         </div>
@@ -2458,6 +2483,7 @@ const BottomContentArea = ({
             onClick={handleThumbsUpClick}
             onMouseEnter={() => setThumbsUpButtonState(thumbsUpButtonState === 'on' ? 'on' : 'hover')}
             onMouseLeave={() => setThumbsUpButtonState(thumbsUpButtonState === 'on' ? 'on' : 'off')}
+            title="Vote positive - this content is accurate and helpful"
             style={{
               backgroundColor: 'transparent',
               border: 'none',
@@ -2486,6 +2512,7 @@ const BottomContentArea = ({
             onClick={handleThumbsDownClick}
             onMouseEnter={() => setThumbsDownButtonState(thumbsDownButtonState === 'on' ? 'on' : 'hover')}
             onMouseLeave={() => setThumbsDownButtonState(thumbsDownButtonState === 'on' ? 'on' : 'off')}
+            title="Vote negative - this content needs improvement or is inaccurate"
             style={{
               backgroundColor: 'transparent',
               border: 'none',
@@ -2515,6 +2542,7 @@ const BottomContentArea = ({
             onMouseEnter={() => (!developmentMode || canGoBack) && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
             onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
             disabled={developmentMode && !canGoBack}
+            title={canGoBack ? 'Go back to the previous page' : 'Cannot go back - this is the first page'}
             style={{
               backgroundColor: 'transparent',
               border: 'none',
@@ -2539,6 +2567,7 @@ const BottomContentArea = ({
             onMouseEnter={() => (!developmentMode || canGoForward) && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
             onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
             disabled={developmentMode && !canGoForward}
+            title={canGoForward ? 'Continue to the next page' : 'Cannot proceed - complete the current phase first'}
             style={{
               backgroundColor: 'transparent',
               border: 'none',

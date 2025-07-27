@@ -701,8 +701,8 @@
   gap: 6px;
   width: 200px; /* Increased width to accommodate longer button text */
   height: auto; /* Let height be determined by padding */
-  justify-content: center;
-  text-align: center;
+  justify-content: flex-end;
+  text-align: right;
   white-space: nowrap; /* Prevent text wrapping */
   overflow: hidden; /* Hide any overflow */
   box-sizing: border-box; /* Include padding in width calculation */
@@ -715,7 +715,7 @@
   padding: 8px clamp(8px, 1.5vw, 16px) !important; /* Responsive padding */
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-end !important;
   border-radius: 6px !important;
   font-size: clamp(14px, 1.5vw, 16px) !important; /* Responsive font size */
   font-weight: 500 !important;
@@ -735,7 +735,7 @@
   padding: 8px clamp(8px, 1.5vw, 16px) !important; /* Responsive padding */
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-end !important;
   border-radius: 6px !important;
   font-size: clamp(14px, 1.5vw, 16px) !important; /* Responsive font size */
   font-weight: 500 !important;
