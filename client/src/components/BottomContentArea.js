@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './BottomContentArea.css';
 import EnhancedTranscription from './EnhancedTranscription';
 import {
@@ -66,246 +66,18 @@ const BottomContentArea = ({
   const [isLoopActive, setIsLoopActive] = useState(false);
   const [isLoopHover, setIsLoopHover] = useState(false);
 
-  // Tooltip state and refs
-  const [showMicTooltip, setShowMicTooltip] = useState(false);
-  const [showCameraTooltip, setShowCameraTooltip] = useState(false);
-  const [showPersonTooltip, setShowPersonTooltip] = useState(false);
-  const [showLoopTooltip, setShowLoopTooltip] = useState(false);
-  
-  // Add tooltip states for the actual UI buttons in tab-controls-right
-  const [showTabMicTooltip, setShowTabMicTooltip] = useState(false);
-  const [showTabClearTooltip, setShowTabClearTooltip] = useState(false);
-  const [showTabStatusTooltip, setShowTabStatusTooltip] = useState(false);
-
-  // Timeout refs for tooltip delays
-  const micTooltipTimeout = useRef(null);
-  const cameraTooltipTimeout = useRef(null);
-  const personTooltipTimeout = useRef(null);
-  const loopTooltipTimeout = useRef(null);
-  
-  // Add timeout refs for the actual UI buttons
-  const tabMicTooltipTimeout = useRef(null);
-  const tabClearTooltipTimeout = useRef(null);
-  const tabStatusTooltipTimeout = useRef(null);
-
-  // Press timeout refs for mobile long-press
-  const micPressTimeout = useRef(null);
-  const cameraPressTimeout = useRef(null);
-  const personPressTimeout = useRef(null);
-  const loopPressTimeout = useRef(null);
-  
-  // Add press timeout refs for the actual UI buttons
-  const tabMicPressTimeout = useRef(null);
-  const tabClearPressTimeout = useRef(null);
-  const tabStatusPressTimeout = useRef(null);
-
-  // Auto-hide timeout refs for mobile
-  const micAutoHideTimeout = useRef(null);
-  const cameraAutoHideTimeout = useRef(null);
-  const personAutoHideTimeout = useRef(null);
-  const loopAutoHideTimeout = useRef(null);
-  
-  // Add auto-hide timeout refs for the actual UI buttons
-  const tabMicAutoHideTimeout = useRef(null);
-  const tabClearAutoHideTimeout = useRef(null);
-  const tabStatusAutoHideTimeout = useRef(null);
-
-  // Utility functions for tooltip management
-  const showTooltipWithDelay = (setTooltip, timeoutRef, delay = 2000) => {
-    clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setTooltip(true);
-    }, delay);
-  };
-
-  const showTooltipImmediately = (setTooltip) => {
-    setTooltip(true);
-  };
-
-  const hideTooltipImmediately = (setTooltip, timeoutRef, pressTimeoutRef = null, autoHideTimeoutRef = null) => {
-    clearTimeout(timeoutRef.current);
-    if (pressTimeoutRef) clearTimeout(pressTimeoutRef.current);
-    if (autoHideTimeoutRef) clearTimeout(autoHideTimeoutRef.current);
-    setTooltip(false);
-  };
-
-  // Get tooltip positioning relative to button
-  const getTooltipPosition = (buttonId) => {
-    const button = document.getElementById(buttonId);
-    if (!button) {
-      return { left: '50%', top: '50%' };
-    }
-    
-    const rect = button.getBoundingClientRect();
-    const buttonCenterY = rect.top + rect.height / 2;
-    const buttonRight = rect.right;
-    const buttonLeft = rect.left;
-    const viewportHeight = window.innerHeight;
-    
-    // For tab control buttons, always position to the LEFT of the button
-    const isTabControlButton = buttonId.startsWith('tab-');
-    
-    let leftPosition, topPosition;
-    
-    if (isTabControlButton) {
-      const tooltipWidth = 200;
-      
-      // Different positioning for each button based on user feedback
-      let iconWidthGap;
-      if (buttonId === 'tab-status-indicator') {
-        // Status indicator: move 5px more to the left (increase gap)
-        iconWidthGap = 130; // 125 + 5 = 130px gap
-      } else {
-        // Mic and Clear buttons: move 20px to the left (increase gap)
-        iconWidthGap = 40; // 20 + 20 = 40px gap
-      }
-      
-      leftPosition = buttonLeft - tooltipWidth - iconWidthGap;
-      
-      // If it would go off screen, position it as far left as possible
-      if (leftPosition < 10) {
-        leftPosition = 10;
-      }
-      
-      topPosition = buttonCenterY;
-    } else {
-      // Original logic for other buttons - position to the right
-      // Adjusted: 3px left (15-3=12) and 2px down
-      leftPosition = buttonRight + 12; // 12px gap from button (was 15, moved 3px left)
-      
-      // Check if tooltip would go off the right edge
-      const tooltipWidth = 200;
-      if (leftPosition + tooltipWidth > window.innerWidth - 10) {
-        // If not enough space on right, position to the left of button
-        // Also moved 3px left here
-        leftPosition = rect.left - tooltipWidth - 18; // was -15, now -18 (3px more left)
-      }
-      
-      topPosition = buttonCenterY + 2; // Moved 2px down for bottom controls only
-    }
-    
-    // Check if tooltip would go off the top or bottom
-    const tooltipHeight = 50; // Approximate tooltip height
-    if (topPosition - tooltipHeight/2 < 10) {
-      topPosition = tooltipHeight/2 + 10;
-    }
-    if (topPosition + tooltipHeight/2 > viewportHeight - 10) {
-      topPosition = viewportHeight - tooltipHeight/2 - 10;
-    }
-    
-    const position = {
-      left: `${leftPosition}px`,
-      top: `${topPosition}px`,
-      // Center all tooltips vertically since all are positioned to the side now
-      transform: 'translateY(-50%)'
-    };
-    
-    return position;
-  };
-
-  // Smart device detection - use touch capability, not just window width
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  const isSmallScreen = window.innerWidth <= 768;
-  
-  // Universal event handlers that work on both desktop and mobile
-  const createTooltipHandlers = (setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef) => ({
-    // Desktop hover events
-    onMouseEnter: () => {
-      if (!isTouchDevice) { // Desktop/laptop with mouse
-        showTooltipWithDelay(setTooltip, timeoutRef);
-      }
-    },
-    onMouseLeave: () => {
-      if (!isTouchDevice) { // Desktop/laptop with mouse
-        hideTooltipImmediately(setTooltip, timeoutRef, pressTimeoutRef, autoHideTimeoutRef);
-      }
-    },
-    // Mobile/tablet touch events
-    onTouchStart: () => {
-      if (isTouchDevice) { // Only on actual touch devices
-        // Clear any existing timeouts
-        clearTimeout(pressTimeoutRef.current);
-        clearTimeout(autoHideTimeoutRef.current);
-        
-        pressTimeoutRef.current = setTimeout(() => {
-          setTooltip(true);
-          
-          // Auto-hide after 4 seconds on mobile
-          autoHideTimeoutRef.current = setTimeout(() => {
-            setTooltip(false);
-          }, 4000);
-        }, 1000); // 1 second long-press
-      }
-    },
-    onTouchEnd: () => {
-      if (isTouchDevice) {
-        clearTimeout(pressTimeoutRef.current);
-        // Keep the tooltip visible if it was already shown, 
-        // let auto-hide handle it
-      }
-    },
-    onTouchCancel: () => {
-      if (isTouchDevice) {
-        clearTimeout(pressTimeoutRef.current);
-        clearTimeout(autoHideTimeoutRef.current);
-        setTooltip(false);
-      }
-    }
-  });
-
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      clearTimeout(micTooltipTimeout.current);
-      clearTimeout(cameraTooltipTimeout.current);
-      clearTimeout(personTooltipTimeout.current);
-      clearTimeout(loopTooltipTimeout.current);
-      clearTimeout(micPressTimeout.current);
-      clearTimeout(cameraPressTimeout.current);
-      clearTimeout(personPressTimeout.current);
-      clearTimeout(loopPressTimeout.current);
-      clearTimeout(micAutoHideTimeout.current);
-      clearTimeout(cameraAutoHideTimeout.current);
-      clearTimeout(personAutoHideTimeout.current);
-      clearTimeout(loopAutoHideTimeout.current);
-      clearTimeout(tabMicTooltipTimeout.current);
-      clearTimeout(tabClearTooltipTimeout.current);
-      clearTimeout(tabStatusTooltipTimeout.current);
-      clearTimeout(tabMicPressTimeout.current);
-      clearTimeout(tabClearPressTimeout.current);
-      clearTimeout(tabStatusPressTimeout.current);
-      clearTimeout(tabMicAutoHideTimeout.current);
-      clearTimeout(tabClearAutoHideTimeout.current);
-      clearTimeout(tabStatusAutoHideTimeout.current);
-    };
-  }, []);
-
   // Transcription state
   const [isRecording, setIsRecording] = useState(false);
-  const [transcriptionStatus, setTranscriptionStatus] = useState('Ready to transcribe');
+  const [transcriptionStatus, setTranscriptionStatus] = useState('Disconnected');
   const [transcriptionError] = useState('');
 
-  // AI-enhanced transcript and summary state
-  const [aiEnhancedTranscript, setAiEnhancedTranscript] = useState('');
-  const [aiGeneratedSummary, setAiGeneratedSummary] = useState('');
-
-  // Function to parse timeframe string to seconds
-  const parseTimeframeToSeconds = (timeframe) => {
-    if (!timeframe) return 1200; // Default 20 minutes
-    
-    const match = timeframe.match(/(\d+)\s*(minute|min)/i);
-    if (match) {
-      return parseInt(match[1]) * 60; // Convert minutes to seconds
-    }
-    
-    // If no match, try to extract any number and assume it's minutes
-    const numberMatch = timeframe.match(/(\d+)/);
-    if (numberMatch) {
-      return parseInt(numberMatch[1]) * 60;
-    }
-    
-    return 1200; // Default fallback to 20 minutes
-  };
+  // Dialogue-specific state
+  const [liveTranscript, setLiveTranscript] = useState('');
+  const [formattedTranscript, setFormattedTranscript] = useState([]);
+  const [dialogueTimeRemaining, setDialogueTimeRemaining] = useState(1200); // 20 minutes
+  const [isEditingTranscript, setIsEditingTranscript] = useState(false);
+  const [editableTranscript, setEditableTranscript] = useState([]);
+  const [transcriptSubmitted, setTranscriptSubmitted] = useState(false);
 
   // Summary review state
   const [participantVotes, setParticipantVotes] = useState({
@@ -325,6 +97,8 @@ const BottomContentArea = ({
     'Casey': null
   });
   const [kivaSummarySubmitted, setKivaSummarySubmitted] = useState(false);
+
+
 
   // Set segment duration based on current page
   useEffect(() => {
@@ -372,27 +146,101 @@ const BottomContentArea = ({
     return () => clearInterval(interval);
   }, []);
 
-  // Dialogue timer state - re-adding since it's used in UI
-  const [dialogueTimeRemaining, setDialogueTimeRemaining] = useState(() => parseTimeframeToSeconds(dialogueTimeframe));
-
-  // Update timer when timeframe prop changes
-  useEffect(() => {
-    const newTimeInSeconds = parseTimeframeToSeconds(dialogueTimeframe);
-    setDialogueTimeRemaining(newTimeInSeconds);
-  }, [dialogueTimeframe]);
-
   // Dialogue timer countdown
   useEffect(() => {
-    if (isDialogueActive) {
+    if (isDialogueActive && dialogueTimeRemaining > 0) {
       const timer = setInterval(() => {
-        setDialogueTimeRemaining(prev => prev > 0 ? prev - 1 : 0);
+        setDialogueTimeRemaining(prev => prev - 1);
       }, 1000);
       
       return () => clearInterval(timer);
     }
+  }, [isDialogueActive, dialogueTimeRemaining]);
+
+  // Mock dialogue transcript simulation
+  useEffect(() => {
+    if (isDialogueActive) {
+      // Simulate live transcript updates
+      const liveUpdates = [
+        "Sarah is speaking about community networks...",
+        "Marcus is responding to Sarah's point...",
+        "Elena is asking a clarifying question...",
+        "Group is discussing resilience strategies..."
+      ];
+
+      // Simulate formatted transcript entries
+      const mockTranscript = [
+        {
+          id: 1,
+          speaker: "Sarah",
+          timestamp: "15:32",
+          text: "I think community resilience starts with understanding our interconnectedness. When we know our neighbors and local resources, we're better prepared for any crisis."
+        },
+        {
+          id: 2,
+          speaker: "Marcus", 
+          timestamp: "15:34",
+          text: "That's a great point, Sarah. I'd like to build on that - in my experience working with local nonprofits, I've seen how crucial communication networks are. When people have multiple ways to stay connected, communities bounce back faster."
+        },
+        {
+          id: 3,
+          speaker: "Elena",
+          timestamp: "15:36", 
+          text: "Both of you raise important points about connection. I'm curious though - how do we balance self-reliance with community interdependence? Sometimes I worry that too much emphasis on community support might reduce individual preparedness."
+        }
+      ];
+
+      // Update live transcript every 3 seconds
+      const liveTimer = setInterval(() => {
+        const randomUpdate = liveUpdates[Math.floor(Math.random() * liveUpdates.length)];
+        setLiveTranscript(randomUpdate);
+      }, 3000);
+
+      // Add formatted transcript entries gradually
+      const transcriptTimer = setTimeout(() => {
+        setFormattedTranscript(mockTranscript);
+      }, 2000);
+
+      return () => {
+        clearInterval(liveTimer);
+        clearTimeout(transcriptTimer);
+      };
+    }
   }, [isDialogueActive]);
 
-  // Dialogue transcript editing functions are now handled by EnhancedTranscription component
+  // Update editable transcript when formatted transcript changes
+  useEffect(() => {
+    setEditableTranscript([...formattedTranscript]);
+  }, [formattedTranscript]);
+
+  // Dialogue transcript editing functions
+  const startEditingTranscript = () => {
+    setIsEditingTranscript(true);
+  };
+
+  const cancelEditingTranscript = () => {
+    setIsEditingTranscript(false);
+    setEditableTranscript([...formattedTranscript]); // Reset to original
+  };
+
+  const updateTranscriptEntry = (entryId, newText) => {
+    setEditableTranscript(prev => 
+      prev.map(entry => 
+        entry.id === entryId ? { ...entry, text: newText } : entry
+      )
+    );
+  };
+
+  const submitTranscriptForAI = () => {
+    // Here you would typically send the edited transcript to your backend
+    console.log('Submitting transcript for AI processing:', editableTranscript);
+    setTranscriptSubmitted(true);
+    setIsEditingTranscript(false);
+    // In a real implementation, this would trigger navigation to summary page
+  };
+
+  // Check if dialogue time has ended
+  const isDialogueEnded = dialogueTimeRemaining === 0;
 
   // Summary review functions
   const handleVote = (participant, vote) => {
@@ -403,6 +251,9 @@ const BottomContentArea = ({
   };
 
   const submitSummaryForCompilation = () => {
+    console.log('Submitting summary for collective compilation:', {
+      votes: participantVotes
+    });
     setSummarySubmitted(true);
   };
 
@@ -511,67 +362,6 @@ const BottomContentArea = ({
       "Effective resilience strategies honor both individual agency and collective interdependence",
       "Communication networks require intentional redundancy and relationship-based trust",
       "Local knowledge and resources are often undervalued in resilience planning"
-    ]
-  };
-
-  // CONNECT stage data (One-to-one connection wisdom)
-  const connectVoicesFromField = [
-    {
-      speaker: "Marcus",
-      quote: "What surprised me was how quickly we moved past small talk to something real. There's something about being witnessed by just one other person that creates safety."
-    },
-    {
-      speaker: "Elena",  
-      quote: "In my dyad, we discovered we both carry this sense of wanting to contribute but not knowing where we fit. It was such a relief to name that together."
-    },
-    {
-      speaker: "David",
-      quote: "I realized I've been so focused on speaking my truth that I forgot how powerful it is to really hear someone else's. The quality of listening changed everything."
-    },
-    {
-      speaker: "Fatima",
-      quote: "My partner and I found ourselves talking about things we'd never shared with our own families. There's something about this container that makes vulnerability feel possible."
-    },
-    {
-      speaker: "James",
-      quote: "What struck me is that we didn't need to agree on everything to feel deeply connected. Our differences became doorways rather than walls."
-    },
-    {
-      speaker: "Aisha",
-      quote: "I learned that connection isn't about finding someone just like you - it's about being seen and held exactly as you are."
-    }
-  ];
-
-  const connectCollectiveWisdom = {
-    title: "The Foundation of All Dialogue: What CONNECTION Teaches Us",
-    
-    narrative: "Through hundreds of dyad conversations, a powerful truth emerges: authentic human connection is both simpler and more profound than we often realize. When we create sacred space for two people to truly see and hear each other, we discover that beneath our surface differences lie shared longings for belonging, meaning, and the courage to be fully ourselves. These one-to-one connections become the bedrock upon which all larger collective wisdom is built.",
-
-    choiceQuotes: [
-      {
-        quote: "Real connection happens not when we find someone who thinks like us, but when we're brave enough to be seen exactly as we are.",
-        attribution: "Synthesis from 47 dyad conversations"
-      },
-      {
-        quote: "The quality of our listening determines the depth of our connection, and the depth of our connection determines the wisdom that can emerge.",
-        attribution: "Pattern across dyad reflections"
-      }
-    ],
-
-    sentimentAnalysis: {
-      overall: "Deeply Moved and Hopeful",
-      vulnerability: 85,
-      safety: 92,
-      authenticity: 88,
-      hope: 79
-    },
-
-    emergingWisdom: [
-      "True dialogue begins with the courage to be vulnerable with one other person",
-      "Connection is less about agreement and more about mutual witnessing and holding",
-      "Sacred containers for conversation can be created through intention and presence alone",
-      "The skills learned in dyad connection become the foundation for all larger group wisdom",
-      "Individual healing and collective healing are intimately connected through authentic relationship"
     ]
   };
 
@@ -720,6 +510,9 @@ const BottomContentArea = ({
    };
 
    const submitKivaSummaryForCompilation = () => {
+     console.log('Submitting KIVA summary for collective compilation:', {
+       votes: kivaParticipantVotes
+     });
      setKivaSummarySubmitted(true);
    };
 
@@ -733,34 +526,24 @@ const BottomContentArea = ({
    // Transcription functions - these will be passed to EnhancedTranscription
   const startRecording = () => {
     setIsRecording(true);
-    setTranscriptionStatus('Recording...');
+    setTranscriptionStatus('Connected - Speaking...');
   };
 
   const stopRecording = () => {
     setIsRecording(false);
-    setTranscriptionStatus('Processing...');
+    setTranscriptionStatus('Disconnected');
   };
 
   const clearTranscription = () => {
-    setIsRecording(false);
-    setTranscriptionStatus('Ready to transcribe');
-    setAiEnhancedTranscript('');
-    setAiGeneratedSummary('');
+    // This will be handled by EnhancedTranscription
+    setTranscriptionStatus('Cleared');
   };
 
   const getStatusClass = () => {
-    return transcriptionStatus.toLowerCase().replace(' ', '-');
-  };
-
-  // AI callbacks
-  const handleAITranscriptUpdate = (enhancedTranscript) => {
-    setAiEnhancedTranscript(enhancedTranscript);
-    console.log('📝 AI Enhanced transcript received:', enhancedTranscript.substring(0, 100) + '...');
-  };
-
-  const handleAISummaryUpdate = (summary) => {
-    setAiGeneratedSummary(summary);
-    console.log('📊 AI Summary received:', summary.substring(0, 100) + '...');
+    if (transcriptionError) return 'disconnected';
+    if (isRecording) return 'recording';
+    if (transcriptionStatus.includes('Connected')) return 'connected';
+    return 'disconnected';
   };
 
   const switchTab = (tabName) => {
@@ -770,32 +553,33 @@ const BottomContentArea = ({
   const toggleMic = () => {
     setIsMuted(!isMuted);
     setIsMicrophoneHover(false); // Reset hover state after click
-    hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout);
   };
 
   const toggleCamera = () => {
     setIsCameraOff(!isCameraOff);
     setIsCameraHover(false); // Reset hover state after click
-    hideTooltipImmediately(setShowCameraTooltip, cameraTooltipTimeout, cameraPressTimeout, cameraAutoHideTimeout);
   };
 
   const toggleCall = () => {
     setIsInCall(!isInCall);
     setPersonHover(false); // Reset hover state after click
-    hideTooltipImmediately(setShowPersonTooltip, personTooltipTimeout, personPressTimeout, personAutoHideTimeout);
   };
 
   const toggleLoop = () => {
     const newLoopState = !isLoopActive;
+    console.log(`🔄 LOOP TOGGLE: ${isLoopActive} → ${newLoopState}`);
     setIsLoopActive(newLoopState);
     setIsLoopHover(false); // Reset hover state after click
-    hideTooltipImmediately(setShowLoopTooltip, loopTooltipTimeout, loopPressTimeout, loopAutoHideTimeout);
     if (onLoopToggle) {
+      console.log(`📡 CALLING onLoopToggle with: ${newLoopState}`);
       onLoopToggle(newLoopState);
+    } else {
+      console.log('❌ onLoopToggle callback not provided');
     }
   };
 
   const vote = (direction) => {
+    console.log(`Voted ${direction}`);
     // Toggle vote state - if same direction, remove vote, otherwise set new vote
     setVoteState(voteState === direction ? null : direction);
   };
@@ -808,6 +592,7 @@ const BottomContentArea = ({
       setTimeout(() => setBackButtonState('off'), 200);
     } else {
       // Normal mode: toggle button state
+      console.log('Back button clicked');
       const newBackState = backButtonState === 'on' ? 'off' : 'on';
       setBackButtonState(newBackState);
       
@@ -825,6 +610,7 @@ const BottomContentArea = ({
       setTimeout(() => setForwardButtonState('off'), 200);
     } else {
       // Normal mode: toggle button state
+      console.log('Forward button clicked');
       const newForwardState = forwardButtonState === 'on' ? 'off' : 'on';
       setForwardButtonState(newForwardState);
       
@@ -835,6 +621,7 @@ const BottomContentArea = ({
   };
 
   const handleThumbsUpClick = () => {
+    console.log('Thumbs up clicked');
     const newThumbsUpState = thumbsUpButtonState === 'on' ? 'off' : 'on';
     setThumbsUpButtonState(newThumbsUpState);
     
@@ -844,6 +631,7 @@ const BottomContentArea = ({
   };
 
   const handleThumbsDownClick = () => {
+    console.log('Thumbs down clicked');
     const newThumbsDownState = thumbsDownButtonState === 'on' ? 'off' : 'on';
     setThumbsDownButtonState(newThumbsDownState);
     
@@ -919,30 +707,22 @@ const BottomContentArea = ({
           {/* Transcription Controls */}
           <div className="tab-controls-right">
             <button 
-              id="tab-mic-btn"
               className={`transcription-control-btn ${isRecording ? 'danger' : 'primary'}`}
               onClick={isRecording ? stopRecording : startRecording}
-              {...createTooltipHandlers(setShowTabMicTooltip, tabMicTooltipTimeout, tabMicPressTimeout, tabMicAutoHideTimeout)}
             >
               <span className="btn-icon">{isRecording ? '⏹' : '🎤'}</span>
               <span className="btn-text">{isRecording ? ' Stop Recording' : ' Start Live Transcription'}</span>
             </button>
             
             <button 
-              id="tab-clear-btn"
               className="transcription-control-btn warning"
               onClick={clearTranscription}
-              {...createTooltipHandlers(setShowTabClearTooltip, tabClearTooltipTimeout, tabClearPressTimeout, tabClearAutoHideTimeout)}
             >
               <span className="btn-icon">🗑</span>
               <span className="btn-text"> Clear</span>
             </button>
             
-            <div 
-              id="tab-status-indicator"
-              className={`transcription-status ${getStatusClass()}`}
-              {...createTooltipHandlers(setShowTabStatusTooltip, tabStatusTooltipTimeout, tabStatusPressTimeout, tabStatusAutoHideTimeout)}
-            >
+            <div className={`transcription-status ${getStatusClass()}`}>
               <span className="status-icon">🚫</span>
               <span className="status-text">{transcriptionError || transcriptionStatus}</span>
             </div>
@@ -974,37 +754,6 @@ const BottomContentArea = ({
                 
                 <div className="guiding-question">
                   <strong>Guiding Question:</strong> What personal experiences have shaped your perspective on this topic?
-                </div>
-                
-                {/* Add more content to test scrolling */}
-                <div className="dialogue-instructions">
-                  <h4>Additional Context</h4>
-                  <p>As we move through this dialogue process, we invite you to bring your full presence and authentic voice. This is a space for deep listening and meaningful exchange.</p>
-                  
-                  <p>The dialogue methodology we're using has been developed through years of research and practice in collective intelligence and community building. Each stage builds on the previous one, creating layers of connection and understanding.</p>
-                  
-                  <h4>What to Expect</h4>
-                  <ol>
-                    <li><strong>Connect:</strong> Begin with one-to-one conversations that establish trust and personal connection</li>
-                    <li><strong>Explore:</strong> Move to small group conversations that allow deeper exploration of themes</li>
-                    <li><strong>Discover:</strong> Engage in larger group witnessing and collective meaning-making</li>
-                    <li><strong>Harvest:</strong> Reflect individually and collectively on insights and next steps</li>
-                  </ol>
-                  
-                  <h4>Guidelines for Engagement</h4>
-                  <p>Please remember these key principles throughout our dialogue:</p>
-                  <ul>
-                    <li>Listen with curiosity rather than judgment</li>
-                    <li>Speak from personal experience when possible</li>
-                    <li>Allow for pauses and silence</li>
-                    <li>Notice what wants to emerge rather than pushing an agenda</li>
-                    <li>Trust the process and the collective wisdom of the group</li>
-                  </ul>
-                  
-                  <h4>Technical Notes</h4>
-                  <p>This platform includes AI-powered transcription and analysis to help capture and synthesize the collective insights that emerge. All content is handled with respect for privacy and the sacred nature of authentic dialogue.</p>
-                  
-                  <p>If you experience any technical difficulties, please use the chat or audio functions to let us know. Our hosts are here to support both the technical and relational aspects of this gathering.</p>
                 </div>
               </div>
             </div>
@@ -1183,123 +932,27 @@ const BottomContentArea = ({
           {activeTab === 'dialogue' && (
             <div id="dialogueContent" className="content-section dialogue-tab-content">
               {currentPage === 'dyad-dialogue-connect' ? (
-                isDialogueActive ? (
-                  /* CONNECT Stage Dyad Dialogue Content with Full Transcript Functionality */
-                  <div className="dialogue-section">
-                    {/* Instructions Section */}
-                    <div style={{marginBottom: '20px'}}>
-                      <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '15px'}}>
-                        CONNECT Stage - {dialogueFormat} Instructions
-                      </h3>
-                      
-                      <div style={{display: 'flex', gap: '20px', marginBottom: '12px', fontSize: '14px'}}>
-                        <div><strong>Format:</strong> {dialogueFormat}</div>
-                        <div><strong>Timeframe:</strong> {dialogueTimeframe}</div>
-                        <div style={{
-                          backgroundColor: '#28a745',
-                          color: 'white',
-                          padding: '2px 6px',
-                          borderRadius: '8px',
-                          fontSize: '12px',
-                          fontWeight: '600'
-                        }}>
-                          {dialogueTimeRemaining > 0 ? 
-                            `${Math.floor(dialogueTimeRemaining / 60)}:${String(dialogueTimeRemaining % 60).padStart(2, '0')} remaining` :
-                            '30:00 remaining'
-                          }
-                        </div>
-                      </div>
-                      
-                      {dialogueQuestion && (
-                        <div style={{
-                          backgroundColor: '#fff3e0',
-                          padding: '10px',
-                          borderRadius: '4px',
-                          marginBottom: '12px',
-                          border: '1px solid #E06D37',
-                          fontSize: '14px'
-                        }}>
-                          <strong style={{color: '#E06D37'}}>Question:</strong> "{dialogueQuestion}"
-                        </div>
-                      )}
-
-                      <div style={{
-                        backgroundColor: '#f8f9fa',
-                        padding: '10px',
-                        borderRadius: '4px',
-                        marginBottom: '12px',
-                        border: '1px solid #E06D37',
-                        fontSize: '14px'
-                      }}>
-                        <strong style={{color: '#E06D37'}}>Connection Guidelines:</strong>
-                        <div style={{fontSize: '14px', lineHeight: '1.6', marginTop: '8px'}}>
-                          <div style={{marginBottom: '4px'}}>• Go in sequence (share for equal time)</div>
-                          <div style={{marginBottom: '4px'}}>• Listen without interruption</div>
-                          <div>• Create space for authentic connection</div>
-                        </div>
-                      </div>
+                /* Dyad Dialogue Guide for Connect phase */
+                <div className="dialogue-section">
+                  <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '20px'}}>Dyad Dialogue Guide</h3>
+                  <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '20px'}}>
+                    In this next section, you will have a total of <strong>10 minutes</strong> to share with each other what 
+                    came up for you during the mindfulness exercise.
+                  </p>
+                  
+                  <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '15px'}}>
+                    The <strong>10 minutes</strong> will allow the two participants to share as follows:
+                  </p>
+                  
+                  <div style={{fontSize: '16px', lineHeight: '1.8', marginLeft: '20px'}}>
+                    <div style={{marginBottom: '8px'}}>
+                      <strong>1.</strong> Go in sequence <strong>(4 mins each)</strong>
                     </div>
-
-                    {/* Live Transcription Section - Using EnhancedTranscription Component */}
-                    <div>
-                      <div style={{marginBottom: '15px'}}>
-                        <h4 style={{color: '#E06D37', margin: 0, fontSize: '16px', marginBottom: '10px'}}>
-                          Live Dialogue Transcript
-                        </h4>
-                        <p style={{fontSize: '14px', color: '#666', margin: 0}}>
-                          Real-time AI transcription with speaker identification and editing capabilities
-                        </p>
-                      </div>
-                      
-                      {/* Enhanced Transcription Component */}
-                      <EnhancedTranscription
-                        isRecording={isRecording}
-                        startRecording={startRecording}
-                        stopRecording={stopRecording}
-                        clearTranscription={clearTranscription}
-                        getStatusClass={getStatusClass}
-                        onAITranscriptUpdate={handleAITranscriptUpdate}
-                        onAISummaryUpdate={handleAISummaryUpdate}
-                      />
+                    <div style={{marginBottom: '15px'}}>
+                      <strong>2.</strong> No interruption
                     </div>
                   </div>
-                ) : (
-                  /* CONNECT Stage - Pre-dialogue Instructions */
-                  <div className="dialogue-section">
-                    <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '20px'}}>Dyad Dialogue Guide</h3>
-                    <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '20px'}}>
-                      In this next section, you will have a total of <strong>15 minutes</strong> to share with each other what 
-                      brought you together today and what you hope to discover through your connection.
-                    </p>
-                    
-                    <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '15px'}}>
-                      The <strong>15 minutes</strong> will allow the two participants to share as follows:
-                    </p>
-                    
-                    <div style={{fontSize: '16px', lineHeight: '1.8', marginLeft: '20px'}}>
-                      <div style={{marginBottom: '8px'}}>
-                        <strong>1.</strong> Go in sequence (share for equal time)
-                      </div>
-                      <div style={{marginBottom: '15px'}}>
-                        <strong>2.</strong> Listen without interruption
-                      </div>
-                      <div style={{marginBottom: '15px'}}>
-                        <strong>3.</strong> Create space for authentic connection
-                      </div>
-                    </div>
-
-                    <div style={{
-                      backgroundColor: '#fff3e0',
-                      padding: '15px',
-                      borderRadius: '6px',
-                      marginTop: '20px',
-                      border: '1px solid #E06D37',
-                      textAlign: 'center'
-                    }}>
-                      <strong style={{color: '#E06D37'}}>🎙️ Once dialogue begins, live transcript and editing features will be available below</strong>
-                    </div>
-                  </div>
-                )
+                </div>
               ) : currentPage === 'explore-triad-dialogue' && isDialogueActive ? (
                 /* EXPLORE Stage Triad Dialogue Content */
                 <div className="dialogue-section">
@@ -1313,17 +966,14 @@ const BottomContentArea = ({
                       <div><strong>Format:</strong> {dialogueFormat} breakout rooms</div>
                       <div><strong>Timeframe:</strong> {dialogueTimeframe}</div>
                       <div style={{
-                        backgroundColor: '#28a745',
+                        backgroundColor: dialogueTimeRemaining < 300 ? '#dc3545' : '#28a745',
                         color: 'white',
                         padding: '2px 6px',
                         borderRadius: '8px',
                         fontSize: '12px',
                         fontWeight: '600'
                       }}>
-                        {dialogueTimeRemaining > 0 ? 
-                          `${Math.floor(dialogueTimeRemaining / 60)}:${String(dialogueTimeRemaining % 60).padStart(2, '0')} remaining` :
-                          '30:00 remaining'
-                        }
+                        {Math.floor(dialogueTimeRemaining / 60)}:{String(dialogueTimeRemaining % 60).padStart(2, '0')} remaining
                       </div>
                     </div>
                     
@@ -1341,27 +991,183 @@ const BottomContentArea = ({
                     )}
                   </div>
 
-                  {/* Live Transcription Section - Using EnhancedTranscription Component */}
+                  {/* Live Transcription Section */}
                   <div>
-                    <div style={{marginBottom: '15px'}}>
-                      <h4 style={{color: '#2E5BBA', margin: 0, fontSize: '16px', marginBottom: '10px'}}>
-                        Live Dialogue Transcript
-                      </h4>
-                      <p style={{fontSize: '14px', color: '#666', margin: 0}}>
-                        Real-time AI transcription with speaker identification and editing capabilities
-                      </p>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                      <h4 style={{color: '#2E5BBA', margin: 0, fontSize: '16px'}}>Live Dialogue Transcript</h4>
+                      
+                      {/* Edit/Submit Controls */}
+                      {!isDialogueEnded && formattedTranscript.length === 0 && (
+                        <span style={{fontSize: '12px', color: '#666'}}>Dialogue in progress...</span>
+                      )}
+                      
+                      {(isDialogueEnded || formattedTranscript.length > 0) && !transcriptSubmitted && (
+                        <div style={{display: 'flex', gap: '8px'}}>
+                          {!isEditingTranscript ? (
+                            <>
+                              <button
+                                onClick={startEditingTranscript}
+                                style={{
+                                  backgroundColor: '#f8f9fa',
+                                  border: '1px solid #2E5BBA',
+                                  color: '#2E5BBA',
+                                  padding: '4px 12px',
+                                  borderRadius: '4px',
+                                  fontSize: '12px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                Edit Transcript
+                              </button>
+                              <button
+                                onClick={submitTranscriptForAI}
+                                style={{
+                                  backgroundColor: '#28a745',
+                                  border: 'none',
+                                  color: 'white',
+                                  padding: '4px 12px',
+                                  borderRadius: '4px',
+                                  fontSize: '12px',
+                                  cursor: 'pointer',
+                                  fontWeight: '600'
+                                }}
+                              >
+                                Submit for AI Summary
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={cancelEditingTranscript}
+                                style={{
+                                  backgroundColor: '#f8f9fa',
+                                  border: '1px solid #6c757d',
+                                  color: '#6c757d',
+                                  padding: '4px 12px',
+                                  borderRadius: '4px',
+                                  fontSize: '12px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={submitTranscriptForAI}
+                                style={{
+                                  backgroundColor: '#28a745',
+                                  border: 'none',
+                                  color: 'white',
+                                  padding: '4px 12px',
+                                  borderRadius: '4px',
+                                  fontSize: '12px',
+                                  cursor: 'pointer',
+                                  fontWeight: '600'
+                                }}
+                              >
+                                Submit for AI Summary
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                      
+                      {transcriptSubmitted && (
+                        <span style={{
+                          color: '#28a745',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          padding: '4px 8px',
+                          backgroundColor: '#d4edda',
+                          borderRadius: '4px'
+                        }}>
+                          ✓ Submitted for AI Processing
+                        </span>
+                      )}
                     </div>
                     
-                    {/* Enhanced Transcription Component */}
-                    <EnhancedTranscription
-                      isRecording={isRecording}
-                      startRecording={startRecording}
-                      stopRecording={stopRecording}
-                      clearTranscription={clearTranscription}
-                      getStatusClass={getStatusClass}
-                      onAITranscriptUpdate={handleAITranscriptUpdate}
-                      onAISummaryUpdate={handleAISummaryUpdate}
-                    />
+                    {/* Live Transcript Lines (1-2 lines for visual feedback) */}
+                    {!isDialogueEnded && (
+                      <div style={{
+                        backgroundColor: '#f0f8ff',
+                        padding: '8px',
+                        borderRadius: '4px',
+                        marginBottom: '10px',
+                        fontSize: '14px',
+                        fontStyle: 'italic',
+                        color: '#666',
+                        minHeight: '40px',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}>
+                        {liveTranscript ? (
+                          <>🔴 Live: {liveTranscript}</>
+                        ) : (
+                          <>🔴 Live transcript will appear here...</>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Formatted Transcript (near real-time) */}
+                    <div style={{
+                      backgroundColor: transcriptSubmitted ? '#f8f9fa' : '#fff',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      padding: '10px',
+                      maxHeight: '180px',
+                      overflowY: 'auto'
+                    }}>
+                      {formattedTranscript.length === 0 ? (
+                        <div style={{textAlign: 'center', color: '#999', fontStyle: 'italic', padding: '20px'}}>
+                          Formatted dialogue transcript will appear here in near real-time...
+                        </div>
+                      ) : (
+                        (isEditingTranscript ? editableTranscript : formattedTranscript).map((entry) => (
+                          <div key={entry.id} style={{marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #eee'}}>
+                            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
+                              <strong style={{color: '#2E5BBA', fontSize: '14px'}}>{entry.speaker}</strong>
+                              <span style={{color: '#666', fontSize: '12px'}}>{entry.timestamp}</span>
+                            </div>
+                            {isEditingTranscript ? (
+                              <textarea
+                                value={entry.text}
+                                onChange={(e) => updateTranscriptEntry(entry.id, e.target.value)}
+                                style={{
+                                  width: '100%',
+                                  fontSize: '14px',
+                                  lineHeight: '1.4',
+                                  border: '1px solid #ddd',
+                                  borderRadius: '3px',
+                                  padding: '4px',
+                                  resize: 'vertical',
+                                  minHeight: '60px',
+                                  fontFamily: 'inherit'
+                                }}
+                              />
+                            ) : (
+                              <div style={{
+                                fontSize: '14px', 
+                                lineHeight: '1.4',
+                                opacity: transcriptSubmitted ? 0.7 : 1
+                              }}>
+                                {entry.text}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    
+                    {isEditingTranscript && (
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#666',
+                        fontStyle: 'italic',
+                        marginTop: '8px',
+                        textAlign: 'center'
+                      }}>
+                        💡 Make small corrections for accuracy. Click "Submit for AI Summary" when ready.
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : currentPage === 'discover-kiva-dialogue' && isKivaDialogue ? (
@@ -1376,19 +1182,6 @@ const BottomContentArea = ({
                     <div style={{display: 'flex', gap: '20px', marginBottom: '12px', fontSize: '14px'}}>
                       <div><strong>Format:</strong> {dialogueFormat}</div>
                       <div><strong>Timeframe:</strong> {dialogueTimeframe}</div>
-                      <div style={{
-                        backgroundColor: '#28a745',
-                        color: 'white',
-                        padding: '2px 6px',
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                        fontWeight: '600'
-                      }}>
-                        {dialogueTimeRemaining > 0 ? 
-                          `${Math.floor(dialogueTimeRemaining / 60)}:${String(dialogueTimeRemaining % 60).padStart(2, '0')} remaining` :
-                          '30:00 remaining'
-                        }
-                      </div>
                     </div>
                     
                     {dialogueQuestion && (
@@ -1416,52 +1209,52 @@ const BottomContentArea = ({
                     </div>
                   </div>
 
-                  {/* Live Transcription Section - Using EnhancedTranscription Component */}
+                  {/* Live Transcription Section */}
                   <div>
-                    <div style={{marginBottom: '15px'}}>
-                      <h4 style={{color: '#D2691E', margin: 0, fontSize: '16px', marginBottom: '10px'}}>
-                        KIVA Group Dialogue Transcript
-                      </h4>
-                      <p style={{fontSize: '14px', color: '#666', margin: 0}}>
-                        Real-time AI transcription with speaker identification for KIVA group discussions
-                      </p>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                      <h4 style={{color: '#D2691E', margin: 0, fontSize: '16px'}}>KIVA Group Dialogue</h4>
                     </div>
                     
-                    {/* Enhanced Transcription Component */}
-                    <EnhancedTranscription
-                      isRecording={isRecording}
-                      startRecording={startRecording}
-                      stopRecording={stopRecording}
-                      clearTranscription={clearTranscription}
-                      getStatusClass={getStatusClass}
-                      onAITranscriptUpdate={handleAITranscriptUpdate}
-                      onAISummaryUpdate={handleAISummaryUpdate}
-                    />
+                    {/* Live Transcript Lines (1-2 lines for visual feedback) */}
+                    <div style={{
+                      backgroundColor: '#f0f8ff',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      marginBottom: '10px',
+                      fontSize: '14px',
+                      fontStyle: 'italic',
+                      color: '#666',
+                      minHeight: '40px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
+                      🔴 Live: KIVA groups building on fishbowl insights...
+                    </div>
+                    
+                    {/* Formatted Transcript (near real-time) */}
+                    <div style={{
+                      backgroundColor: '#fff',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      padding: '10px',
+                      maxHeight: '180px',
+                      overflowY: 'auto'
+                    }}>
+                      <div style={{textAlign: 'center', color: '#999', fontStyle: 'italic', padding: '20px'}}>
+                        KIVA dialogue transcript will appear here in near real-time...
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
-                /* Default dialogue content for pages without specific dialogue modes */
-                <div className="dialogue-section">
-                  <div style={{marginBottom: '15px'}}>
-                    <h4 style={{color: '#666', margin: 0, fontSize: '16px', marginBottom: '10px'}}>
-                      Live Dialogue Transcript
-                    </h4>
-                    <p style={{fontSize: '14px', color: '#666', margin: 0}}>
-                      Real-time AI transcription with speaker identification and editing capabilities
-                    </p>
-                  </div>
-                  
-                  {/* Enhanced Transcription Component */}
-                  <EnhancedTranscription
-                    isRecording={isRecording}
-                    startRecording={startRecording}
-                    stopRecording={stopRecording}
-                    clearTranscription={clearTranscription}
-                    getStatusClass={getStatusClass}
-                    onAITranscriptUpdate={handleAITranscriptUpdate}
-                    onAISummaryUpdate={handleAISummaryUpdate}
-                  />
-                </div>
+                /* Enhanced Real-time Transcription for other pages */
+                <EnhancedTranscription 
+                  isRecording={isRecording}
+                  startRecording={startRecording}
+                  stopRecording={stopRecording}
+                  clearTranscription={clearTranscription}
+                  getStatusClass={getStatusClass}
+                />
               )}
             </div>
           )}
@@ -1877,127 +1670,58 @@ const BottomContentArea = ({
                 </div>
               ) : (
                 /* Default Summary content for other pages */
-                <div>
-                  {aiGeneratedSummary ? (
-                    /* Display Real AI Summary */
-                    <div className="summary-card">
-                      <div className="summary-header">
-                        <div className="summary-title">🤖 AI-Generated Summary</div>
-                        <div className="summary-status">Generated from enhanced transcript</div>
-                      </div>
-                      <div className="summary-content">
-                        <div style={{
-                          padding: '15px',
-                          backgroundColor: '#f8f9fa',
-                          borderRadius: '6px',
-                          lineHeight: '1.6',
-                          whiteSpace: 'pre-wrap'
-                        }}>
-                          {aiGeneratedSummary}
-                        </div>
-                      </div>
+                <>
+                  <div className="summary-card">
+                    <div className="summary-header">
+                      <div className="summary-title">Key Themes Emerging</div>
+                      <div className="ai-tag">AI Generated</div>
                     </div>
-                  ) : aiEnhancedTranscript ? (
-                    /* Show Enhanced Transcript if Summary not yet generated */
-                    <div className="summary-card">
-                      <div className="summary-header">
-                        <div className="summary-title">📝 Enhanced Transcript</div>
-                        <div className="summary-status">AI-processed for accuracy - Ready for summarization</div>
-                      </div>
-                      <div className="summary-content">
-                        <div style={{
-                          padding: '15px',
-                          backgroundColor: '#e8f5e8',
-                          borderRadius: '6px',
-                          lineHeight: '1.6',
-                          whiteSpace: 'pre-wrap',
-                          maxHeight: '300px',
-                          overflowY: 'auto'
-                        }}>
-                          {aiEnhancedTranscript}
-                        </div>
-                        <div style={{
-                          marginTop: '10px',
-                          padding: '10px',
-                          backgroundColor: '#d1ecf1',
-                          borderRadius: '4px',
-                          fontSize: '14px',
-                          color: '#0c5460'
-                        }}>
-                          💡 Go to the Dialogue tab and click "Generate Summary" to create an AI summary
-                        </div>
-                      </div>
+                    
+                    <div className="summary-content">
+                      <p>The conversation centers on the concept of intergenerational responsibility and long-term thinking. Both speakers recognize the value of indigenous approaches to decision-making that consider impacts many generations into the future.</p>
+                      
+                      <p>There's an acknowledgment that current systems often lack this perspective, and there's interest in exploring how to incorporate this long-term, multigenerational viewpoint into modern governance structures.</p>
                     </div>
-                  ) : (
-                    /* Default placeholder when no AI content available */
-                    <>
-                      <div className="summary-card">
-                        <div className="summary-header">
-                          <div className="summary-title">🎤 Live Dialogue Processing</div>
-                          <div className="summary-status">AI will analyze and summarize your conversation</div>
-                        </div>
-                        <div className="summary-content">
-                          <div style={{
-                            textAlign: 'center',
-                            padding: '40px 20px',
-                            color: '#666',
-                            backgroundColor: '#f8f9fa',
-                            borderRadius: '6px',
-                            border: '1px dashed #dee2e6'
-                          }}>
-                            <div style={{fontSize: '48px', marginBottom: '15px'}}>🤖</div>
-                            <h4 style={{margin: '0 0 10px 0', color: '#495057'}}>AI Summary & Analysis</h4>
-                            <p style={{margin: '0 0 15px 0', lineHeight: '1.6'}}>
-                              Start recording in the Dialogue tab to generate:
-                            </p>
-                            <ul style={{textAlign: 'left', display: 'inline-block', margin: 0}}>
-                              <li>🔴 <strong>Live transcript</strong> - Real-time speech recognition</li>
-                              <li>🤖 <strong>AI-enhanced transcript</strong> - Improved accuracy & formatting</li>
-                              <li>📝 <strong>AI summary</strong> - Key themes and insights</li>
-                              <li>👥 <strong>Speaker identification</strong> - Who said what</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Show Original Summary Cards Only as Fallback */}
-                  {!aiGeneratedSummary && !aiEnhancedTranscript && (
-                    <>
-                      <div className="summary-card">
-                        <div className="summary-header">
-                          <div className="summary-title">Key Themes Emerging</div>
-                          <div className="summary-status">Based on conversation patterns</div>
-                        </div>
-                        <div className="summary-content">
-                          <div className="theme-item">
-                            <span className="theme-icon">🌱</span>
-                            <div className="theme-content">
-                              <div className="theme-title">Authentic Connection</div>
-                              <div className="theme-description">The conversation explores the depth of human connection beyond surface-level interactions.</div>
-                            </div>
-                          </div>
-                          <div className="theme-item">
-                            <span className="theme-icon">🔄</span>
-                            <div className="theme-content">
-                              <div className="theme-title">Mutual Understanding</div>
-                              <div className="theme-description">Participants are finding common ground through shared experiences and perspectives.</div>
-                            </div>
-                          </div>
-                          <div className="theme-item">
-                            <span className="theme-icon">💡</span>
-                            <div className="theme-content">
-                              <div className="theme-title">Emerging Insights</div>
-                              <div className="theme-description">New possibilities and questions are arising from the dialogue exchange.</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
+                    
+                    <div className="vote-controls">
+                      <span>Is this accurate?</span>
+                      <button 
+                        className={`vote-btn ${voteState === 'up' ? 'active' : ''}`} 
+                        onClick={() => vote('up')}
+                        onMouseEnter={(e) => e.target.querySelector('img').src = thumbsUpHover}
+                        onMouseLeave={(e) => e.target.querySelector('img').src = voteState === 'up' ? thumbsUpOn : thumbsUpOff}
+                      >
+                        <img src={voteState === 'up' ? thumbsUpOn : thumbsUpOff} alt="Thumbs Up" style={{width: '24px', height: '24px'}} /> 24
+                      </button>
+                      <button 
+                        className={`vote-btn ${voteState === 'down' ? 'active' : ''}`} 
+                        onClick={() => vote('down')}
+                        onMouseEnter={(e) => e.target.querySelector('img').src = thumbsDownHover}
+                        onMouseLeave={(e) => e.target.querySelector('img').src = voteState === 'down' ? thumbsDownOn : thumbsDownOff}
+                      >
+                        <img src={voteState === 'down' ? thumbsDownOn : thumbsDownOff} alt="Thumbs Down" style={{width: '24px', height: '24px'}} /> 3
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
+              
+              <div className="summary-card">
+                <div className="summary-header">
+                  <div className="summary-title">Formatted Transcript</div>
+                  <div className="ai-tag">AI Enhanced</div>
+                </div>
+                
+                <div className="summary-content">
+                  <p><strong>Sarah Johnson:</strong> I think we need to consider how our actions today will impact future generations.</p>
+                  
+                  <p><strong>Michael Chen:</strong> That's an interesting point. I've been thinking about how indigenous cultures often make decisions based on the impact seven generations ahead.</p>
+                  
+                  <p><strong>Sarah Johnson:</strong> Exactly! That kind of long-term thinking seems missing from many of our current systems.</p>
+                  
+                  <p><strong>Michael Chen:</strong> I wonder if there are ways we could incorporate that perspective into our governance models?</p>
+                </div>
+              </div>
             </div>
           )}
           
@@ -2220,183 +1944,38 @@ const BottomContentArea = ({
                     </div>
                   </div>
                 </div>
-              ) : currentPage === 'connect-dyad-collective-wisdom' && isCollectiveWisdom ? (
-                /* CONNECT Stage Collective Wisdom - Combined Version */
+              ) : currentPage === 'voices-from-field' ? (
+                /* Voices from the Field page content */
                 <div className="dialogue-section">
-                  <div style={{marginBottom: '30px'}}>
-                    <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '20px'}}>
-                      Voices From the Field<br/>What are WE Saying?
-                    </h3>
-                    <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '20px'}}>
-                      After experiencing authentic one-to-one connection in dyads, we come back together to discover 
-                      the collective wisdom that emerges. Let us now hear from a small representative number <strong>(~six volunteers)</strong>. 
-                      This is a way to add to our sense of connection - the emerging WE - that has already begun to surface.
+                  <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '20px'}}>Voices From the Field<br/>What are WE Saying?</h3>
+                  <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '20px'}}>
+                    Let us now hear from a small representative number <strong>(~six volunteers)</strong>. This is a way to 
+                    add to our sense of connection - the emerging WE - that has already begun to surface.
+                  </p>
+                  
+                  <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '30px'}}>
+                    Below, in real time, is an AI generated transcript of what was just shared, followed by an 
+                    AI analysis of patterns emerging from all the breakout groups that participated in this segment.
+                  </p>
+                  
+                  <div style={{
+                    backgroundColor: '#f8f9fa', 
+                    border: '1px solid #e9ecef', 
+                    borderRadius: '8px', 
+                    padding: '20px', 
+                    margin: '20px 0',
+                    fontStyle: 'italic',
+                    lineHeight: '1.6'
+                  }}>
+                    <p style={{marginBottom: '15px', fontWeight: '500'}}>
+                      <strong>Real-time AI Transcript:</strong>
                     </p>
-                  </div>
-
-                  {/* Voices from the Field */}
-                  <div style={{marginBottom: '30px'}}>
-                    <h4 style={{color: '#E06D37', marginBottom: '15px', fontSize: '18px'}}>
-                      🎤 Voices from Dyad Connections
-                    </h4>
-                    <p style={{fontSize: '14px', color: '#666', marginBottom: '15px', fontStyle: 'italic'}}>
-                      Participants share what they discovered about connection through their one-to-one conversations:
+                    <p style={{marginBottom: '15px'}}>
+                      <em>[Voices from volunteers will appear here as they share their insights and aha moments from the dyad conversations...]</em>
                     </p>
-                    
-                    <div style={{
-                      display: 'grid',
-                      gap: '12px',
-                      marginBottom: '20px'
-                    }}>
-                      {connectVoicesFromField.map((voice, index) => (
-                        <div key={index} style={{
-                          backgroundColor: '#fff3e0',
-                          border: '1px solid #E06D37',
-                          borderRadius: '6px',
-                          padding: '12px'
-                        }}>
-                          <div style={{
-                            fontWeight: '600',
-                            color: '#E06D37',
-                            fontSize: '14px',
-                            marginBottom: '6px'
-                          }}>
-                            {voice.speaker}
-                          </div>
-                          <div style={{
-                            fontSize: '14px',
-                            lineHeight: '1.4',
-                            fontStyle: 'italic',
-                            color: '#333'
-                          }}>
-                            "{voice.quote}"
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* What Are We Saying - AI-Generated Collective Wisdom */}
-                  <div>
-                    <h4 style={{color: '#E06D37', marginBottom: '15px', fontSize: '18px'}}>
-                      🧠 What Are We Saying? - Collective Wisdom
-                    </h4>
-                    <p style={{fontSize: '14px', color: '#666', marginBottom: '20px', fontStyle: 'italic'}}>
-                      Drawing from all dyad conversations, here's what emerges about the nature of human connection:
+                    <p style={{marginBottom: '0'}}>
+                      <strong>AI Pattern Analysis:</strong> <em>[Collective themes and insights from all parallel dyad summaries will be synthesized here...]</em>
                     </p>
-
-                    <div style={{
-                      backgroundColor: '#fff3e0',
-                      border: '1px solid #E06D37', 
-                      borderRadius: '6px',
-                      padding: '20px',
-                      marginBottom: '20px'
-                    }}>
-                      <h5 style={{color: '#E06D37', marginBottom: '10px', fontSize: '16px'}}>
-                        {connectCollectiveWisdom.title}
-                      </h5>
-                      <p style={{
-                        fontSize: '14px',
-                        lineHeight: '1.5',
-                        margin: 0,
-                        color: '#333'
-                      }}>
-                        {connectCollectiveWisdom.narrative}
-                      </p>
-                    </div>
-
-                    {/* Choice Quotes */}
-                    <div style={{marginBottom: '20px'}}>
-                      <h5 style={{color: '#333', marginBottom: '12px', fontSize: '16px'}}>
-                        Wisdom Quotes from Connection
-                      </h5>
-                      <div style={{display: 'grid', gap: '10px'}}>
-                        {connectCollectiveWisdom.choiceQuotes.map((quote, index) => (
-                          <div key={index} style={{
-                            backgroundColor: '#fff',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            padding: '12px'
-                          }}>
-                            <div style={{
-                              fontSize: '14px',
-                              lineHeight: '1.4',
-                              fontStyle: 'italic',
-                              marginBottom: '6px',
-                              color: '#333'
-                            }}>
-                              "{quote.quote}"
-                            </div>
-                            <div style={{
-                              fontSize: '12px',
-                              color: '#666',
-                              textAlign: 'right'
-                            }}>
-                              — {quote.attribution}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Sentiment Analysis */}
-                    <div style={{marginBottom: '20px'}}>
-                      <h5 style={{color: '#333', marginBottom: '12px', fontSize: '16px'}}>
-                        Connection Quality Analysis
-                      </h5>
-                      <div style={{
-                        backgroundColor: '#fff',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px',
-                        padding: '15px'
-                      }}>
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          marginBottom: '10px',
-                          color: '#E06D37'
-                        }}>
-                          Overall Tone: {connectCollectiveWisdom.sentimentAnalysis.overall}
-                        </div>
-                        <div style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(2, 1fr)',
-                          gap: '8px',
-                          fontSize: '13px'
-                        }}>
-                          <div>🤗 Vulnerability: {connectCollectiveWisdom.sentimentAnalysis.vulnerability}%</div>
-                          <div>🛡️ Safety: {connectCollectiveWisdom.sentimentAnalysis.safety}%</div>
-                          <div>✨ Authenticity: {connectCollectiveWisdom.sentimentAnalysis.authenticity}%</div>
-                          <div>🌱 Hope: {connectCollectiveWisdom.sentimentAnalysis.hope}%</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Emerging Wisdom */}
-                    <div>
-                      <h5 style={{color: '#333', marginBottom: '12px', fontSize: '16px'}}>
-                        Emerging Wisdom About Connection
-                      </h5>
-                      <div style={{
-                        backgroundColor: '#fff3cd',
-                        border: '1px solid #ffc107',
-                        borderRadius: '4px',
-                        padding: '15px'
-                      }}>
-                        <ul style={{
-                          margin: 0,
-                          paddingLeft: '20px',
-                          fontSize: '14px',
-                          lineHeight: '1.5'
-                        }}>
-                          {connectCollectiveWisdom.emergingWisdom.map((wisdom, index) => (
-                            <li key={index} style={{marginBottom: '6px', color: '#333'}}>
-                              {wisdom}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
                   </div>
                 </div>
               ) : currentPage === 'discover-collective-wisdom' && isDiscoverCollectiveWisdom ? (
@@ -2709,180 +2288,36 @@ const BottomContentArea = ({
                   </div>
                 </div>
               ) : (
-                /* Default WE content for CONNECT and other pages - Combined Voices From Field style */
-                <div className="dialogue-section">
-                  <div style={{marginBottom: '30px'}}>
-                    <h3 className="dialogue-title" style={{color: '#E06D37', marginBottom: '20px'}}>
-                      Voices From the Field<br/>What are WE Saying?
-                    </h3>
-                    <p style={{fontSize: '16px', lineHeight: '1.6', marginBottom: '20px'}}>
-                      Let us now hear from a small representative number <strong>(~six volunteers)</strong>. This is a way to 
-                      add to our sense of connection - the emerging WE - that has already begun to surface.
-                    </p>
+                /* Default WE content for other pages */
+                <>
+                  <h3 className="dialogue-title">Voices From The Field</h3>
+                  
+                  <div className="voice-card">
+                    <div className="voice-speaker">Sarah Johnson</div>
+                    <div className="voice-quote">"I was struck by how many of us referenced indigenous wisdom traditions as models for long-term thinking. There seems to be a collective yearning to reconnect with these deeper ways of seeing ourselves in relationship to future generations."</div>
                   </div>
-
-                  {/* Voices from the Field */}
-                  <div style={{marginBottom: '30px'}}>
-                    <h4 style={{color: '#E06D37', marginBottom: '15px', fontSize: '18px'}}>
-                      🎤 Voices from the Field
-                    </h4>
-                    <p style={{fontSize: '14px', color: '#666', marginBottom: '15px', fontStyle: 'italic'}}>
-                      Participants share insights and discoveries from their dialogue experiences:
-                    </p>
-                    
-                    <div style={{
-                      display: 'grid',
-                      gap: '12px',
-                      marginBottom: '20px'
-                    }}>
-                      <div style={{
-                        backgroundColor: '#fff3e0',
-                        border: '1px solid #E06D37',
-                        borderRadius: '6px',
-                        padding: '12px'
-                      }}>
-                        <div style={{
-                          fontWeight: '600',
-                          color: '#E06D37',
-                          fontSize: '14px',
-                          marginBottom: '6px'
-                        }}>
-                          Sarah Johnson
-                        </div>
-                        <div style={{
-                          fontSize: '14px',
-                          lineHeight: '1.4',
-                          fontStyle: 'italic',
-                          color: '#333'
-                        }}>
-                          "I was struck by how many of us referenced indigenous wisdom traditions as models for long-term thinking. There seems to be a collective yearning to reconnect with these deeper ways of seeing ourselves in relationship to future generations."
-                        </div>
-                      </div>
-                      
-                      <div style={{
-                        backgroundColor: '#fff3e0',
-                        border: '1px solid #E06D37',
-                        borderRadius: '6px',
-                        padding: '12px'
-                      }}>
-                        <div style={{
-                          fontWeight: '600',
-                          color: '#E06D37',
-                          fontSize: '14px',
-                          marginBottom: '6px'
-                        }}>
-                          Michael Chen
-                        </div>
-                        <div style={{
-                          fontSize: '14px',
-                          lineHeight: '1.4',
-                          fontStyle: 'italic',
-                          color: '#333'
-                        }}>
-                          "Our breakout group discussed how governance structures might be redesigned to include representatives for future generations - I'm curious if other groups explored similar ideas."
-                        </div>
-                      </div>
-                      
-                      <div style={{
-                        backgroundColor: '#fff3e0',
-                        border: '1px solid #E06D37',
-                        borderRadius: '6px',
-                        padding: '12px'
-                      }}>
-                        <div style={{
-                          fontWeight: '600',
-                          color: '#E06D37',
-                          fontSize: '14px',
-                          marginBottom: '6px'
-                        }}>
-                          Aisha Patel
-                        </div>
-                        <div style={{
-                          fontSize: '14px',
-                          lineHeight: '1.4',
-                          fontStyle: 'italic',
-                          color: '#333'
-                        }}>
-                          "We explored the tension between short-term economic incentives and long-term ecological health. Several of us wondered what economic models might better align with intergenerational thinking."
-                        </div>
-                      </div>
+                  
+                  <div className="voice-card">
+                    <div className="voice-speaker">Michael Chen</div>
+                    <div className="voice-quote">"Our breakout group discussed how governance structures might be redesigned to include representatives for future generations - I'm curious if other groups explored similar ideas."</div>
+                  </div>
+                  
+                  <div className="voice-card">
+                    <div className="voice-speaker">Aisha Patel</div>
+                    <div className="voice-quote">"We explored the tension between short-term economic incentives and long-term ecological health. Several of us wondered what economic models might better align with intergenerational thinking."</div>
+                  </div>
+                  
+                  <div className="theme-tags">
+                    <h4>Emerging Themes</h4>
+                    <div>
+                      <span className="theme-tag">intergenerationalEthics</span>
+                      <span className="theme-tag">indigenousWisdom</span>
+                      <span className="theme-tag">governanceReform</span>
+                      <span className="theme-tag">economicReimagining</span>
+                      <span className="theme-tag">ecologicalAwareness</span>
                     </div>
                   </div>
-
-                  {/* What Are We Saying - Emerging Themes */}
-                  <div>
-                    <h4 style={{color: '#E06D37', marginBottom: '15px', fontSize: '18px'}}>
-                      🧠 What Are We Saying? - Emerging Themes
-                    </h4>
-                    <p style={{fontSize: '14px', color: '#666', marginBottom: '20px', fontStyle: 'italic'}}>
-                      Collective patterns and themes emerging from our shared dialogues:
-                    </p>
-
-                    <div style={{
-                      backgroundColor: '#fff3e0',
-                      border: '1px solid #E06D37',
-                      borderRadius: '6px',
-                      padding: '20px',
-                      marginBottom: '20px'
-                    }}>
-                      <h5 style={{color: '#E06D37', marginBottom: '15px', fontSize: '16px'}}>
-                        Emerging Collective Wisdom
-                      </h5>
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '10px',
-                        marginBottom: '15px'
-                      }}>
-                        <span style={{
-                          backgroundColor: '#E06D37',
-                          color: 'white',
-                          padding: '6px 12px',
-                          borderRadius: '15px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          textAlign: 'center'
-                        }}>intergenerationalEthics</span>
-                        <span style={{
-                          backgroundColor: '#E06D37',
-                          color: 'white',
-                          padding: '6px 12px',
-                          borderRadius: '15px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          textAlign: 'center'
-                        }}>indigenousWisdom</span>
-                        <span style={{
-                          backgroundColor: '#E06D37',
-                          color: 'white',
-                          padding: '6px 12px',
-                          borderRadius: '15px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          textAlign: 'center'
-                        }}>governanceReform</span>
-                        <span style={{
-                          backgroundColor: '#E06D37',
-                          color: 'white',
-                          padding: '6px 12px',
-                          borderRadius: '15px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          textAlign: 'center'
-                        }}>economicReimagining</span>
-                        <span style={{
-                          backgroundColor: '#E06D37',
-                          color: 'white',
-                          padding: '6px 12px',
-                          borderRadius: '15px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          textAlign: 'center'
-                        }}>ecologicalAwareness</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                </>
               )}
             </div>
           )}
@@ -2896,10 +2331,9 @@ const BottomContentArea = ({
           <button 
             id="camera-btn" 
             className="control-button"
-            onClick={(e) => {
-              toggleCamera();
-            }}
-            {...createTooltipHandlers(setShowCameraTooltip, cameraTooltipTimeout, cameraPressTimeout, cameraAutoHideTimeout)}
+            onClick={toggleCamera}
+            onMouseEnter={() => setIsCameraHover(true)}
+            onMouseLeave={() => setIsCameraHover(false)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -2925,11 +2359,9 @@ const BottomContentArea = ({
           <button 
             id="mic-btn" 
             className="control-button"
-            onClick={(e) => {
-              hideTooltipImmediately(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout);
-              toggleMic(e);
-            }}
-            {...createTooltipHandlers(setShowMicTooltip, micTooltipTimeout, micPressTimeout, micAutoHideTimeout)}
+            onClick={toggleMic}
+            onMouseEnter={() => setIsMicrophoneHover(true)}
+            onMouseLeave={() => setIsMicrophoneHover(false)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -2957,11 +2389,9 @@ const BottomContentArea = ({
           <button 
             id="join-btn" 
             className={`control-button ${isInCall ? 'active' : ''}`}
-            onClick={(e) => {
-              hideTooltipImmediately(setShowPersonTooltip, personTooltipTimeout, personPressTimeout, personAutoHideTimeout);
-              toggleCall(e);
-            }}
-            {...createTooltipHandlers(setShowPersonTooltip, personTooltipTimeout, personPressTimeout, personAutoHideTimeout)}
+            onClick={toggleCall}
+            onMouseEnter={() => setPersonHover(true)}
+            onMouseLeave={() => setPersonHover(false)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -2989,11 +2419,9 @@ const BottomContentArea = ({
           <button 
             id="loop-btn" 
             className={`control-button ${isLoopActive ? 'active' : ''}`}
-            onClick={(e) => {
-              hideTooltipImmediately(setShowLoopTooltip, loopTooltipTimeout, loopPressTimeout, loopAutoHideTimeout);
-              toggleLoop(e);
-            }}
-            {...createTooltipHandlers(setShowLoopTooltip, loopTooltipTimeout, loopPressTimeout, loopAutoHideTimeout)}
+            onClick={toggleLoop}
+            onMouseEnter={() => setIsLoopHover(true)}
+            onMouseLeave={() => setIsLoopHover(false)}
             style={{
               backgroundColor: '#e0e0e3', // Match footer background  
               border: 'none',
@@ -3011,28 +2439,12 @@ const BottomContentArea = ({
           </button>
         </div>
         
-        {/* Timer display - Responsive: separate times for desktop, total only for mobile */}
+        {/* Timer display - Optimized compact format */}
         <div className="timer-display">
-          {/* Desktop view: show both times separately */}
-          <div className="timer-cell-desktop timer-total">
-            <div className="timer-label">TOTAL TIME</div>
-            <div className="timer-value" id="total-time">
-              {totalTime.replace(/^0+:/, '').replace(/^0/, '') || totalTime}
-            </div>
-          </div>
-          
-          <div className="timer-cell-desktop timer-segment">
-            <div className="timer-label">SEGMENT TIME</div>
-            <div className="timer-value" id="segment-time">
-              {segmentTime}
-            </div>
-          </div>
-          
-          {/* Mobile view: show only total time */}
-          <div className="timer-cell-mobile">
-            <div className="timer-label">TOTAL TIME</div>
-            <div className="timer-value" id="mobile-total-time">
-              {totalTime.replace(/^0+:/, '').replace(/^0/, '') || totalTime}
+          <div className="timer-cell-combined">
+            <div className="timer-label-combined">TOTAL / SEGMENT TIME</div>
+            <div className="timer-value-combined" id="combined-time">
+              {totalTime.replace(/^0+:/, '').replace(/^0/, '') || totalTime} / {segmentTime}
             </div>
           </div>
         </div>
@@ -3110,7 +2522,8 @@ const BottomContentArea = ({
               borderRadius: '50%',
               boxShadow: 'none',
               opacity: (developmentMode && !canGoBack) ? 0.4 : 1,
-              cursor: (developmentMode && !canGoBack) ? 'not-allowed' : 'pointer'
+              cursor: (developmentMode && !canGoBack) ? 'not-allowed' : 'pointer',
+              marginLeft: '8px'
             }}
           >
             <img 
@@ -3151,240 +2564,6 @@ const BottomContentArea = ({
           </button>
         </div>
       </div>
-
-      {/* Tooltips */}
-      {showCameraTooltip && (
-        <div style={{
-          position: 'fixed',
-          ...getTooltipPosition('camera-btn'),
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          color: 'white',
-          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
-          borderRadius: '8px',
-          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
-          fontWeight: '600',
-          whiteSpace: 'nowrap',
-          zIndex: 99999,
-          pointerEvents: 'none',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
-          textAlign: 'center'
-        }}>
-          {isCameraOff ? '📷 Turn camera on' : '📷 Turn camera off'}
-          {/* Left-pointing tooltip arrow */}
-          <div style={{
-            position: 'absolute',
-            left: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '0',
-            height: '0',
-            borderTop: '6px solid transparent',
-            borderBottom: '6px solid transparent',
-            borderRight: '6px solid rgba(0, 0, 0, 0.9)'
-          }} />
-        </div>
-      )}
-
-      {showMicTooltip && (
-        <div style={{
-          position: 'fixed',
-          ...getTooltipPosition('mic-btn'),
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          color: 'white',
-          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
-          borderRadius: '8px',
-          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
-          fontWeight: '600',
-          whiteSpace: 'nowrap',
-          zIndex: 99999,
-          pointerEvents: 'none',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
-          textAlign: 'center'
-        }}>
-          {isMuted ? '🎤 Unmute microphone' : '🎤 Mute microphone'}
-          {/* Left-pointing tooltip arrow */}
-          <div style={{
-            position: 'absolute',
-            left: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '0',
-            height: '0',
-            borderTop: '6px solid transparent',
-            borderBottom: '6px solid transparent',
-            borderRight: '6px solid rgba(0, 0, 0, 0.9)'
-          }} />
-        </div>
-      )}
-
-      {showPersonTooltip && (
-        <div style={{
-          position: 'fixed',
-          ...getTooltipPosition('join-btn'),
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          color: 'white',
-          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
-          borderRadius: '8px',
-          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
-          fontWeight: '600',
-          whiteSpace: 'nowrap',
-          zIndex: 99999,
-          pointerEvents: 'none',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
-          textAlign: 'center'
-        }}>
-          {isInCall ? '👤 Leave call' : '👤 Join call'}
-          {/* Left-pointing tooltip arrow */}
-          <div style={{
-            position: 'absolute',
-            left: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '0',
-            height: '0',
-            borderTop: '6px solid transparent',
-            borderBottom: '6px solid transparent',
-            borderRight: '6px solid rgba(0, 0, 0, 0.9)'
-          }} />
-        </div>
-      )}
-
-      {showLoopTooltip && (
-        <div style={{
-          position: 'fixed',
-          ...getTooltipPosition('loop-btn'),
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          color: 'white',
-          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
-          borderRadius: '8px',
-          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
-          fontWeight: '600',
-          whiteSpace: 'nowrap',
-          zIndex: 99999,
-          pointerEvents: 'none',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
-          textAlign: 'center'
-        }}>
-          🔍 Toggle loop magnifier
-          {/* Left-pointing tooltip arrow */}
-          <div style={{
-            position: 'absolute',
-            left: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '0',
-            height: '0',
-            borderTop: '6px solid transparent',
-            borderBottom: '6px solid transparent',
-            borderRight: '6px solid rgba(0, 0, 0, 0.9)'
-          }} />
-        </div>
-      )}
-
-      {/* Tab Control Tooltips */}
-      {showTabMicTooltip && (
-        <div style={{
-          position: 'fixed',
-          ...getTooltipPosition('tab-mic-btn'),
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          color: 'white',
-          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
-          borderRadius: '8px',
-          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
-          fontWeight: '600',
-          whiteSpace: 'nowrap',
-          zIndex: 99999,
-          pointerEvents: 'none',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
-          textAlign: 'center'
-        }}>
-          {isRecording ? '⏹ Stop recording audio' : '🎤 Start live transcription'}
-          {/* Right-pointing tooltip arrow for tab controls */}
-          <div style={{
-            position: 'absolute',
-            right: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '0',
-            height: '0',
-            borderTop: '6px solid transparent',
-            borderBottom: '6px solid transparent',
-            borderLeft: '6px solid rgba(0, 0, 0, 0.9)'
-          }} />
-        </div>
-      )}
-
-      {showTabClearTooltip && (
-        <div style={{
-          position: 'fixed',
-          ...getTooltipPosition('tab-clear-btn'),
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          color: 'white',
-          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
-          borderRadius: '8px',
-          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
-          fontWeight: '600',
-          whiteSpace: 'nowrap',
-          zIndex: 99999,
-          pointerEvents: 'none',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
-          textAlign: 'center'
-        }}>
-          🗑 Clear all transcriptions
-          {/* Right-pointing tooltip arrow for tab controls */}
-          <div style={{
-            position: 'absolute',
-            right: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '0',
-            height: '0',
-            borderTop: '6px solid transparent',
-            borderBottom: '6px solid transparent',
-            borderLeft: '6px solid rgba(0, 0, 0, 0.9)'
-          }} />
-        </div>
-      )}
-
-      {showTabStatusTooltip && (
-        <div style={{
-          position: 'fixed',
-          ...getTooltipPosition('tab-status-indicator'),
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          color: 'white',
-          padding: window.innerWidth <= 768 ? '12px 20px' : '8px 12px',
-          borderRadius: '8px',
-          fontSize: window.innerWidth <= 768 ? '16px' : '14px',
-          fontWeight: '600',
-          whiteSpace: 'nowrap',
-          zIndex: 99999,
-          pointerEvents: 'none',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-          maxWidth: window.innerWidth <= 768 ? '90vw' : 'auto',
-          textAlign: 'center'
-        }}>
-          🚫 Transcription status: {transcriptionError || transcriptionStatus}
-          {/* Right-pointing tooltip arrow for status indicator (positioned to left) */}
-          <div style={{
-            position: 'absolute',
-            right: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '0',
-            height: '0',
-            borderTop: '6px solid transparent',
-            borderBottom: '6px solid transparent',
-            borderLeft: '6px solid rgba(0, 0, 0, 0.9)'
-          }} />
-        </div>
-      )}
-
     </div>
   );
 };
