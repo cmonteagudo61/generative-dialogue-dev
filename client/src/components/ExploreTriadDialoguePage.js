@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useVideo } from './VideoProvider';
 import VideoGrid from './video/VideoGrid';
-import AppLayout from './AppLayout';
 import '../App.css';
 
 const getLayoutFromView = (activeView) => {
@@ -65,25 +64,7 @@ const ExploreTriadDialoguePageInner = ({
   };
 
   return (
-    <AppLayout
-      activeSize={activeView}
-      viewMode={layout}
-      onSizeChange={handleViewChange}
-      participantCount={participantCount}
-      onLoopToggle={handleLoopToggle}
-      developmentMode={developmentMode}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-      activeStage="explore" // EXPLORE stage is active
-      defaultActiveTab="dialogue" // DIALOGUE tab is active
-      dialogueQuestion="How can we better support community resilience in times of crisis?"
-      dialogueTimeframe="20 minutes"
-      dialogueFormat="TRIAD breakout rooms"
-      isDialogueActive={true}
-    >
+    <>
       <VideoGrid 
         participants={participants} 
         layout={layout} 
@@ -93,10 +74,10 @@ const ExploreTriadDialoguePageInner = ({
         isLoopActive={isLoopActive}
       />
       {error && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
-    </AppLayout>
+    </>
   );
 };
 
 const ExploreTriadDialoguePage = (props) => <ExploreTriadDialoguePageInner {...props} />;
 
-export default ExploreTriadDialoguePage; 
+export default ExploreTriadDialoguePage;

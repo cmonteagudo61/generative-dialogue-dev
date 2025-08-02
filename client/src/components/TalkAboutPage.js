@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
-import AppLayout from './AppLayout';
+
 import { useVideo } from './VideoProvider';
-import './TalkAboutPage.css';
 
 const TalkAboutPage = ({ 
   canGoBack,
@@ -20,7 +19,7 @@ const TalkAboutPage = ({
     return realParticipants.length > 0 ? realParticipants.length : 1093;
   }, [realParticipants]);
 
-  const summaryContent = (
+  return (
     <div className="talkabout-container">
       <div className="talkabout-header">
         <div className="header-titles">
@@ -93,26 +92,6 @@ const TalkAboutPage = ({
         </div>
       </div>
     </div>
-  );
-
-  return (
-    <AppLayout 
-      activeSize={1}
-      viewMode="reflection"
-      participantCount={participantCount}
-      onViewModeChange={() => {}}
-      showVideoGrid={false}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-      currentIndex={currentIndex}
-      totalPages={totalPages}
-      developmentMode={developmentMode}
-    >
-      {summaryContent}
-    </AppLayout>
   );
 };
 

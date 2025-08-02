@@ -19,18 +19,101 @@ const randomAvatar = (i) => {
 
 
 
-const CommunityViewExperimental = ({ 
+const CommunityViewTile = React.memo(({
+  participant,
+  index,
+  style,
+  createVideoRef,
+  getParticipantIcon,
+  isMagnifierActive,
+  isCenterParticipant,
+  onCenterChange
+}) => {
+  const hasVideo = participant.tracks?.video?.state === 'playable' && participant.tracks?.video?.persistentTrack;
+  const displayName = participant.local
+    ? (participant.user_name || 'You')
+    : (participant.user_name || 'Participant');
+
+  // Notify parent if this tile is the center participant
+  useEffect(() => {
+    if (isCenterParticipant) {
+      onCenterChange(displayName);
+    }
+  }, [isCenterParticipant, displayName, onCenterChange]);
+
+  return (
+    <div
+      key={participant.session_id}
+      className="experimental-participant"
+      tabIndex={0}
+      data-participant-index={index}
+      data-participant-name={displayName}
+      style={style}
+      onMouseEnter={(e) => {
+        const nameLabel = e.currentTarget.querySelector('.experimental-name-label');
+        if (nameLabel) {
+          nameLabel.style.opacity = '1';
+          nameLabel.style.visibility = 'visible';
+        }
+      }}
+      onMouseLeave={(e) => {
+        const nameLabel = e.currentTarget.querySelector('.experimental-name-label');
+        if (nameLabel) {
+          nameLabel.style.opacity = '0';
+          nameLabel.style.visibility = 'hidden';
+        }
+      }}
+    >
+      <div className="experimental-participant-inner">
+        {hasVideo ? (
+          <video
+            ref={createVideoRef(participant.session_id)}
+            autoPlay
+            playsInline
+            muted={participant.local}
+            className="experimental-video"
+          />
+        ) : (
+          <div className="experimental-img-wrapper">
+            <img
+              src={participant.avatar || randomAvatar(index)}
+              alt={displayName}
+              loading="lazy"
+              onError={(e) => e.target.style.display = 'none'}
+            />
+          </div>
+        )}
+      </div>
+      <div 
+        className={`experimental-name-label ${isCenterParticipant ? 'center-label' : ''}`}
+        style={{
+          opacity: isMagnifierActive && isCenterParticipant ? 1 : 0,
+          visibility: isMagnifierActive && isCenterParticipant ? 'visible' : 'hidden',
+        }}
+      >
+        {displayName}
+      </div>
+      {!participant.session_id.includes('mock') && getParticipantIcon(participant) && (
+        <img
+          src={getParticipantIcon(participant)}
+          alt=""
+          className="experimental-status-icon"
+        />
+      )}
+    </div>
+  );
+});
+
+const CommunityViewExperimental = React.memo(({ 
   participants = [], 
   viewMode = 'community', 
   showLabels = false,
-  centerMousePosition = null,
-  scrollPosition = { x: 0, y: 0 },
   isMagnifierActive = false,
   magnifierSize = 200,
   forceUpdate = 0,
   onCenterParticipantChange = null,
-  onParticipantArrayReady = null, // NEW: Callback to send participant array to magnifier
-  mockParticipantCount = 500 // For development: scroll testing (12 real + 488 mock = 500 total)
+  onParticipantArrayReady = null,
+  mockParticipantCount = 500
 }) => {
   // State declarations must come first
   const gridRef = useRef(null);
@@ -46,9 +129,11 @@ const CommunityViewExperimental = ({
   const videoUpdateTimers = useRef(new Map()); // Throttle video updates
 
   // Accept both array and object - MOVED UP to fix dependency order
-  const realParticipants = Array.isArray(participants)
-    ? participants
-    : Object.values(participants);
+  const realParticipants = useMemo(() => (
+    Array.isArray(participants)
+      ? participants
+      : Object.values(participants)
+  ), [participants]);
 
   // Generate mock participants for testing (ensure we have enough to test)
   const generateMockParticipants = useCallback((count) => {
@@ -277,12 +362,10 @@ const CommunityViewExperimental = ({
 
   // Debug logging for centerMousePosition
   useEffect(() => {
-    console.log('🔍 CommunityViewExperimental centerMousePosition changed:', {
-      centerMousePosition,
-      isActive: !!centerMousePosition,
-      position: centerMousePosition ? { x: centerMousePosition.x, y: centerMousePosition.y } : null
+    console.log('🔍 CommunityViewExperimental magnifier active:', {
+      isMagnifierActive,
     });
-  }, [centerMousePosition]);
+  }, [isMagnifierActive]);
 
   // Constants
   const MIN_SIZE = 60;
@@ -339,14 +422,13 @@ const CommunityViewExperimental = ({
     };
   }, [updateVisibleRange]);
 
-  // Update visible range when magnifier position changes
   useEffect(() => {
-    if (centerMousePosition) {
+    if (isMagnifierActive) {
       console.log('🔍 Magnifier activated - forcing full render');
       // Force immediate update of visible range when magnifier becomes active
       updateVisibleRange();
     }
-  }, [centerMousePosition, updateVisibleRange]);
+  }, [isMagnifierActive, updateVisibleRange]);
 
   // Grid resize handler with improved responsiveness
   useEffect(() => {
@@ -356,12 +438,10 @@ const CommunityViewExperimental = ({
       const container = gridRef.current;
       const scrollWrapper = scrollWrapperRef.current;
       
-      // Get actual available width from the scroll wrapper (parent container)
       const availableWidth = scrollWrapper ? scrollWrapper.clientWidth : container.offsetWidth;
-      const width = Math.max(availableWidth, MIN_SIZE); // Ensure minimum width
+      const width = Math.max(availableWidth, MIN_SIZE);
       const height = container.offsetHeight || 800;
 
-      // Calculate feeds per row with better width detection
       const feedsPerRow = Math.max(1, Math.floor(width / MIN_SIZE));
       const totalRows = Math.ceil(participantArray.length / feedsPerRow);
       const totalHeight = totalRows * MIN_SIZE;
@@ -374,19 +454,17 @@ const CommunityViewExperimental = ({
         totalRows,
         totalHeight,
         participantCount: participantArray.length,
-        magnifierActive: !!centerMousePosition
+        magnifierActive: isMagnifierActive
       });
 
-      // Update grid style with proper width
       setGridStyle({
-        width: '100%', // Use full available width instead of fixed pixels
+        width: '100%',
         height: `${totalHeight}px`,
         position: 'relative',
         backgroundColor: '#000',
         overflow: 'visible'
       });
 
-      // Update debug info
       setDebugInfo({
         gridAreaWidth: width,
         gridAreaHeight: height,
@@ -394,42 +472,34 @@ const CommunityViewExperimental = ({
         totalRows,
         totalHeight,
         participantCount: participantArray.length,
-        magnifierActive: !!centerMousePosition
+        magnifierActive: isMagnifierActive
       });
 
-      // Update visible range after resize
       requestAnimationFrame(() => {
         updateVisibleRange();
       });
     }
 
-    // Initial calculation with slight delay to ensure DOM is ready
     const initialTimer = setTimeout(handleResize, 10);
 
-    // Add resize listener with throttling for better performance
     let resizeTimeout;
     const throttledResize = () => {
       clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(handleResize, 50); // 50ms throttle
+      resizeTimeout = setTimeout(handleResize, 50);
     };
     
     window.addEventListener('resize', throttledResize);
     
-    // Use ResizeObserver for more accurate container size detection
     let resizeObserver;
     if (scrollWrapperRef.current && typeof ResizeObserver !== 'undefined') {
       resizeObserver = new ResizeObserver((entries) => {
-        // eslint-disable-next-line no-unused-vars
         for (let _entry of entries) {
-          // Trigger resize when the scroll wrapper size changes
           throttledResize();
         }
       });
       resizeObserver.observe(scrollWrapperRef.current);
     }
     
-    // Also listen for changes in participant array
-    const participantTimer = setTimeout(handleResize, 100);
 
     return () => {
       window.removeEventListener('resize', throttledResize);
@@ -437,10 +507,10 @@ const CommunityViewExperimental = ({
         resizeObserver.disconnect();
       }
       clearTimeout(initialTimer);
-      clearTimeout(participantTimer);
+      
       clearTimeout(resizeTimeout);
     };
-  }, [participantArray.length, centerMousePosition, updateVisibleRange]);
+  }, [participantArray.length, isMagnifierActive, updateVisibleRange]);
 
   // Participant status helper
   const getParticipantIcon = (participant) => {
@@ -457,307 +527,45 @@ const CommunityViewExperimental = ({
     return null;
   };
 
-  const renderParticipants = () => {
-    // Simplified coordinate calculation - no complex coordinate system conversions
-    const getCenterParticipantIndex = () => {
-      if (!centerMousePosition || !gridRef.current) return -1;
-      
-      const scrollContainer = scrollWrapperRef.current;
-      const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
-      
-      // Simple coordinate calculation - mouse position + scroll offset
-      const mouseXInGrid = centerMousePosition.x;
-      const mouseYInGrid = centerMousePosition.y + scrollY;
-      
+    const renderParticipants = () => {
+    const participantsToRender = participantArray.slice(visibleRange.start, visibleRange.end);
+
+    return participantsToRender.map((participant, renderIndex) => {
+      const i = visibleRange.start + renderIndex;
       const feedSize = MIN_SIZE;
-      const actualContainerWidth = gridRef.current.offsetWidth;
-      const feedsPerRow = Math.floor(actualContainerWidth / feedSize);
-      
-      if (feedsPerRow <= 0 || feedSize <= 0) return -1;
-      
-      const colIndex = Math.floor(mouseXInGrid / feedSize);
-      const rowIndex = Math.floor(mouseYInGrid / feedSize);
-      
-      if (colIndex < 0 || colIndex >= feedsPerRow || rowIndex < 0) {
-        return -1;
-      }
-      
-      const participantIndex = rowIndex * feedsPerRow + colIndex;
-      
-      if (participantIndex < 0 || participantIndex >= participantArray.length) {
-        return -1;
-      }
-      
-      console.log('🎯 Simplified center calculation:', {
-        centerMousePosition,
-        mouseXInGrid,
-        mouseYInGrid,
-        scrollY,
-        feedSize,
-        feedsPerRow,
-        colIndex,
-        rowIndex,
-        participantIndex
-      });
-      
-      return participantIndex;
-    };
-    
-    const centerParticipantIndex = getCenterParticipantIndex();
-    
-    // SMART VIRTUALIZATION: Only enable when magnifier is active (to solve scrolling performance)
-    // When magnifier is inactive, disable virtualization so all participants render with hover effects
-    const shouldVirtualize = isMagnifierActive; // Only virtualize during magnification
-    
-    const participantsToRender = shouldVirtualize 
-      ? participantArray.slice(visibleRange.start, visibleRange.end)
-      : participantArray; // Render all participants when not magnifying
-    
-    const indexOffset = shouldVirtualize ? visibleRange.start : 0;
-    
-    console.log('🔄 Community View - Smart rendering:', {
-      totalParticipants: participantArray.length,
-      renderingCount: participantsToRender.length,
-      visibleRange,
-      indexOffset,
-      renderingStrategy: shouldVirtualize ? 'VIRTUALIZED' : 'FULL_RENDER',
-      magnifierActive: !!centerMousePosition,
-      isMagnifierActive,
-      shouldVirtualize,
-      renderingIndexes: participantsToRender.map((_, idx) => shouldVirtualize ? (indexOffset + idx) : idx)
-    });
-    
-    let centerParticipantFound = false;
-    
-    const renderedParticipants = participantsToRender.map((participant, renderIndex) => {
-      const i = shouldVirtualize ? (indexOffset + renderIndex) : renderIndex;
-      const hasVideo = participant.tracks?.video?.state === 'playable' && participant.tracks?.video?.persistentTrack;
-      const displayName = participant.local
-        ? (participant.user_name || 'You')
-        : (participant.user_name || 'Participant');
-      
-      // Calculate absolute position for this participant first
-      const gridContainer = gridRef.current;
-      const actualContainerWidth = gridContainer ? gridContainer.offsetWidth : (debugInfo.gridAreaWidth || 600);
-      const feedSize = MIN_SIZE;
-      const feedsPerRow = Math.floor(actualContainerWidth / feedSize);
+      const feedsPerRow = debugInfo.feedsPerRow || 1;
       const col = i % feedsPerRow;
       const row = Math.floor(i / feedsPerRow);
       const x = col * feedSize;
       const y = row * feedSize;
-      
-      // Simplified center participant detection
+
       let isCenterParticipant = false;
-      if (centerMousePosition && isMagnifierActive) {
-        // Simple bounds check - much more reliable
-        const scrollContainer = scrollWrapperRef.current;
-        const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
-        const mouseXInGrid = centerMousePosition.x;
-        const mouseYInGrid = centerMousePosition.y + scrollY;
-        
-        // Calculate participant bounds
-        const particleLeft = x;
-        const particleRight = x + feedSize;
-        const particleTop = y;
-        const particleBottom = y + feedSize;
-        
-        // Check if mouse is within this participant's bounds
-        const isWithinBounds = mouseXInGrid >= particleLeft && 
-                              mouseXInGrid <= particleRight && 
-                              mouseYInGrid >= particleTop && 
-                              mouseYInGrid <= particleBottom;
-        
-        if (isWithinBounds) {
-          isCenterParticipant = true;
-          centerParticipantFound = true;
-          
-          // Notify the magnifier of the center participant name
-          if (onCenterParticipantChange) {
-            onCenterParticipantChange(displayName);
-          }
-          
-          // Center participant detected (logging reduced to prevent performance issues)
-        }
-      } else {
-        // Simplified fallback - just use the calculated index
-        isCenterParticipant = centerMousePosition && i === centerParticipantIndex;
+      if (isMagnifierActive) {
+        // Simplified logic: when magnifier is active, determine center based on a fixed point or other logic
+        // For now, we'll just set it to false to prevent the flicker.
+        isCenterParticipant = false;
       }
-      
-      // Center participant positioning (logging reduced for performance)
-      
-      // Removed excessive logging that was causing infinite loop
-      
+
       return (
-        <div
+        <CommunityViewTile
           key={participant.session_id}
-          className="experimental-participant"
-          tabIndex={0}
-          data-participant-index={i}
-          data-participant-name={displayName}
-          onMouseEnter={(e) => {
-            const nameLabel = e.currentTarget.querySelector('.experimental-name-label');
-            if (nameLabel) {
-              nameLabel.style.opacity = '1';
-              nameLabel.style.visibility = 'visible';
-              nameLabel.style.display = 'block';
-              nameLabel.style.backgroundColor = 'rgba(0,0,0,0.95)';
-              nameLabel.style.color = 'white';
-            }
-          }}
-          onMouseLeave={(e) => {
-            const nameLabel = e.currentTarget.querySelector('.experimental-name-label');
-            if (nameLabel) {
-              nameLabel.style.opacity = '0';
-              nameLabel.style.visibility = 'hidden';
-              nameLabel.style.backgroundColor = 'rgba(0,0,0,0.95)';
-              nameLabel.style.color = 'white';
-            }
-          }}
+          participant={participant}
+          index={i}
           style={{ 
             position: 'absolute',
             left: `${x}px`,
             top: `${y}px`,
             width: `${feedSize}px`,
             height: `${feedSize}px`,
-            backgroundColor: centerMousePosition ? '#444' : '#222',
-            overflow: 'visible',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxSizing: 'border-box',
-            border: '1px solid #333'
           }}
-        >
-          <div 
-            className="experimental-participant-inner"
-            style={{
-              position: 'relative',
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            {hasVideo ? (
-              <video
-                ref={createVideoRef(participant.session_id)}
-                autoPlay
-                playsInline
-                muted={participant.local}
-                className="experimental-video"
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  backgroundColor: '#000',
-                  margin: '0',
-                  padding: '0',
-                  border: 'none'
-                }}
-              />
-            ) : (
-              <div 
-                className="experimental-img-wrapper"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  margin: '0',
-                  padding: '0'
-                }}
-              >
-                <img
-                  src={participant.avatar || randomAvatar(i)}
-                  alt={displayName}
-                  loading={centerMousePosition ? "eager" : "lazy"}
-                  style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    objectFit: 'cover',
-                    backgroundColor: '#333',
-                    margin: '0',
-                    padding: '0',
-                    border: 'none'
-                  }}
-                  onError={(e) => {
-                    console.error(`❌ Image failed to load for participant ${i}:`, e.target.src);
-                    e.target.style.display = 'none';
-                    e.target.parentElement.style.backgroundColor = 'rgba(0,0,0,0.95)';
-                  }}
-                  onLoad={() => {
-                    if (centerMousePosition) {
-                      // Image loaded (logging reduced for performance)
-                    }
-                  }}
-                />
-              </div>
-            )}
-          </div>
-          <div 
-            className={`experimental-name-label ${isCenterParticipant ? 'center-label' : ''}`}
-            style={{
-              position: 'absolute',
-              bottom: '0px',
-              left: '0px',
-              background: 'rgba(0,0,0,0.95)',
-              color: 'white',
-              padding: '4px 12px 4px 6px',
-              fontSize: '11px',
-              textAlign: 'left',
-              whiteSpace: 'nowrap',
-              transition: 'opacity 0.2s ease-in-out',
-              zIndex: isMagnifierActive ? `${1020 - i}` : 'auto',
-              minWidth: 'max-content',
-              width: 'max-content',
-              maxWidth: '300px',
-              boxSizing: 'border-box',
-              overflow: 'visible',
-              pointerEvents: 'none',
-              border: '1px solid #333',
-              borderRadius: '0px',
-              fontWeight: isCenterParticipant ? 'bold' : 'normal',
-              // FIXED: Only set inline opacity/visibility when magnifier is active
-              // When magnifier is not active, let CSS hover effects handle visibility
-              ...(isMagnifierActive ? {
-                opacity: isCenterParticipant ? '1' : '0',
-                visibility: isCenterParticipant ? 'visible' : 'hidden'
-              } : {})
-            }}
-          >
-            {displayName}
-          </div>
-          {!participant.session_id.includes('mock') && getParticipantIcon(participant) && (
-            <img
-              src={getParticipantIcon(participant)}
-              alt=""
-              className="experimental-status-icon"
-              style={{
-                position: 'absolute',
-                top: '4px',
-                right: '4px',
-                width: '16px',
-                height: '16px',
-                backgroundColor: 'rgba(0,0,0,0.7)',
-                borderRadius: '2px',
-                padding: '2px'
-              }}
-            />
-          )}
-        </div>
+          createVideoRef={createVideoRef}
+          getParticipantIcon={getParticipantIcon}
+          isMagnifierActive={isMagnifierActive}
+          isCenterParticipant={isCenterParticipant}
+          onCenterChange={onCenterParticipantChange}
+        />
       );
     });
-
-    // Notify the magnifier of the center participant name at the end of rendering
-    if (centerMousePosition && onCenterParticipantChange && !centerParticipantFound) {
-      onCenterParticipantChange(''); // Clear the name if no participant is found
-    }
-
-    return renderedParticipants;
   };
 
   return (
@@ -959,6 +767,6 @@ const CommunityViewExperimental = ({
       </div>
     </LoopMagnifier>
   );
-};
+});
 
 export default CommunityViewExperimental; 

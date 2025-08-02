@@ -1,6 +1,8 @@
 import React from 'react';
 import NavigationMap from './NavigationMap';
 import BottomContentArea from './BottomContentArea';
+import FooterNavigation from './FooterNavigation';
+import useMediaQuery from '../hooks/useMediaQuery';
 import './AppLayout.css';
 
 const getHeaderLabel = (viewMode) => {
@@ -39,7 +41,7 @@ const AppLayout = ({
   viewMode, 
   onSizeChange, 
   participantCount, 
-  onLoopToggle,
+  onToggleLoop,
   developmentMode,
   canGoBack,
   canGoForward,
@@ -47,8 +49,8 @@ const AppLayout = ({
   onForward,
   currentPage,
   showBottomContent = true,
-  activeStage = null, // Allow explicit stage override
-  defaultActiveTab = '', // Allow pages to set default active tab
+  activeStage = null,
+  defaultActiveTab = '',
   dialogueQuestion = '',
   dialogueTimeframe = '',
   dialogueFormat = '',
@@ -59,25 +61,55 @@ const AppLayout = ({
   isKivaDialogue = false,
   isKivaSummaryReview = false,
   isDiscoverCollectiveWisdom = false,
-  isHarvestClosing = false
+  isHarvestClosing = false,
+  isMuted,
+  isCameraOff,
+  isInCall,
+  onToggleMic,
+  onToggleCamera,
+  onToggleCall,
+  isLoopActive,
+  vote,
+  voteState,
+  totalTime,
+  segmentTime
 }) => {
-  // Remove experimental debugging behavior - use currentPage for navigation state
+  const isNarrow = useMediaQuery('(max-width: 1100px)');
+
   const getCurrentStage = () => {
-    // If activeStage is explicitly passed, use it
     if (activeStage) return activeStage;
-    
-    // Map currentPage to stage based on application flow
-    if (currentPage === 'videoconference') return null; // Videoconference - no active tabs
+    if (currentPage === 'videoconference') return null;
     if (currentPage === 'landing' || currentPage === 'input' || currentPage === 'permissions') return 'connect';
     if (currentPage === 'reflection') return 'discover';
-    return 'harvest'; // Summary pages and beyond
+    return 'harvest';
   };
 
   const activeTab = getCurrentStage();
 
+  const headerInfo = (
+    <div className="header-info">
+      <div className="view-title">
+        {typeof getHeaderLabel(viewMode) === 'string' ? (
+          getHeaderLabel(viewMode)
+        ) : (
+          <div className="two-line-title">
+            <div>{getHeaderLabel(viewMode).line1}</div>
+            <div>{getHeaderLabel(viewMode).line2}</div>
+          </div>
+        )}
+      </div>
+      <div className="participant-counter-fixed">
+        {participantCount != null && (
+          <span className="participant-badge">
+            {participantCount} {participantCount === 1 ? 'participant' : 'participants'}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className={`app-container ${viewMode === 'reflection' ? 'reflection-mode' : ''}`}>
-      {/* Header section: logo, nav, title and participant count */}
       <header className="header-section">
         <div className="header-upper-row">
           <div className="logo-container">
@@ -88,50 +120,18 @@ const AppLayout = ({
               <div
                 key={tab.key}
                 className={`stage-tab${activeTab === tab.key ? ' active' : ''}`}
-                onClick={() => {
-                  // Remove debugging behavior - implement proper navigation
-                  // For now, provide visual feedback only
-                  console.log(`Navigating to ${tab.label} stage`);
-                  // Future: Add proper navigation logic here
-                }}
+                onClick={() => console.log(`Navigating to ${tab.label} stage`)}
               >
                 {tab.label}
               </div>
             ))}
           </nav>
-          <div className="header-info">
-            <div className="view-title">
-              {typeof getHeaderLabel(viewMode) === 'string' ? (
-                getHeaderLabel(viewMode)
-              ) : (
-                <div className="two-line-title">
-                  <div>{getHeaderLabel(viewMode).line1}</div>
-                  <div>{getHeaderLabel(viewMode).line2}</div>
-                </div>
-              )}
-            </div>
-            <div className="participant-counter-mobile">
-              {participantCount != null && (
-                <span className="participant-badge">
-                  {participantCount} {participantCount === 1 ? 'participant' : 'participants'}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="participant-counter-fixed">
-            {participantCount != null && (
-              <span className="participant-badge">
-                {participantCount} {participantCount === 1 ? 'participant' : 'participants'}
-              </span>
-            )}
-          </div>
+          {!isNarrow && headerInfo}
         </div>
       </header>
-
-      {/* Main content */}
+      
       <div className="main-content">
-
-        {/* Video grid wrapper (contains left nav and video grid) */}
+        {isNarrow && <div className="secondary-header">{headerInfo}</div>}
         <div className="grid-wrapper">
           <NavigationMap activeSize={activeSize} onSizeChange={onSizeChange} />
           <div className="viewing-area">
@@ -140,17 +140,9 @@ const AppLayout = ({
             </div>
           </div>
         </div>
-
-        {/* Bottom content area with tabs and control bar */}
+        
         {showBottomContent && (
-          <BottomContentArea 
-            participantCount={participantCount} 
-            onLoopToggle={onLoopToggle}
-            developmentMode={developmentMode}
-            canGoBack={canGoBack}
-            canGoForward={canGoForward}
-            onBack={onBack}
-            onForward={onForward}
+          <BottomContentArea
             currentPage={currentPage}
             defaultActiveTab={defaultActiveTab}
             dialogueQuestion={dialogueQuestion}
@@ -167,8 +159,33 @@ const AppLayout = ({
           />
         )}
       </div>
+
+      {showBottomContent && (
+        <FooterNavigation 
+          {...{
+            canGoBack,
+            canGoForward,
+            onBack,
+            onForward,
+            currentPage,
+            participantCount,
+            totalTime,
+            segmentTime,
+            isMuted,
+            isCameraOff,
+            isInCall,
+            onToggleMic,
+            onToggleCamera,
+            onToggleCall,
+            isLoopActive,
+            onToggleLoop,
+            vote,
+            voteState
+          }}
+        />
+      )}
     </div>
   );
 };
 
-export default AppLayout; 
+export default AppLayout;

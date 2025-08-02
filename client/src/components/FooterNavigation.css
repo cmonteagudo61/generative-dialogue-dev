@@ -1,269 +1,91 @@
-/* Footer Navigation Styles */
-.footer-navigation {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 15px 20px;
-  z-index: 1000;
-}
-
-.footer-nav-content {
+.footer-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 0 20px;
+  background-color: #e0e0e3;
+  height: 60px;
+  border-top: 1px solid #c0c0c6;
+  box-sizing: border-box;
 }
 
-/* Page Indicators */
-.page-indicators {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.page-indicator {
+.footer-left,
+.footer-center,
+.footer-right {
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 20px;
-  transition: all 0.3s ease;
-  color: rgba(255, 255, 255, 0.6);
+  gap: 12px;
+  height: 100%;
 }
 
-.page-indicator:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.page-indicator.active {
-  background: linear-gradient(45deg, #cd7f32, #ffa500);
-  color: white;
-}
-
-.page-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.page-label {
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-/* Navigation Controls */
-.nav-controls {
+.footer-center {
+  flex-grow: 1;
+  justify-content: center;
+  gap: 40px;
   display: flex;
-  align-items: center;
-  gap: clamp(8px, 2vw, 15px); /* Responsive default with tighter minimum */
+}
+
+.footer-right {
+  justify-content: flex-end;
+  gap: 8px; /* Default gap for immediate children */
 }
 
 .control-button {
-  background: none;
+  background: #e0e0e3;
   border: none;
   cursor: pointer;
   padding: 8px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  border-radius: 50%;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 44px;
+  height: 44px;
 }
 
-.control-button:hover:not(.disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.1);
+.control-button:hover:not(:disabled) {
+  background: #e0e0e3;
+  transform: scale(1.05);
 }
 
-.control-button.disabled {
+.control-button.active {
+  background-color: #e0e0e3;
+}
+
+.control-button img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.control-button:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
-  opacity: 0.3;
+  transform: none;
+  background-color: transparent;
 }
 
-.nav-icon {
-  width: 24px;
-  height: 24px;
-  transition: all 0.3s ease;
-}
-
-.current-page-info {
+.timer-display {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  min-width: 120px;
 }
 
-.page-counter {
-  font-size: 14px;
-  font-weight: 700;
-  color: #ffa500;
-}
-
-.page-name {
+.timer-label {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.7);
-  text-transform: uppercase;
+  color: #666;
   letter-spacing: 0.5px;
-}
-
-/* Development Indicator */
-.dev-indicator {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.4);
   text-transform: uppercase;
-  letter-spacing: 1px;
-  padding: 4px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  background: rgba(255, 0, 0, 0.1);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .footer-navigation {
-    padding: 6px 8px; /* More compact padding */
-    max-height: 20vh;
-    overflow: visible;
-  }
-
-  .footer-nav-content {
-    flex-direction: row;
-    gap: 4px; /* Reduced from 8px to 4px */
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: nowrap; /* Prevent wrapping to keep everything on one line */
-  }
-
-  .page-indicators {
-    order: 1;
-    gap: 2px; /* Reduced from 6px to 2px for tighter spacing */
-    flex: 1;
-    justify-content: center;
-    min-width: 0;
-    max-width: 60%; /* Limit page indicators to give space for nav controls */
-  }
-
-  .nav-controls {
-    order: 2;
-    flex-shrink: 0;
-    gap: clamp(2px, 1vw, 4px); /* More flexible and tighter spacing */
-    display: flex;
-    align-items: center;
-  }
-
-  .dev-indicator {
-    order: 3;
-    font-size: 8px;
-    display: none;
-  }
-
-  .page-label {
-    display: none;
-  }
-
-  .page-indicator {
-    padding: 2px 4px; /* Reduced from 4px 6px */
-    min-width: 20px; /* Ensure minimum clickable area */
-  }
-
-  .page-dot {
-    width: 6px; /* Smaller dots */
-    height: 6px;
-  }
-
-  /* Ensure navigation buttons are always visible */
-  .control-button {
-    min-width: 28px; /* Reduced from 32px */
-    min-height: 28px; /* Reduced from 32px */
-    padding: 4px; /* Reduced from 6px */
-    flex-shrink: 0; /* Never allow shrinking */
-  }
-
-  .nav-icon {
-    width: 18px; /* Reduced from 20px */
-    height: 18px; /* Reduced from 20px */
-  }
-
-  .current-page-info {
-    min-width: 45px; /* Reduced from 60px */
-    font-size: 10px; /* Smaller text */
-  }
-
-  .page-counter {
-    font-size: 11px;
-  }
-
-  .page-name {
-    font-size: 8px;
-  }
+.timer-value {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
 }
 
-@media (max-width: 480px) {
-  .footer-navigation {
-    padding: 4px 6px; /* Even more compact */
-  }
-
-  .footer-nav-content {
-    gap: 2px; /* Very tight spacing */
-  }
-
-  .page-indicators {
-    gap: 1px; /* Minimal gap between page indicators */
-    max-width: 50%; /* Give more space to nav controls on very small screens */
-  }
-
-  .nav-controls {
-    gap: clamp(1px, 0.5vw, 2px); /* Ultra-tight flexible spacing on very small screens */
-  }
-
-  .page-indicator {
-    padding: 1px 3px; /* Minimal padding */
-  }
-
-  .control-button {
-    min-width: 24px; /* Even smaller on very small screens */
-    min-height: 24px;
-    padding: 2px;
-  }
-
-  .nav-icon {
-    width: 16px;
-    height: 16px;
-  }
-
-  .current-page-info {
-    min-width: 35px; /* Very compact */
-    font-size: 9px;
-  }
-
-  .page-counter {
-    font-size: 10px;
-  }
-
-  .page-name {
-    font-size: 7px;
-  }
-
-  /* Keep horizontal layout even on very small screens to preserve nav buttons */
-  .footer-nav-content {
-    flex-direction: row; /* Changed from column to row */
-  }
-
-  .page-indicators {
-    order: 1;
-  }
-
-  .nav-controls {
-    order: 2;
-  }
-} 
+/* Grouping for right-hand controls */
+.footer-right > .control-button:nth-of-type(2) {
+  margin-right: 16px; /* Add extra space after the second button (thumbs down) */
+}

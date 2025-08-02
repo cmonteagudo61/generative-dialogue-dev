@@ -61,7 +61,7 @@
   height: 99px;
   margin: 0 auto;
   border-radius: 16px;
-  background: #d9d9d9; /* Neutral background */
+  background: #d9d9d9;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,11 +97,7 @@
   transform-origin: center;
 }
 
-/* Make fishbowl icon match the others */
 .nav-icon.fishbowl-icon {
   transform: scale(1.2);
   transform-origin: center;
-} /* Sync test Sat Jul 19 00:32:43 EDT 2025 */
-/* TEST: Nav 40px Sat Jul 19 00:40:24 EDT 2025 */
-/* FIXED: Removed LandingPage conflicts Sat Jul 19 00:44:51 EDT 2025 */
-/* FORCE RELOAD Sat Jul 19 00:50:08 EDT 2025 */
+}

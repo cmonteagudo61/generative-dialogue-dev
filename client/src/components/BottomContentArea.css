@@ -4,9 +4,7 @@
   flex-direction: column;
   flex: 1; /* Take available space from parent container */
   height: 100%; /* Fill parent container completely */
-  max-height: 100%; /* Don't exceed parent container */
-  overflow-y: auto; /* Allow vertical scrolling when content exceeds container */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow: hidden;
   position: relative;
   background-color: white;
   margin: 0; /* Remove any margin */
@@ -53,8 +51,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%; /* Ensure it has a defined height for proper scrolling */
-  min-height: 0; /* Allow flex shrinking */
+  overflow: hidden;
   position: relative;
   margin-left: -64px; /* Extend to the left edge */
   padding-left: 65px; /* Reduced from 88px to bring tabs much closer to left edge */
@@ -136,13 +133,9 @@
   font-weight: 600; /* Make text slightly bolder in active tab */
 }
 
-
-
 .tab-content {
   flex: 1;
-  height: 0; /* Force the flex item to constrain its height */
-  overflow-y: auto; /* Allow scrolling when content exceeds available space */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow-y: auto;
   background-color: white;
   border-top: 1px solid #ccc;
   padding: 20px 20px 20px 8px; /* Reduced left padding from 20px to 8px */
@@ -152,22 +145,16 @@
   flex-direction: column;
   align-items: flex-start;
   font-size: 18px; /* Added base font size for content */
-  min-height: 0; /* Allow flex item to shrink below content size */
 }
 
 /* Content sections */
 .content-section {
-  flex: 1; /* Take available space */
-  overflow-y: auto; /* Enable scrolling for content */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  height: 100%;
+  overflow-y: auto;
   width: 100%;
   text-align: left !important;
   align-self: flex-start;
   font-size: 18px; /* Increased base content font size */
-  padding: 16px; /* Add padding back for proper content spacing */
-  box-sizing: border-box; /* Include padding in height calculations */
-  min-height: 0; /* Allow flex item to shrink below content size */
-  height: 100%; /* Ensure content section takes full available height */
 }
 
 /* Ensure all content within sections is left-aligned */
@@ -194,18 +181,15 @@
 .dialogue-tab-content {
   display: flex;
   flex-direction: column;
-  flex: 1; /* Take available space */
+  height: 100%;
   padding: 0; /* Remove default padding to let EnhancedTranscription manage spacing */
-  overflow-y: auto; /* Allow scrolling for dialogue content */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow: hidden; /* Let the inner component handle scrolling */
 }
 
 .dialogue-section {
   max-width: 800px;
   margin: 0;
   text-align: left !important;
-  padding: 0; /* Remove padding since parent content-section now has padding */
-  /* Remove flex and overflow properties to let parent handle scrolling */
 }
 
 .dialogue-section p,
@@ -445,29 +429,25 @@
   border: 1px solid #bbdefb;
 }
 
-/* Standardized control bar - copied from simple footer pages */
+/* Bottom control bar - Minimal buffering, no clipping */
 .control-bar {
   height: 50px !important; /* Sufficient height to prevent clipping */
   background-color: #e0e0e3; /* Light grey background for footer */
   color: #3E4C71; /* Dark blue text color */
   display: flex !important;
   align-items: center !important; /* Perfect vertical centering */
-  justify-content: space-between !important; /* Three-group layout for complex footer */
+  justify-content: space-between !important; /* Maintain layout structure */
   padding: 5px 20px !important; /* Minimal 5px top/bottom - prevents clipping */
   border-top: none; /* Remove border */
   flex-shrink: 0; /* Prevent shrinking */
   margin: 0; /* Remove any margin */
+  position: relative; /* Ensure proper positioning */
   box-sizing: border-box; /* Include padding in height calculation */
 }
 
 .media-controls {
   display: flex;
-  gap: clamp(2px, 1vw, 8px); /* Responsive gap: 2px minimum on mobile, 8px maximum on desktop */
-}
-
-.navigation-controls {
-  display: flex;
-  gap: clamp(2px, 1vw, 8px); /* Responsive gap: 2px minimum on mobile, 8px maximum on desktop */
+  gap: 8px; /* Add consistent spacing between media control buttons */
 }
 
 .control-button {
@@ -503,26 +483,42 @@
   transition: all 0.2s ease;
 }
 
-/* Responsive timer styles */
 .timer-display {
   display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
-/* Desktop timer styles - show both times separately */
-.timer-cell-desktop {
-  margin: 0 6px;
+.timer-cell {
+  margin: 0 15px;
   text-align: center;
-  min-width: 90px; /* Smaller width for individual timers */
+}
+
+.timer-label {
+  font-size: 14px; /* Increased from 11px to 14px */
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px; /* Reduced from 4px to 2px */
+}
+
+.timer-value {
+  font-size: 20px; /* Increased from 16px to 20px */
+  font-weight: 600;
+  color: #3E4C71;
+}
+
+/* Compact timer styles for desktop */
+.timer-cell-combined {
+  margin: 0 12px;
+  text-align: center;
+  min-width: 160px; /* Desktop width for combined display */
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: center; /* Center the timer content vertically */
 }
 
-.timer-cell-desktop .timer-label {
-  font-size: 11px;
-  margin-bottom: 1px;
+.timer-label-combined {
+  font-size: 11px; /* Compact size */
+  margin-bottom: 1px; /* Minimal gap but prevents text crowding */
   color: #666;
   font-weight: 500;
   letter-spacing: 0.5px;
@@ -530,42 +526,13 @@
   line-height: 1;
 }
 
-.timer-cell-desktop .timer-value {
-  font-size: 16px;
+.timer-value-combined {
+  font-size: 16px; /* Compact but readable */
   font-weight: 600;
   color: #333;
-  font-family: 'Courier New', monospace;
+  font-family: 'Courier New', monospace; /* Monospace for better time alignment */
   line-height: 1;
-  margin-top: 0;
-}
-
-/* Mobile timer styles - show only total time */
-.timer-cell-mobile {
-  margin: 0 6px;
-  text-align: center;
-  min-width: 100px;
-  display: none; /* Hidden by default, shown only on mobile */
-  flex-direction: column;
-  justify-content: center;
-}
-
-.timer-cell-mobile .timer-label {
-  font-size: 10px;
-  margin-bottom: 0px;
-  color: #666;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  line-height: 1;
-}
-
-.timer-cell-mobile .timer-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-  font-family: 'Courier New', monospace;
-  line-height: 1;
-  margin-top: 0;
+  margin-top: 0; /* No extra margin */
 }
 
 /* Spin animation for loading states */
@@ -586,15 +553,33 @@
     width: calc(100% + 60px);
   }
   
-  /* Responsive timer display for mobile */
-  .timer-cell-desktop {
-    display: none !important; /* Hide separate desktop timers */
+  /* Compact timer display for mobile */
+  .timer-cell {
+    margin: 0 8px; /* Reduced from 15px to 8px */
   }
   
-  .timer-cell-mobile {
-    display: flex !important; /* Show mobile total time only */
-    margin: 0 6px;
-    min-width: 100px;
+  .timer-label {
+    font-size: 11px; /* Smaller on mobile */
+    margin-bottom: 1px;
+  }
+  
+  .timer-value {
+    font-size: 16px; /* Smaller on mobile */
+  }
+
+  /* Override compact timer for mobile */
+  .timer-cell-combined {
+    margin: 0 6px !important; /* Tighter spacing on mobile */
+    min-width: 120px !important; /* Smaller minimum width for mobile */
+  }
+  
+  .timer-label-combined {
+    font-size: 10px !important; /* Smaller label on mobile */
+    margin-bottom: 0px !important; /* Tightest spacing for mobile */
+  }
+  
+  .timer-value-combined {
+    font-size: 14px !important; /* Smaller value on mobile but still readable */
   }
   
   .tab-navigation {
@@ -623,7 +608,7 @@
     height: 58px !important; /* Adjusted for optimal bottom padding */
     display: flex !important;
     align-items: center !important; /* Force vertical centering on mobile */
-    justify-content: space-between !important; /* Three-group layout for complex footer */
+    justify-content: space-between !important; /* Maintain layout structure */
     box-sizing: border-box !important; /* Include padding in height calculation */
   }
 
@@ -638,23 +623,11 @@
     flex-shrink: 0 !important; /* Prevent shrinking */
   }
 
-  #back-btn, #forward-btn, #thumbs-up-btn, #thumbs-down-btn {
+  #back-btn, #forward-btn {
     position: static !important; /* Remove all custom positioning */
     top: auto !important; /* Reset positioning */
     margin: 0 !important; /* Remove all margins */
   }
-  
-  /* Move navigation controls 30px left to close gap with timer */
-  .navigation-controls {
-    transform: translateX(-30px); /* Move icons 30px to the left */
-  }
-  
-  /* Move Loop icon specifically 4px further left in mobile view */
-  .control-button#loop-btn {
-    transform: translateX(-4px); /* Additional 4px left movement for Loop icon */
-  }
-  
-
   
   .timer-cell {
     margin: 0 10px;
@@ -701,21 +674,22 @@
   gap: 6px;
   width: 200px; /* Increased width to accommodate longer button text */
   height: auto; /* Let height be determined by padding */
-  justify-content: flex-end;
-  text-align: right;
+  justify-content: center;
+  text-align: center;
   white-space: nowrap; /* Prevent text wrapping */
   overflow: hidden; /* Hide any overflow */
   box-sizing: border-box; /* Include padding in width calculation */
 }
 
-/* Desktop view - rectangular buttons with text content */
-.transcription-control-btn:not(.primary):not(.warning):not(.danger) {
+/* Desktop view - make all buttons identical and responsive */
+.transcription-control-btn,
+.transcription-status {
   width: clamp(150px, 20vw, 200px) !important; /* Responsive width: 150px-200px */
   height: 36px !important;
   padding: 8px clamp(8px, 1.5vw, 16px) !important; /* Responsive padding */
   display: flex !important;
   align-items: center !important;
-  justify-content: flex-end !important;
+  justify-content: center !important;
   border-radius: 6px !important;
   font-size: clamp(14px, 1.5vw, 16px) !important; /* Responsive font size */
   font-weight: 500 !important;
@@ -726,49 +700,14 @@
   flex-shrink: 1 !important; /* Allow buttons to shrink */
 }
 
-
-
-/* Transcription status with grey background and blue border to match buttons */
-.transcription-status {
-  width: clamp(150px, 20vw, 200px) !important; /* Responsive width: 150px-200px */
-  height: 36px !important;
-  padding: 8px clamp(8px, 1.5vw, 16px) !important; /* Responsive padding */
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  border-radius: 6px !important;
-  font-size: clamp(14px, 1.5vw, 16px) !important; /* Responsive font size */
-  font-weight: 500 !important;
-  box-sizing: border-box !important;
-  background-color: #f5f5f5 !important; /* Default grey background to match buttons */
-  color: #3E4C71 !important; /* Default blue text to match buttons */
-  border: 2px solid #3E4C71 !important; /* Default blue pinstripe stroke to match buttons */
-  flex-shrink: 1 !important; /* Allow buttons to shrink */
-}
-
-/* Ensure base layout styles still apply to all buttons */
-.transcription-control-btn {
-  width: clamp(150px, 20vw, 200px) !important;
-  height: 36px !important;
-  padding: 8px clamp(8px, 1.5vw, 16px) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 6px !important;
-  font-size: clamp(14px, 1.5vw, 16px) !important;
-  font-weight: 500 !important;
-  box-sizing: border-box !important;
-  flex-shrink: 1 !important;
-}
-
-  /* Mobile view - square icons only, hide text */
+  /* Mobile view - clean simple approach */
 @media (max-width: 1100px) {
   .tab-controls-right {
     gap: 2px;
   }
   
   .transcription-control-btn {
-    width: 32px !important; /* Square size for mobile */
+    width: 32px !important;
     height: 32px !important;
     padding: 0 !important;
     display: flex !important;
@@ -776,14 +715,13 @@
     justify-content: center !important;
   }
 
-  /* Hide text labels on mobile, show only icons */
   .transcription-control-btn .btn-text,
   .transcription-status .status-text {
     display: none;
   }
 
   .transcription-status {
-    width: 32px !important; /* Square size for mobile */
+    width: 32px !important;
     height: 32px !important;
     padding: 0 !important;
     display: flex !important;
@@ -797,89 +735,65 @@
   
   /* Force the disconnected status to be square like the buttons */
   .transcription-status.disconnected {
-    width: 32px !important; /* Square size for mobile */
+    width: 32px !important;
     height: 32px !important;
     padding: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background-color: #f5f5f5 !important; /* Grey background to match buttons */
-    color: #3E4C71 !important; /* Blue text to match buttons */
-    border: 2px solid #3E4C71 !important; /* Blue border to match buttons */
+    background-color: #3E4C71 !important;
+    color: #fff !important;
   }
 }
 
 .transcription-control-btn.primary {
-  background-color: #f5f5f5 !important; /* Default grey background */
-  color: #3E4C71 !important; /* Default blue text */
-  border: 2px solid #3E4C71 !important; /* Default blue pinstripe stroke */
+  background-color: #3E4C71; /* Match app's dark blue */
+  color: white;
 }
 
 .transcription-control-btn.primary:hover {
-  background-color: #e8e8e8 !important; /* Slightly darker grey on hover */
+  background-color: #334060; /* Darker shade for hover */
   transform: translateY(-1px);
 }
 
 .transcription-control-btn.danger {
-  background-color: #f5f5f5 !important; /* Default grey background */
-  color: #3E4C71 !important; /* Default blue text */
-  border: 2px solid #3E4C71 !important; /* Default blue pinstripe stroke */
+  background-color: #E06D37; /* Match app's orange for stop button */
+  color: white;
 }
 
 .transcription-control-btn.danger:hover {
-  background-color: #e8e8e8 !important; /* Slightly darker grey on hover */
+  background-color: #CC5A2B; /* Darker orange for hover */
   transform: translateY(-1px);
 }
 
 .transcription-control-btn.warning {
-  background-color: #f5f5f5 !important; /* Default grey background */
-  color: #3E4C71 !important; /* Default blue text */
-  border: 2px solid #3E4C71 !important; /* Default blue pinstripe stroke */
+  background-color: #3E4C71; /* Match app's dark blue theme */
+  color: #fff; /* White text for contrast */
+  border: 1px solid #3E4C71;
 }
 
 .transcription-control-btn.warning:hover {
-  background-color: #e8e8e8 !important; /* Slightly darker grey on hover */
+  background-color: #334060; /* Darker blue on hover */
   transform: translateY(-1px);
 }
 
 .transcription-control-btn.warning .btn-icon {
-  color: #3E4C71 !important; /* Make trash icon blue to match text */
+  color: #fff; /* Make trash icon white for contrast against red */
   font-weight: bold; /* Make it bolder */
   font-size: 18px; /* Slightly larger for better visibility */
-  text-shadow: none !important; /* Remove shadow for clean look on grey background */
-  display: inline-flex; /* Use flexbox for perfect centering */
-  align-items: center; /* Center vertically */
-  justify-content: center; /* Center horizontally */
-  width: auto !important; /* Override any fixed width */
-  height: auto !important; /* Override any fixed height */
-  filter: none !important; /* Remove any filters that affect emoji */
-  line-height: 1; /* Remove line height issues */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add shadow for crispness */
 }
 
 .transcription-control-btn.primary .btn-icon {
-  color: #3E4C71 !important; /* Make microphone icon blue to match text */
+  color: #fff; /* Ensure microphone icon is white for contrast */
   font-weight: bold; /* Make it bold */
-  text-shadow: none !important; /* Remove shadow for clean look on grey background */
-  display: inline-flex; /* Use flexbox for perfect centering */
-  align-items: center; /* Center vertically */
-  justify-content: center; /* Center horizontally */
-  width: auto !important; /* Override any fixed width */
-  height: auto !important; /* Override any fixed height */
-  filter: none !important; /* Remove any filters that affect emoji */
-  line-height: 1; /* Remove line height issues */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add subtle shadow for crispness */
 }
 
 .transcription-control-btn.danger .btn-icon {
-  color: #3E4C71 !important; /* Make stop icon blue to match text */
+  color: #fff; /* Ensure stop icon is white for contrast */
   font-weight: bold; /* Make it bold */
-  text-shadow: none !important; /* Remove shadow for clean look on grey background */
-  display: inline-flex; /* Use flexbox for perfect centering */
-  align-items: center; /* Center vertically */
-  justify-content: center; /* Center horizontally */
-  width: auto !important; /* Override any fixed width */
-  height: auto !important; /* Override any fixed height */
-  filter: none !important; /* Remove any filters that affect emoji */
-  line-height: 1; /* Remove line height issues */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add subtle shadow for crispness */
 }
 
 .transcription-status {
@@ -915,21 +829,18 @@
 }
 
 .transcription-status.connected {
-  background-color: #d4edda !important; /* Light green background for connected state */
-  color: #155724 !important; /* Dark green text */
-  border: 2px solid #3E4C71 !important; /* Blue border to match buttons */
+  background-color: #d4edda;
+  color: #155724;
 }
 
 .transcription-status.disconnected {
-  background-color: #f5f5f5 !important; /* Grey background to match buttons */
-  color: #3E4C71 !important; /* Blue text to match buttons */
-  border: 2px solid #3E4C71 !important; /* Blue border to match buttons */
+  background-color: #3E4C71; /* Match button styling */
+  color: #fff; /* White text for consistency */
 }
 
 .transcription-status.recording {
-  background-color: #fff3cd !important; /* Light yellow background for recording state */
-  color: #856404 !important; /* Dark yellow text */
-  border: 2px solid #3E4C71 !important; /* Blue border to match buttons */
+  background-color: #fff3cd;
+  color: #856404;
 }
 
 /* Enhanced styling for forward/backward buttons - let SVG handle the styling */
@@ -957,137 +868,6 @@
 #forward-btn.active {
   border: none !important; /* No border when active */
   background-color: rgba(62, 76, 113, 0.2) !important; /* Light blue background when active */
-}
-
-/* Voting buttons styling - match back/forward button behavior */
-#thumbs-up-btn, #thumbs-down-btn {
-  position: relative;
-  /* Remove all borders and backgrounds - let the SVG handle the visual design */
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-#thumbs-up-btn:not(.active):not(:hover), 
-#thumbs-down-btn:not(.active):not(:hover) {
-  border: none !important; /* No border - SVG has its own stroke */
-  background-color: transparent !important; /* Transparent background */
-}
-
-#thumbs-up-btn:hover:not(.active), 
-#thumbs-down-btn:hover:not(.active) {
-  border: none !important; /* No border on hover */
-  background-color: rgba(224, 109, 55, 0.1) !important; /* Light orange background on hover */
-}
-
-#thumbs-up-btn.active, 
-#thumbs-down-btn.active {
-  border: none !important; /* No border when active */
-  background-color: rgba(62, 76, 113, 0.2) !important; /* Light blue background when active */
 } /* Added blue pinstripes to tabs Sat Jul 19 01:10:32 EDT 2025 */
 /* Made pinstripes thinner and extended down sides Sat Jul 19 01:12:20 EDT 2025 */
 /* Simplified active tabs - removed orange pinstripes Sat Jul 19 01:14:33 EDT 2025 */
-
-/* Mobile responsive styles for tab controls */
-@media (max-width: 768px) {
-  .tab-navigation {
-    flex-direction: column; /* Stack tab navigation vertically */
-    align-items: stretch; /* Stretch both rows to full width */
-    padding: 8px 12px 0 1px;
-    border-bottom: none; /* Remove border from entire navigation */
-  }
-  
-  .tab-controls-left {
-    order: 1; /* Tabs go first */
-    justify-content: flex-start; /* Align tabs to left */
-    margin-bottom: 4px; /* Reduced space between rows */
-    border-bottom: 1px solid #ddd; /* Keep grey line only under tabs */
-    padding-bottom: 4px; /* Small padding under tabs before border */
-  }
-  
-  .tab-controls-right {
-    order: 2; /* Controls go second (below tabs) */
-    justify-content: flex-end; /* Right-justify the controls */
-    gap: clamp(6px, 2vw, 12px); /* Tighter spacing on mobile */
-    flex-shrink: 0; /* Don't allow shrinking */
-    min-width: auto; /* Reset min-width */
-    margin-bottom: 4px; /* Reduced margin to allow content to move up */
-    padding-top: 2px; /* Small top padding for icons */
-    border-bottom: none; /* Ensure no border under icons */
-  }
-  
-  /* Keep tab controls same height as desktop on mobile */
-  .transcription-control-btn {
-    height: 36px !important; /* Same as desktop, not taller */
-    padding: 8px 12px;
-    font-size: 14px;
-    min-height: auto; /* Remove min-height override */
-  }
-  
-  .transcription-status {
-    height: 36px !important; /* Same as desktop, not taller */
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    font-size: 14px;
-    min-height: auto; /* Remove min-height override */
-  }
-  
-  /* Responsive timer display for mobile */
-  .timer-cell-desktop {
-    display: none !important; /* Hide separate desktop timers */
-  }
-  
-  .timer-cell-mobile {
-    display: flex !important; /* Show mobile total time only */
-    margin: 0 3px; /* Reduced from 6px to 3px to close gap by about half */
-    min-width: 100px;
-  }
-}
-
-/* Even smaller screens - make controls more compact */
-@media (max-width: 480px) {
-  .tab-controls-left {
-    margin-bottom: 2px; /* Even tighter spacing */
-    padding-bottom: 2px;
-  }
-  
-  .tab-controls-right {
-    gap: clamp(4px, 1.5vw, 8px); /* Very tight spacing on small screens */
-    margin-bottom: 2px; /* Allow content closer */
-    padding-top: 1px;
-    border-bottom: none; /* Ensure no border under icons */
-  }
-  
-  .transcription-control-btn {
-    height: 36px !important; /* Keep same height even on very small screens */
-    padding: 6px 10px;
-    font-size: 13px;
-    min-height: auto; /* Remove min-height override */
-  }
-  
-  .transcription-status {
-    height: 36px !important; /* Keep same height even on very small screens */
-    padding: 6px 10px;
-    font-size: 13px;
-    min-height: auto; /* Remove min-height override */
-  }
-  
-  /* Hide button text on very small screens, keep only icons */
-  .btn-text {
-    display: none;
-  }
-  
-  .status-text {
-    display: none;
-  }
-  
-  /* Keep responsive timer behavior on very small screens */
-  .timer-cell-desktop {
-    display: none !important; /* Hide separate desktop timers */
-  }
-  
-  .timer-cell-mobile {
-    display: flex !important; /* Show mobile total time only */
-  }
-}

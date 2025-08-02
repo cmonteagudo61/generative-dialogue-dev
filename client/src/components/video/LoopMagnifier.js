@@ -138,6 +138,7 @@ const LoopMagnifier = ({ isActive, children, magnification = 2.5, size = 200, pa
   return (
     <div
       ref={containerRef}
+      data-magnifier-active={isActive && isVisible}
       style={{
         position: 'relative',
         width: '100%',
@@ -197,106 +198,23 @@ const LoopMagnifier = ({ isActive, children, magnification = 2.5, size = 200, pa
               background: 'rgba(0,0,0,0.95)',
             }}
           >
-            {/* Independent Magnifier Content - Renders participants on demand */}
-            <MagnifierContent 
+            <MagnifierContent
               mousePosition={mousePosition}
               scrollPosition={scrollPosition}
               magnification={magnification}
               size={size}
               containerRef={containerRef}
-              onCenterParticipantChange={setCenterParticipantName}
               participantArray={participantArray}
               feedSize={feedSize}
             />
-            
 
-            
-            {/* CSS to hide background labels when magnifier active */}
+            {/* This style block hides the original labels underneath the magnifier */}
             <style>{`
-              /* Hide ALL background labels when magnifier is active */
-              body .experimental-name-label:not(.magnified-content .experimental-name-label),
-              div .experimental-name-label:not(.magnified-content .experimental-name-label),
-              .experimental-community-container .experimental-name-label:not(.magnified-content .experimental-name-label) {
-                opacity: 0 !important;
-                visibility: hidden !important;
+              [data-magnifier-active="true"] .experimental-participant:hover .experimental-name-label {
                 display: none !important;
-                pointer-events: none !important;
-                background: rgba(0,0,0,0.95) !important;
-                color: white !important;
-                border-radius: 0px !important;
-              }
-              
-              /* FORCE magnified content labels to be visible with consistent black background styling */
-              .magnified-content .experimental-name-label {
-                opacity: 1 !important;
-                visibility: visible !important;
-                display: block !important;
-                pointer-events: auto !important;
-                background: rgba(0,0,0,0.95) !important;
-                color: white !important;
-                border: 1px solid #333 !important;
-                border-radius: 0px !important;
-                font-weight: normal !important;
-                z-index: 999 !important;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
-              }
-              
-              /* Ensure magnifier content doesn't get clipped */
-              .magnified-content {
-                overflow: visible !important;
-              }
-              
-              /* Force magnifier to be above everything */
-              div[style*="z-index: 1000"] {
-                z-index: 999999 !important;
-              }
-              
-              /* Fix hover effects for background when magnifier is NOT active */
-              .experimental-community-container:not([data-magnifier-active="true"]) .experimental-participant:hover .experimental-name-label {
-                opacity: 1 !important;
-                visibility: visible !important;
-                display: block !important;
-                background: rgba(0,0,0,0.95) !important;
-                color: white !important;
-                border-radius: 0px !important;
-              }
-              
-              /* Ensure ALL background participants (including virtualized ones) can show hover labels */
-              .experimental-community-container:not([data-magnifier-active="true"]) .experimental-name-label {
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity 0.2s ease-in-out;
-                background: rgba(0,0,0,0.95) !important;
-                color: white !important;
-                border-radius: 0px !important;
-              }
-              
-              /* Make sure hover works for ALL participants, not just first 12 */
-              .experimental-community-container:not([data-magnifier-active="true"]) .experimental-participant:hover .experimental-name-label {
-                opacity: 1 !important;
-                visibility: visible !important;
-                display: block !important;
-                z-index: 999 !important;
-                background: rgba(0,0,0,0.95) !important;
-                color: white !important;
-                border-radius: 0px !important;
               }
             `}</style>
-            
-            {/* Glass reflection effect */}
-            <div
-              style={{
-                position: 'absolute',
-                top: '8px',
-                left: '8px',
-                right: '8px',
-                bottom: '8px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(0,0,0,0.05) 100%)',
-                pointerEvents: 'none',
-              }}
-            />
-            
+
             {/* Center crosshair */}
             <div
               style={{
@@ -316,7 +234,7 @@ const LoopMagnifier = ({ isActive, children, magnification = 2.5, size = 200, pa
                   left: '0',
                   right: '0',
                   height: '1px',
-                  background: 'rgba(62, 76, 113, 0.7)',
+                  background: 'rgba(255, 255, 255, 0.7)',
                   transform: 'translateY(-50%)',
                 }}
               />
@@ -327,7 +245,7 @@ const LoopMagnifier = ({ isActive, children, magnification = 2.5, size = 200, pa
                   top: '0',
                   bottom: '0',
                   width: '1px',
-                  background: 'rgba(62, 76, 113, 0.7)',
+                  background: 'rgba(255, 255, 255, 0.7)',
                   transform: 'translateX(-50%)',
                 }}
               />
@@ -339,21 +257,20 @@ const LoopMagnifier = ({ isActive, children, magnification = 2.5, size = 200, pa
   );
 };
 
-// Independent Magnifier Content Component - Renders participants on demand
-const MagnifierContent = ({ 
+const MagnifierContent = React.memo(({ 
   mousePosition, 
   scrollPosition, 
   magnification, 
   size, 
   containerRef, 
-  onCenterParticipantChange,
-  participantArray, // RECEIVE participant array from background
-  feedSize // RECEIVE feed size from background
+  participantArray,
+  feedSize
 }) => {
-  // Use EXACT same participant array and feed size as background
-  const MIN_SIZE = feedSize || 60; // Default to 60px if not provided
+  if (!containerRef.current) return null;
 
-  // Helper to generate deterministic avatar images (EXACT SAME as background)
+  const containerWidth = containerRef.current.offsetWidth;
+  const feedsPerRow = Math.floor(containerWidth / feedSize);
+  
   const randomAvatar = (i) => {
     const baseUrl = 'https://randomuser.me/api/portraits/';
     const type = ['men', 'women'][i % 2];
@@ -361,247 +278,93 @@ const MagnifierContent = ({
     return `${baseUrl}${type}/${id}.jpg`;
   };
 
-  // Calculate which participants should be visible in the magnified view
-  // CRITICAL: Use EXACT same coordinate system as background grid
-  const getVisibleParticipantsInMagnifier = () => {
-    if (!containerRef.current || !participantArray || participantArray.length === 0) return [];
-
-    // Use EXACT same coordinate system as CommunityViewExperimental
-    const container = containerRef.current;
-    const actualContainerWidth = container.offsetWidth;
-    const feedSize = MIN_SIZE; // EXACT same as background: 60px
-    const feedsPerRow = Math.floor(actualContainerWidth / feedSize); // EXACT same calculation
-    
-    if (feedsPerRow <= 0) return [];
-
-    // Calculate the area that the magnifier is showing
-    const magnifierAreaSize = size / magnification; // Actual area being magnified
-    const mousePosWithScroll = {
-      x: mousePosition.x,
-      y: mousePosition.y + scrollPosition.y
-    };
-
-    // Calculate the bounds of the area being magnified
-    const magnifiedArea = {
-      left: mousePosWithScroll.x - (magnifierAreaSize / 2),
-      right: mousePosWithScroll.x + (magnifierAreaSize / 2),
-      top: mousePosWithScroll.y - (magnifierAreaSize / 2),
-      bottom: mousePosWithScroll.y + (magnifierAreaSize / 2)
-    };
-
-    // Find all participants that intersect with this area
-    const visibleParticipants = [];
-    
-    for (let i = 0; i < participantArray.length; i++) {
-      // EXACT same coordinate calculation as background grid
-      const col = i % feedsPerRow;
-      const row = Math.floor(i / feedsPerRow);
-      const x = col * feedSize;
-      const y = row * feedSize;
-      
-      // Check if this participant intersects with the magnified area
-      const participantBounds = {
-        left: x,
-        right: x + feedSize,
-        top: y,
-        bottom: y + feedSize
-      };
-      
-      const intersects = (
-        participantBounds.left < magnifiedArea.right &&
-        participantBounds.right > magnifiedArea.left &&
-        participantBounds.top < magnifiedArea.bottom &&
-        participantBounds.bottom > magnifiedArea.top
-      );
-      
-      if (intersects) {
-        visibleParticipants.push({
-          participant: participantArray[i],
-          index: i,
-          position: { x, y }, // EXACT same coordinates as background
-          bounds: participantBounds
-        });
-      }
-    }
-
-    // Find center participant for naming
-    const centerParticipant = visibleParticipants.find(p => 
-      mousePosWithScroll.x >= p.bounds.left && 
-      mousePosWithScroll.x <= p.bounds.right &&
-      mousePosWithScroll.y >= p.bounds.top && 
-      mousePosWithScroll.y <= p.bounds.bottom
-    );
-
-    if (centerParticipant && onCenterParticipantChange) {
-      onCenterParticipantChange(centerParticipant.participant.user_name);
-    }
-
-    console.log('🔍 COORDINATE-MATCHED magnifier rendering:', {
-      magnifiedArea,
-      participantsInView: visibleParticipants.length,
-      centerParticipant: centerParticipant?.participant.user_name,
-      totalParticipants: participantArray.length,
-      feedSize,
-      feedsPerRow,
-      actualContainerWidth,
-      scrollPosition: scrollPosition.y,
-      mousePosition
-    });
-
-    return visibleParticipants;
-  };
-
-  const visibleParticipants = getVisibleParticipantsInMagnifier();
-
   return (
     <div
-      className="magnified-content"
       style={{
         position: 'absolute',
-        width: `${containerRef.current?.offsetWidth || 0}px`,
-        height: `${containerRef.current?.offsetHeight || 0}px`,
+        left: 0,
+        top: 0,
+        width: `${containerWidth}px`,
+        height: `${(Math.ceil(participantArray.length / feedsPerRow) * feedSize)}px`,
         transform: `translate(${(-mousePosition.x * magnification) + size / 2}px, ${(-(mousePosition.y + scrollPosition.y) * magnification) + size / 2}px) scale(${magnification})`,
         transformOrigin: '0 0',
         pointerEvents: 'none',
-        zIndex: 1,
-        left: '0px',
-        top: '0px',
       }}
     >
-      {/* Render participants with EXACT same logic as background grid */}
-      {visibleParticipants.map(({ participant, index, position, bounds }) => {
-        const feedSize = MIN_SIZE; // EXACT same as background: 60px
-        const displayName = participant.user_name || `User ${index}`;
-        const hasVideo = participant.tracks?.video?.state === 'playable' && participant.tracks?.video?.persistentTrack;
-        
-        // Determine if this is the center participant (under the magnifier crosshair)
-        const mousePosWithScroll = {
-          x: mousePosition.x,
-          y: mousePosition.y + scrollPosition.y
-        };
-        
-        const isCenterParticipant = 
-          mousePosWithScroll.x >= bounds.left && 
-          mousePosWithScroll.x <= bounds.right &&
-          mousePosWithScroll.y >= bounds.top && 
-          mousePosWithScroll.y <= bounds.bottom;
-        
+      {participantArray.map((p, i) => {
+        const row = Math.floor(i / feedsPerRow);
+        const col = i % feedsPerRow;
+        const hasVideo = p.tracks?.video?.state === 'playable' && p.tracks?.video?.persistentTrack;
         return (
-          <div
-            key={`magnifier-${participant.session_id}`}
-            className="experimental-participant"
+          <div 
+            key={p.session_id} 
             style={{ 
-              position: 'absolute',
-              left: `${position.x}px`, // EXACT same coordinates as background
-              top: `${position.y}px`,  // EXACT same coordinates as background
-              width: `${feedSize}px`,  // EXACT same size as background
-              height: `${feedSize}px`, // EXACT same size as background
-              backgroundColor: 'rgba(0,0,0,0.8)', // Match background styling
-              overflow: 'visible',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxSizing: 'border-box',
-              border: '1px solid #333' // Match background styling
+              position: 'absolute', 
+              width: `${feedSize}px`, 
+              height: `${feedSize}px`,
+              left: `${col * feedSize}px`,
+              top: `${row * feedSize}px`,
+              background: '#333',
+              overflow: 'hidden'
             }}
           >
-            <div 
-              className="experimental-participant-inner"
-              style={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              {/* EXACT same logic as background: video OR avatar fallback */}
-              {hasVideo ? (
-                <video
-                  ref={(el) => {
-                    if (el) {
-                      const track = participant.tracks?.video?.persistentTrack;
-                      if (track) {
-                        el.srcObject = new window.MediaStream([track]);
-                      }
-                    }
-                  }}
-                  autoPlay
-                  playsInline
-                  muted={participant.local}
-                  style={{
+            {hasVideo ? (
+              <video
+                ref={el => {
+                  if (el && p.tracks?.video?.persistentTrack) {
+                    el.srcObject = new MediaStream([p.tracks.video.persistentTrack]);
+                  }
+                }}
+                autoPlay
+                playsInline
+                muted={p.local}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              <img 
+                src={p.avatar || randomAvatar(i)} 
+                alt={p.user_name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => e.target.style.display = 'none'}
+              />
+            )}
+            
+            {/* Logic to render the center participant's name label */}
+            {(() => {
+              const mouseX = mousePosition.x;
+              const mouseY = mousePosition.y + scrollPosition.y;
+              const pX = col * feedSize;
+              const pY = row * feedSize;
+              const pEndX = pX + feedSize;
+              const pEndY = pY + feedSize;
+              const isCentered = mouseX >= pX && mouseX <= pEndX && mouseY >= pY && mouseY <= pEndY;
+
+              if (isCentered) {
+                const displayName = p.user_name || (p.local ? 'You' : `User ${i}`);
+                return (
+                  <div style={{
                     position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    backgroundColor: '#000'
-                  }}
-                />
-              ) : (
-                <img
-                  src={participant.avatar || randomAvatar(index)} // EXACT same fallback as background
-                  alt={displayName}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    backgroundColor: '#333'
-                  }}
-                  onError={(e) => {
-                    // Fallback to black background if image fails to load
-                    e.target.style.display = 'none';
-                    e.target.parentElement.style.backgroundColor = 'rgba(0,0,0,0.95)';
-                    e.target.parentElement.style.color = 'white';
-                    e.target.parentElement.style.fontSize = '12px';
-                    e.target.parentElement.style.fontWeight = 'bold';
-                    e.target.parentElement.textContent = displayName;
-                  }}
-                />
-              )}
-              
-              {/* ONLY show name label for center participant with EXACT background styling */}
-              {isCenterParticipant && (
-                <div
-                  className="experimental-name-label"
-                  style={{
-                    position: 'absolute',
-                    bottom: '0px',
-                    left: '0px',
-                    background: 'rgba(0,0,0,0.95)', // Match CommunityViewExperimental styling
-                    color: 'white', // Match CommunityViewExperimental styling
-                    borderRadius: '0px', // Square corners
-                    padding: '4px 12px 4px 6px', // EXACT same as background
-                    fontSize: '11px', // EXACT same as background
-                    textAlign: 'left', // EXACT same as background
-                    whiteSpace: 'nowrap',
-                    overflow: 'visible',
-                    textOverflow: 'ellipsis',
-                    fontWeight: 'normal', // EXACT same as background
-                    lineHeight: '1.2',
-                    zIndex: 999,
-                    border: 'none', // EXACT same as background (no border)
-                    boxShadow: 'none', // No shadow like background
-                    minWidth: 'max-content',
-                    width: 'max-content',
-                    maxWidth: '200px',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  {displayName}
-                </div>
-              )}
-            </div>
+                    bottom: '4px',
+                    left: '4px',
+                    background: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    padding: '1px 2.5px',
+                    borderRadius: '2px',
+                    fontSize: '6px',
+                    zIndex: 10,
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {displayName}
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
-        );
+        )
       })}
     </div>
-  );
-};
+  )
+});
 
 export default LoopMagnifier; 

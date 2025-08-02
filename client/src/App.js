@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import './App.css';
 
@@ -31,123 +31,191 @@ import EmergingStoryPage from './components/EmergingStoryPage';
 import OurStoryPage from './components/OurStoryPage';
 import BuildingCommunityPage from './components/BuildingCommunityPage';
 import { VideoProvider } from './components/VideoProvider';
+import AppLayout from './components/AppLayout';
+
+const formatTime = (seconds) => {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = (seconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+};
 
 function App() {
   const [currentPage, setCurrentPage] = useState('landing');
+  const [voteState, setVoteState] = useState(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCameraOff, setIsCameraOff] = useState(false);
+  const [isInCall, setIsInCall] = useState(true);
+  const [isLoopActive, setIsLoopActive] = useState(false);
+  const [totalTime, setTotalTime] = useState(0);
+  const [segmentTime, setSegmentTime] = useState(300); // 5-minute segment countdown
 
-  // Check if user has already completed setup in this session
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTotalTime(prevTime => prevTime + 1);
+      setSegmentTime(prevTime => (prevTime > 0 ? prevTime - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleVote = useCallback((direction) => {
+    setVoteState(voteState === direction ? null : direction);
+  }, [voteState]);
+  
+  const handleToggleMic = useCallback(() => setIsMuted(prev => !prev), []);
+  const handleToggleCamera = useCallback(() => setIsCameraOff(prev => !prev), []);
+  const handleToggleCall = useCallback(() => setIsInCall(prev => !prev), []);
+  const handleToggleLoop = useCallback(() => setIsLoopActive(prev => !prev), []);
+
   useEffect(() => {
     const deviceInfo = localStorage.getItem('dialogueDeviceInfo');
     const sessionSetupComplete = sessionStorage.getItem('setupComplete');
     const dialogueParameters = localStorage.getItem('dialogueParameters');
     
-    // Only auto-redirect if user has completed BOTH setup steps in the current session
-    // This ensures we always start fresh on landing page unless actively in a session
     if (sessionSetupComplete === 'true' && deviceInfo && dialogueParameters) {
       setCurrentPage('videoconference');
     }
-    // For partial completion, let user start fresh from landing page
-    // They can navigate forward manually if they want to resume
   }, []);
 
   const handleContinueToInput = () => {
     setCurrentPage('input');
   };
 
-
-
   const handleInputComplete = () => {
-    // After input page, go to permissions page
     setCurrentPage('permissions');
   };
 
   const handleSetupComplete = () => {
-    // After permissions, mark setup as complete and go to video conference
     sessionStorage.setItem('setupComplete', 'true');
     setCurrentPage('videoconference');
   };
 
-  const renderCurrentPage = () => {
-    const pages = ['landing', 'input', 'permissions', 'videoconference', 'connect-dyad', 'dyad-dialogue-connect', 'dyad-summary-review', 'connect-dyad-collective-wisdom', 'explore-catalyst', 'explore-triad-dialogue', 'explore-triad-summary', 'explore-collective-wisdom', 'discover-fishbowl-catalyst', 'discover-kiva-dialogue', 'discover-kiva-summary', 'discover-collective-wisdom', 'harvest', 'reflection', 'summary', 'we-summary', 'new-insights', 'questions', 'talkabout', 'cantalk', 'emergingstory', 'ourstory', 'buildingcommunity'];
-    const currentIndex = pages.indexOf(currentPage);
-    
-    const navigationProps = {
-      currentPage,
-      currentIndex,
-      totalPages: pages.length,
-      canGoBack: currentIndex > 0,
-      canGoForward: currentIndex < pages.length - 1,
-      onBack: () => currentIndex > 0 && setCurrentPage(pages[currentIndex - 1]),
-      onForward: () => currentIndex < pages.length - 1 && setCurrentPage(pages[currentIndex + 1]),
-      onNavigate: (page) => setCurrentPage(page),
-      developmentMode: true
-    };
-
-    switch (currentPage) {
-      case 'landing':
-        return <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
-      case 'input':
-        return <InputPage onContinue={handleInputComplete} {...navigationProps} />;
-      case 'permissions':
-        return <PermissionSetup onSetupComplete={handleSetupComplete} {...navigationProps} />;
-      case 'videoconference':
-        return <GenerativeDialogue {...navigationProps} />;
-      case 'connect-dyad':
-        return <ConnectDyadPage {...navigationProps} />;
-      case 'dyad-dialogue-connect':
-        return <DyadDialoguePageConnect {...navigationProps} />;
-      case 'dyad-summary-review':
-        return <DyadSummaryReviewPage {...navigationProps} />;
-      case 'connect-dyad-collective-wisdom':
-        return <ConnectDyadCollectiveWisdomPage {...navigationProps} />;
-      case 'explore-catalyst':
-        return <ExploreCatalystPage {...navigationProps} />;
-      case 'explore-triad-dialogue':
-        return <ExploreTriadDialoguePage {...navigationProps} />;
-      case 'explore-triad-summary':
-        return <ExploreTriadSummaryPage {...navigationProps} />;
-      case 'explore-collective-wisdom':
-        return <ExploreCollectiveWisdomPage {...navigationProps} />;
-      case 'discover-fishbowl-catalyst':
-        return <DiscoverFishbowlCatalystPage {...navigationProps} />;
-      case 'discover-kiva-dialogue':
-        return <DiscoverKivaDialoguePage {...navigationProps} />;
-      case 'discover-kiva-summary':
-        return <DiscoverKivaSummaryPage {...navigationProps} />;
-      case 'discover-collective-wisdom':
-        return <DiscoverCollectiveWisdomPage {...navigationProps} />;
-      case 'harvest':
-        return <HarvestPage {...navigationProps} />;
-      case 'reflection':
-        return <IndividualReflectionPage {...navigationProps} />;
-      case 'summary':
-        return <SummaryPage {...navigationProps} />;
-      case 'we-summary':
-        return <WESummaryPage {...navigationProps} />;
-      case 'new-insights':
-        return <NewInsightsPage {...navigationProps} />;
-      case 'questions':
-        return <QuestionsPage {...navigationProps} />;
-      case 'talkabout':
-        return <TalkAboutPage {...navigationProps} />;
-      case 'cantalk':
-        return <CanTalkPage {...navigationProps} />;
-      case 'emergingstory':
-        return <EmergingStoryPage {...navigationProps} />;
-      case 'ourstory':
-        return <OurStoryPage {...navigationProps} />;
-      case 'buildingcommunity':
-        return <BuildingCommunityPage {...navigationProps} />;
-      default:
-        return <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
-    }
+  const pages = ['landing', 'input', 'permissions', 'videoconference', 'connect-dyad', 'dyad-dialogue-connect', 'dyad-summary-review', 'connect-dyad-collective-wisdom', 'explore-catalyst', 'explore-triad-dialogue', 'explore-triad-summary', 'explore-collective-wisdom', 'discover-fishbowl-catalyst', 'discover-kiva-dialogue', 'discover-kiva-summary', 'discover-collective-wisdom', 'harvest', 'reflection', 'summary', 'we-summary', 'new-insights', 'questions', 'talkabout', 'cantalk', 'emergingstory', 'ourstory', 'buildingcommunity'];
+  const currentIndex = pages.indexOf(currentPage);
+  
+  const navigationProps = {
+    currentPage,
+    currentIndex,
+    totalPages: pages.length,
+    canGoBack: currentIndex > 0,
+    canGoForward: currentIndex < pages.length - 1,
+    onBack: () => currentIndex > 0 && setCurrentPage(pages[currentIndex - 1]),
+    onForward: () => currentIndex < pages.length - 1 && setCurrentPage(pages[currentIndex + 1]),
+    onNavigate: (page) => setCurrentPage(page),
+    developmentMode: true,
+    vote: handleVote,
+    voteState: voteState,
+    isMuted,
+    isCameraOff,
+    isInCall,
+    isLoopActive,
+    onToggleMic: handleToggleMic,
+    onToggleCamera: handleToggleCamera,
+    onToggleCall: handleToggleCall,
+    onToggleLoop: handleToggleLoop,
+    totalTime: formatTime(totalTime),
+    segmentTime: formatTime(segmentTime),
   };
+
+  let pageElement;
+  switch (currentPage) {
+    case 'landing':
+      pageElement = <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
+      break;
+    case 'input':
+      pageElement = <InputPage onContinue={handleInputComplete} {...navigationProps} />;
+      break;
+    case 'permissions':
+      pageElement = <PermissionSetup onSetupComplete={handleSetupComplete} {...navigationProps} />;
+      break;
+    case 'videoconference':
+      pageElement = <GenerativeDialogue {...navigationProps} />;
+      break;
+    case 'connect-dyad':
+      pageElement = <ConnectDyadPage {...navigationProps} />;
+      break;
+    case 'dyad-dialogue-connect':
+      pageElement = <DyadDialoguePageConnect {...navigationProps} />;
+      break;
+    case 'dyad-summary-review':
+      pageElement = <DyadSummaryReviewPage {...navigationProps} />;
+      break;
+    case 'connect-dyad-collective-wisdom':
+      pageElement = <ConnectDyadCollectiveWisdomPage {...navigationProps} />;
+      break;
+    case 'explore-catalyst':
+      pageElement = <ExploreCatalystPage {...navigationProps} />;
+      break;
+    case 'explore-triad-dialogue':
+      pageElement = <ExploreTriadDialoguePage {...navigationProps} />;
+      break;
+    case 'explore-triad-summary':
+      pageElement = <ExploreTriadSummaryPage {...navigationProps} />;
+      break;
+    case 'explore-collective-wisdom':
+      pageElement = <ExploreCollectiveWisdomPage {...navigationProps} />;
+      break;
+    case 'discover-fishbowl-catalyst':
+      pageElement = <DiscoverFishbowlCatalystPage {...navigationProps} />;
+      break;
+    case 'discover-kiva-dialogue':
+      pageElement = <DiscoverKivaDialoguePage {...navigationProps} />;
+      break;
+    case 'discover-kiva-summary':
+      pageElement = <DiscoverKivaSummaryPage {...navigationProps} />;
+      break;
+    case 'discover-collective-wisdom':
+      pageElement = <DiscoverCollectiveWisdomPage {...navigationProps} />;
+      break;
+    case 'harvest':
+      pageElement = <HarvestPage {...navigationProps} />;
+      break;
+    case 'reflection':
+      pageElement = <IndividualReflectionPage {...navigationProps} />;
+      break;
+    case 'summary':
+      pageElement = <SummaryPage {...navigationProps} />;
+      break;
+    case 'we-summary':
+      pageElement = <WESummaryPage {...navigationProps} />;
+      break;
+    case 'new-insights':
+      pageElement = <NewInsightsPage {...navigationProps} />;
+      break;
+    case 'questions':
+      pageElement = <QuestionsPage {...navigationProps} />;
+      break;
+    case 'talkabout':
+      pageElement = <TalkAboutPage {...navigationProps} />;
+      break;
+    case 'cantalk':
+      pageElement = <CanTalkPage {...navigationProps} />;
+      break;
+    case 'emergingstory':
+      pageElement = <EmergingStoryPage {...navigationProps} />;
+      break;
+    case 'ourstory':
+      pageElement = <OurStoryPage {...navigationProps} />;
+      break;
+    case 'buildingcommunity':
+      pageElement = <BuildingCommunityPage {...navigationProps} />;
+      break;
+    default:
+      pageElement = <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
+  }
+
+  const useAppLayout = !['landing', 'input', 'permissions'].includes(currentPage);
 
   return (
     <Router>
       <div className="App">
         <VideoProvider>
-          {renderCurrentPage()}
+          {useAppLayout ? (
+            <AppLayout {...navigationProps}>
+              {pageElement}
+            </AppLayout>
+          ) : (
+            pageElement
+          )}
         </VideoProvider>
       </div>
     </Router>

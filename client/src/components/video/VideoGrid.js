@@ -6,7 +6,7 @@
  * - Critical for restoring complete UI functionality
  */
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import './VideoGridLayout.css';
 // eslint-disable-next-line no-unused-vars
 import CommunityView from './CommunityView';
@@ -59,7 +59,11 @@ const getMockParticipants = (count, startIndex = 1) => {
   }));
 };
 
-const VideoGrid = ({ participants = [], layout = 'self', showLabels = false, useExperimentalView = true, selectedParticipants = [], onParticipantSelect, isLoopActive = false }) => {
+const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showLabels = false, useExperimentalView = true, selectedParticipants = [], onParticipantSelect, isLoopActive = false }) => {
+  const participants = React.useMemo(() => 
+    Array.isArray(participantsProp) ? participantsProp : Object.values(participantsProp),
+    [participantsProp]
+  );
   // ALL HOOKS MUST BE AT THE TOP - before any conditional returns
   const [experimentalMode] = useState(useExperimentalView);
   const [labelsVisible] = useState(showLabels);
@@ -67,12 +71,18 @@ const VideoGrid = ({ participants = [], layout = 'self', showLabels = false, use
   const [quadGridWidth, setQuadGridWidth] = useState('100%');
   const [magnifierParticipantArray, setMagnifierParticipantArray] = useState([]);
   const [magnifierFeedSize, setMagnifierFeedSize] = useState(60);
+  const [centerParticipantName, setCenterParticipantName] = useState(null);
+
+  // FLICKERING FIX: Create a stable callback for onCenterParticipantChange
+  const handleCenterParticipantChange = useCallback((name) => {
+    setCenterParticipantName(name);
+  }, []);
 
   // Callback to receive participant array from CommunityViewExperimental
-  const handleParticipantArrayReady = (participantArray, feedSize) => {
+  const handleParticipantArrayReady = useCallback((participantArray, feedSize) => {
     setMagnifierParticipantArray(participantArray);
     setMagnifierFeedSize(feedSize);
-  };
+  }, []);
 
   // Community layout logging effect
   useEffect(() => {
@@ -188,11 +198,10 @@ const VideoGrid = ({ participants = [], layout = 'self', showLabels = false, use
       <div
         ref={quadWrapperRef}
         style={{
-          height: '100%',
           width: '100%',
-          aspectRatio: '2/1',
-          maxHeight: '100vh',
+          height: '100%',
           maxWidth: '100vw',
+          maxHeight: '100vh',
           margin: 'auto',
           display: 'flex',
           justifyContent: 'center',
@@ -203,9 +212,8 @@ const VideoGrid = ({ participants = [], layout = 'self', showLabels = false, use
         <div
           className={`video-grid quad-view`}
           style={{
-            width: quadGridWidth,
+            width: '100%',
             height: '100%',
-            aspectRatio: '2/1',
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
             gridTemplateRows: '1fr 1fr',
@@ -352,18 +360,12 @@ const VideoGrid = ({ participants = [], layout = 'self', showLabels = false, use
           participantArray={magnifierParticipantArray}
           feedSize={magnifierFeedSize}
         >
-          {({ centerMousePosition, scrollPosition, isMagnifierActive, magnifierSize, forceUpdate, onCenterParticipantChange }) => (
+          {() => (
             experimentalMode ? (
               <CommunityViewExperimental 
                 participants={participants} 
                 viewMode={layout}
                 showLabels={labelsVisible}
-                centerMousePosition={centerMousePosition}
-                scrollPosition={scrollPosition}
-                isMagnifierActive={isMagnifierActive}
-                magnifierSize={magnifierSize}
-                forceUpdate={forceUpdate}
-                onCenterParticipantChange={onCenterParticipantChange}
                 onParticipantArrayReady={handleParticipantArrayReady}
               />
             ) : (

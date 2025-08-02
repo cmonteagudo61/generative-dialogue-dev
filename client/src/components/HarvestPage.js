@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useVideo } from './VideoProvider';
 import VideoGrid from './video/VideoGrid';
-import AppLayout from './AppLayout';
 import '../App.css';
 
 const getLayoutFromView = (activeView) => {
@@ -59,31 +58,16 @@ const HarvestPageInner = ({
   };
 
   return (
-    <AppLayout
-      activeSize={activeView}
-      viewMode={layout}
-      onSizeChange={handleViewChange}
-      participantCount={participantCount}
-      onLoopToggle={handleLoopToggle}
-      developmentMode={developmentMode}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-      activeStage="harvest" // HARVEST stage is active
-      defaultActiveTab="we" // WE tab is active
-      isHarvestClosing={true}
-    >
+    <>
       {/* Hide video feed for individual harvest activities */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', background: '#f5f5f5', color: '#666' }}>
         Individual Activity - No Video Feed Required
       </div>
       {error && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
-    </AppLayout>
+    </>
   );
 };
 
 const HarvestPage = (props) => <HarvestPageInner {...props} />;
 
-export default HarvestPage; 
+export default HarvestPage;

@@ -1,11 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useVideo } from './VideoProvider';
 import VideoGrid from './video/VideoGrid';
-import VideoCallTranscription from './VideoCallTranscription';
+import AudioStreamer from './AudioStreamer';
 import LiveAIInsights from './LiveAIInsights';
 import AIVideoControls from './AIVideoControls';
-import './VideoCallTranscription.css';
-import AppLayout from './AppLayout';
+import BottomContentArea from './BottomContentArea';
 import '../App.css';
 
 const getLayoutFromView = (activeView) => {
@@ -37,7 +36,8 @@ const GenerativeDialogueInner = ({
   currentPage,
   currentIndex,
   totalPages,
-  developmentMode
+  developmentMode,
+  isLoopActive // Receive this from App.js
 }) => {
   // Start with community view to test loop
   const [activeView, setActiveView] = useState('all');
@@ -45,7 +45,6 @@ const GenerativeDialogueInner = ({
   const [selectedParticipants, setSelectedParticipants] = useState([
     'mock-1', 'mock-2', 'mock-3', 'mock-4', 'mock-5', 'mock-6'
   ]);
-  const [isLoopActive, setIsLoopActive] = useState(false); // Reset for manual testing
   
   // AI Transcription state
   const [transcripts, setTranscripts] = useState([]);
@@ -59,25 +58,19 @@ const GenerativeDialogueInner = ({
   const layout = getLayoutFromView(activeView);
   const participantCount = useMemo(() => realParticipants.length, [realParticipants]);
 
-  const handleViewChange = (newView) => setActiveView(newView);
+  const handleViewChange = useCallback((newView) => setActiveView(newView), []);
   
-  const handleParticipantSelect = (participant) => {
+  const handleParticipantSelect = useCallback((participant) => {
     // Toggle selection for fishbowl
     setSelectedParticipants(prev => 
       prev.includes(participant.session_id) 
         ? prev.filter(id => id !== participant.session_id)
         : [...prev, participant.session_id]
     );
-  };
-
-  const handleLoopToggle = (isActive) => {
-    console.log('🔄 Loop toggle called:', { isActive, currentState: isLoopActive });
-    setIsLoopActive(isActive);
-    console.log('✅ Loop state updated to:', isActive);
-  };
+  }, []);
   
   // AI Transcription event handlers
-  const handleTranscriptUpdate = (transcriptData) => {
+  const handleTranscriptUpdate = useCallback((transcriptData) => {
     console.log('📝 New transcript received:', transcriptData);
     
     // Only accumulate final transcripts for AI processing
@@ -93,56 +86,44 @@ const GenerativeDialogueInner = ({
     
     // Also store the full transcript data for other uses
     // Legacy aiInsights removed - now handled by LiveAIInsights component
-  };
+  }, []);
   
-  const handleSpeakerIdentified = (speakerData) => {
+  const handleSpeakerIdentified = useCallback((speakerData) => {
     console.log('👤 Speaker identified:', speakerData);
     setSpeakerMappings(prev => ({
       ...prev,
       [speakerData.speakerId]: speakerData.speakerName
     }));
-  };
+  }, []);
   
-  const handleProcessTranscript = (processedData) => {
+  const handleProcessTranscript = useCallback((processedData) => {
     console.log('🔬 Processed transcript data:', processedData);
     // This receives the processed AI insights from LiveAIInsights
-  };
+  }, []);
   
   // Legacy function removed - AI insights now handled by LiveAIInsights component
   
-  const handleToggleAIInsights = () => {
+  const handleToggleAIInsights = useCallback(() => {
     setInsightsMinimized(!insightsMinimized);
-  };
+  }, [insightsMinimized]);
   
-  const handleMuteDetected = (muteData) => {
+  const handleMuteDetected = useCallback((muteData) => {
     console.log('🔇 Mute detection:', muteData);
     // Could update UI to show muted participants
-  };
+  }, []);
   
-  const handleSpeakerFocused = (speakerData) => {
+  const handleSpeakerFocused = useCallback((speakerData) => {
     console.log('🎯 Speaker focus:', speakerData);
     // Could update video layout to highlight active speaker
-  };
+  }, []);
   
-  const handleControlAction = (action) => {
+  const handleControlAction = useCallback((action) => {
     console.log('🎛️ AI Control action:', action);
     // Could execute control actions like enabling turn-taking
-  };
+  }, []);
 
   return (
-    <AppLayout
-      activeSize={activeView}
-      viewMode={layout}
-      onSizeChange={handleViewChange}
-      participantCount={participantCount}
-      onLoopToggle={handleLoopToggle}
-      developmentMode={developmentMode}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-    >
+    <React.Fragment>
       <VideoGrid 
         participants={participants} 
         layout={layout} 
@@ -152,24 +133,23 @@ const GenerativeDialogueInner = ({
         isLoopActive={isLoopActive}
       />
       
-      {/* Real-time AI Transcription Overlay */}
-      {showTranscription && (
-        <div style={{ 
-          position: 'absolute', 
-          bottom: '20px', 
-          left: '20px', 
-          right: '20px', 
-          zIndex: 1000,
-          pointerEvents: 'auto'
-        }}>
-          <VideoCallTranscription
-            onTranscriptUpdate={handleTranscriptUpdate}
-            onSpeakerIdentified={handleSpeakerIdentified}
-            showRealTimeTranscript={true}
-            autoStartTranscription={true}
-          />
-        </div>
-      )}
+      <AudioStreamer
+        isRecording={showTranscription}
+        onTranscriptionUpdate={handleTranscriptUpdate}
+        onSpeakerIdentified={handleSpeakerIdentified}
+        onAIInsight={handleProcessTranscript}
+      />
+      
+      <BottomContentArea
+        showTranscription={showTranscription}
+        setShowTranscription={setShowTranscription}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        onBack={onBack}
+        onForward={onForward}
+        currentPage={currentPage}
+        developmentMode={developmentMode}
+      />
       
       {/* AI Video Controls */}
       {showAIControls && (
@@ -193,10 +173,10 @@ const GenerativeDialogueInner = ({
       )}
       
       {error && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
-    </AppLayout>
+    </React.Fragment>
   );
 };
 
 const GenerativeDialogue = (props) => <GenerativeDialogueInner {...props} />;
 
-export default GenerativeDialogue; 
+export default GenerativeDialogue;

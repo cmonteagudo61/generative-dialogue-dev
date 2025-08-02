@@ -1,106 +1,122 @@
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* Keep exact viewport height to prevent footer clipping */
+  height: 100vh;
   max-width: 100%;
-  overflow: hidden; /* Prevent body scrolling - let internal areas handle it */
+  overflow: hidden;
   position: relative;
-  margin: 0;
-  padding: 0;
-  border: none;
 }
 
 .header-section {
+  flex-shrink: 0;
   display: flex;
   width: 100%;
   background-color: #E6DDD2;
-  border: none; /* Remove underline for clean look */
   z-index: 20;
-  margin: 0;
+  position: relative;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.secondary-header {
+  padding: 1px 20px;
+  background-color: #d2d2d8;
+  flex-shrink: 0;
+  border-bottom: 1px solid #c0c0c6;
+}
+
+.secondary-header .header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: none;
   padding: 0;
-  position: relative; /* Ensure proper positioning context */
+  height: auto;
+}
+
+.secondary-header .view-title {
+  font-size: 24px;
+}
+
+.secondary-header .participant-badge {
+    font-size: 12px;
+    padding: 3px 8px;
+}
+
+
+.grid-wrapper {
+  display: flex;
+  flex-basis: calc(50vh - 41px);
+  flex-shrink: 0;
+  min-height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bottom-content-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.footer-bar {
+  flex-shrink: 0;
+  height: 60px;
 }
 
 .header-upper-row {
   display: flex;
   width: 100%;
-  height: 80px; /* Increase to accommodate square logo */
+  height: 80px;
   align-items: center;
-  margin: 0;
-  padding: 0;
-  border: none;
-  overflow: hidden; /* Prevent any child elements from overflowing */
+  overflow: hidden;
   box-sizing: border-box;
 }
 
 .logo-container {
   width: 80px;
-  height: 80px; /* Make square - same as width */
+  height: 100%;
   background-color: #393d54;
   display: flex;
   justify-content: center;
   align-items: center;
   border-right: 1px solid #ddd;
-  border-bottom: none;
-  border-radius: 0 !important; /* Sharp corners as requested */
-  flex: 0 0 80px !important;
-  flex-shrink: 0 !important;
-  flex-grow: 0 !important;
-  position: static; /* Remove relative positioning that was causing overflow */
+  flex: 0 0 80px;
   box-sizing: border-box;
-  margin: 0 !important;
-  padding: 8px !important; /* More padding for square container */
-  overflow: hidden; /* Prevent content from extending beyond container */
+  padding: 8px;
+  overflow: hidden;
 }
 
 .app-logo {
-  /* Fixed logo size - no responsive changes */
   width: 64px;
   height: 64px;
-  object-fit: contain; /* Maintain aspect ratio */
-  border-radius: 0; /* Sharp corners */
-  filter: brightness(1.1);
+  object-fit: contain;
 }
 
 .top-nav {
   display: flex;
-  height: 80px; /* Match new header height */
-  flex: 1 1 auto; /* Allow growth but constrain with max-width */
-  max-width: 65vw; /* Constrain to 65% of viewport width on desktop */
-  min-width: 400px; /* Ensure minimum width for readability */
+  height: 100%;
+  flex: 1 1 auto;
 }
 
 .header-info {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 0 20px;
-  height: 80px; /* Match new header height */
+  height: 80px;
   background-color: #d2d2d8;
-  min-width: 250px; /* Minimum width for title readability */
-  flex: 1; /* Grow to fill available space */
-  border: none; /* Remove border for clean look */
-  text-decoration: none !important; /* Remove any inherited underlines */
-}
-
-/* Remove underlines from all elements within header-info */
-.header-info *,
-.header-info *::before,
-.header-info *::after {
-  text-decoration: none !important;
-  border-bottom: none !important;
+  flex: 1;
 }
 
 .participant-counter-fixed {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 16px;
-  height: 80px; /* Match new header height */
-  background-color: #d2d2d8;
-  width: 180px; /* Fixed width for participant counter */
-  flex: 0 0 180px; /* Don't grow or shrink */
-  border: none; /* Remove border for clean look */
+  flex-shrink: 0;
 }
 
 .stage-tab {
@@ -112,10 +128,7 @@
   color: #E06D37;
   font-weight: 600;
   letter-spacing: 0.5px;
-  font-size: 22px; /* Increased to 22px for optimal readability */
-  border-top: none;
-  border-bottom: none;
-  border-left: none;
+  font-size: 22px;
   border-right: 1px solid #E06D37;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -135,130 +148,33 @@
 }
 
 .view-title {
-  font-size: 28px; /* Match navigation tab font size */
-  font-weight: 600; /* Match navigation tab font weight */
+  font-size: 28px;
+  font-weight: 600;
   color: #3E4C71;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: 0.5px;
   text-align: center;
-  line-height: 1; /* Reduce line height to make container thinner */
-  padding: 0; /* Remove any padding */
-  text-decoration: none !important; /* Remove any underlines */
+  line-height: 1;
 }
 
-.two-line-title {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  line-height: 1.1;
-  text-align: center;
-}
-
-.two-line-title div {
-  font-size: 24px; /* Slightly smaller than navigation tabs for better proportion */
-  font-weight: 600; /* Match navigation tab font weight */
-  color: #3E4C71;
-  letter-spacing: 0.4px;
-  line-height: 1; /* Reduce line height to make container thinner */
-  padding: 0; /* Remove any padding */
-  text-decoration: none !important; /* Remove any underlines */
-}
-
-.main-content {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  overflow: hidden; /* Let child components handle their own scrolling */
-  height: calc(100vh - 82px); /* Exact height to fit within viewport */
-  max-height: calc(100vh - 82px); /* Ensure it never exceeds this */
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-
-/* Grid wrapper to contain both left nav and viewing area */
-.grid-wrapper {
-  display: flex;
-  flex: 0 0 auto; /* Don't grow/shrink, use explicit height */
-  height: calc(50vh - 40px); /* Keep video grid to half viewport height for text area below */
-  min-height: 300px; /* Ensure minimum usable height */
-  max-height: calc(50vh - 40px); /* Ensure it doesn't exceed allocated space */
-  overflow: visible; /* Allow content to be visible */
-  width: 100%; /* Ensure full width responsiveness */
-  position: relative; /* For precise alignment */
-  margin: 0; /* Remove all margins */
-  padding: 0; /* Remove all padding */
-  border: none; /* Remove any borders */
-}
-
-/* Bottom content area layout */
-.main-content > *:last-child {
-  /* Target the BottomContentArea component which is the last child of main-content */
-  flex: 1; /* Take remaining space after grid-wrapper */
-  min-height: 200px; /* Ensure minimum height for usability */
-  max-height: calc(100vh - 82px - calc(50vh - 40px)); /* Exact remaining space: total - header - grid */
-  overflow-y: auto; /* Allow scrolling when content exceeds container */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-/* Removed duplicate left-nav styles - using NavigationMap.css instead */
-
-/* Removed duplicate nav-item styles - using NavigationMap.css instead */
-
-/* Viewing area */
 .viewing-area {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   background-color: #f5f5f5;
-  overflow: visible; /* Allow labels to overflow slightly */
-  box-shadow: none;
-  border-bottom: none;
-  height: 100%; /* Fill grid-wrapper height exactly */
-  max-height: 100%; /* Never exceed grid-wrapper height */
-  width: 100%; /* Ensure full width responsiveness */
-  min-width: 0; /* Allow shrinking below content size */
+  overflow: hidden;
+  height: 100%;
 }
 
 .view-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: visible; /* Allow labels to extend beyond video area */
   background-color: #222;
-  justify-content: stretch;
-  align-items: stretch;
   position: relative;
   height: 100%;
   width: 100%;
-  padding: 0;
-  margin: 0;
-  max-height: 100%; /* Ensure it stays within viewing-area */
-  min-width: 0; /* Allow shrinking and proper width calculations */
-}
-
-/* Special styling for reflection mode to allow scrolling */
-.reflection-mode .view-content {
-  overflow-y: auto !important;
-  height: auto !important;
-  max-height: calc(100vh - 82px) !important; /* Full height minus header */
-  background-color: transparent !important; /* Remove dark background */
-}
-
-.reflection-mode .viewing-area {
-  overflow-y: auto !important;
-  height: auto !important;
-  max-height: calc(100vh - 82px) !important; /* Full height minus header */
-}
-
-.participant-counter {
-  display: flex;
-  align-items: center;
 }
 
 .participant-badge {
@@ -268,255 +184,43 @@
   font-weight: 600;
   border-radius: 12px;
   padding: 4px 12px;
-  margin-left: 8px;
-  letter-spacing: 0.5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
-  display: inline-block;
-}
-
-/* Hide mobile participant counter on desktop */
-.participant-counter-mobile {
-  display: none;
 }
 
 @media (max-width: 1100px) {
-  /* Fix mobile layout heights to keep footer visible */
-  .main-content {
-    height: calc(100vh - 100px) !important; /* Adjusted for mobile header height (65px nav + 35px title) */
-    max-height: calc(100vh - 100px) !important;
-  }
-
-  .grid-wrapper {
-    height: calc(50vh - 50px) !important; /* Adjusted for mobile layout spacing */
-    max-height: calc(50vh - 50px) !important; /* Prevent exceeding allocated space */
-    min-height: 250px !important; /* Reduced minimum for mobile */
-  }
-
-  .main-content > *:last-child {
-    /* BottomContentArea - ensure it gets remaining space and stays visible */
-    max-height: calc(100vh - 100px - calc(50vh - 50px)) !important; /* Remaining space calculation for mobile */
-    min-height: 150px !important; /* Reduced minimum for mobile */
-  }
-
-  .logo-container {
-    /* Keep width aligned with side navigation, but reduce height for space optimization */
-    width: 60px !important; /* Restored to match side nav width */
-    height: 65px !important; /* Kept reduced from 80px */
-    flex: 0 0 60px !important;
-  }
-
-  .app-logo {
-    /* 30% smaller logo for mobile space optimization */
-    width: 45px !important; /* Reduced from 64px (30% smaller) */
-    height: 45px !important; /* Reduced from 64px (30% smaller) */
-  }
-
-  /* Create a top row for logo + navigation */
-  .header-upper-row::before {
-    content: '';
-    display: flex;
-    height: 65px; /* Reduced from 80px to match smaller logo container */
-    width: 100%;
-    order: -1; /* Place before other content */
-  }
-
-  .logo-container {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    z-index: 10 !important;
-  }
-
-  /* Create a flex row container for the title row in mobile */
   .header-upper-row {
-    display: flex !important; /* Ensure flex layout */
-    flex-direction: column !important; /* Stack vertically: logo+nav row, then title row */
-    flex-wrap: nowrap !important; 
-    height: auto !important; /* Allow height to grow for stacked content */
-    min-height: 100px !important; /* Reduced from 120px to save space */
-    overflow: visible !important; 
-    padding: 0 !important; 
-    margin: 0 !important; 
-    width: 100% !important; 
-    box-sizing: border-box !important; 
-    align-items: stretch !important; /* Stretch children to full width */
+    height: 80px;
   }
-
-
-
-  /* Mobile header layout */
-  .header-upper-row {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    height: auto !important;
-    min-height: 100px !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+  .top-nav {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: calc(100% - 80px);
   }
-
-  /* Title row contains both title and participant count */
-  .header-info {
-    order: 2 !important;
-    height: 35px !important;
-    background-color: #d2d2d8 !important;
-    border: none !important; /* Remove all borders for clean look */
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important; /* Title left, participant count right */
-    margin: 0 !important;
-    padding: 0 16px !important;
-    width: 100% !important;
-    text-decoration: none !important; /* Remove any inherited underlines */
+  .stage-tab {
+    height: 40px;
+    font-size: 24px;
+    border-bottom: 1px solid #E06D37;
+    border-right: 1px solid #E06D37;
   }
-
-  /* Hide the desktop participant counter on mobile */
-  .participant-counter-fixed {
-    display: none !important;
+  .stage-tab:nth-child(2n) {
+    border-right: none;
   }
-
-  /* Show the mobile participant counter */
-  .participant-counter-mobile {
-    display: flex !important;
-    align-items: center !important;
+  .stage-tab:nth-child(3), .stage-tab:nth-child(4) {
+    border-bottom: none;
   }
-
-  /* Remove all borders from desktop CSS in mobile view */
-  .header-info {
-    border-left: none !important;
-    border-right: none !important;
-    border-top: none !important;
-    border-bottom: none !important;
-  }
-
-  .participant-counter-fixed {
-    border-left: none !important;
-    border-right: none !important;
-    border-top: none !important;
-    border-bottom: none !important;
-  }
-
-  /* Target the top nav directly with maximum specificity */
-  .header-upper-row .top-nav {
-    height: 65px !important; /* Reduced to match smaller logo container */
-    flex: none !important; /* Fixed size, don't grow or shrink */
-    flex-wrap: wrap !important; /* Allow internal wrapping for 2x2 grid */
-    display: flex !important; 
-    padding: 0 !important; 
-    margin: 0 !important; 
-    width: calc(100% - 60px) !important; /* Adjusted to match logo container width */
-    max-width: calc(100% - 60px) !important; 
-    min-width: auto !important; 
-    box-sizing: border-box !important;
-    order: 1 !important; /* Place nav after logo in flex order */
-    justify-content: flex-start !important; 
-    align-content: flex-start !important; 
-    position: absolute !important; /* Position over the pseudo-element */
-    top: 0 !important;
-    right: 0 !important; /* Align to right edge */
-    z-index: 5 !important; /* Below logo but above background */
-  }
-
-  /* Target navigation buttons with maximum specificity - create 2x2 grid */
-  .header-upper-row .top-nav .stage-tab {
-    flex: 0 0 50% !important; /* Exactly half width for 2x2 grid */
-    width: 50% !important; 
-    height: 32.5px !important; /* Reduced from 40px to match smaller nav height */
-    min-width: 50% !important; 
-    max-width: 50% !important; 
-    font-size: 19px !important; /* Slightly reduced from 21px to fit smaller buttons */
-    border: 1px solid #E06D37 !important;
-    border-right: none !important; /* Remove right border by default */
-    border-bottom: none !important; /* Remove bottom border by default */
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    padding: 0 !important; 
-    margin: 0 !important; 
-    box-sizing: border-box !important;
-    background: #e0e0e3 !important; /* Match desktop inactive color */
-    color: #E06D37 !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.5px !important;
-    cursor: pointer !important;
-    transition: all 0.2s ease !important; /* Restore smooth transitions */
-  }
-
-  /* Perfect 2x2 grid borders - create clean grid lines */
-  .header-upper-row .top-nav .stage-tab:nth-child(1),
-  .header-upper-row .top-nav .stage-tab:nth-child(3) {
-    border-right: 1px solid #E06D37 !important; /* Vertical line between left and right columns */
-  }
-
-  .header-upper-row .top-nav .stage-tab:nth-child(1),
-  .header-upper-row .top-nav .stage-tab:nth-child(2) {
-    border-bottom: 1px solid #E06D37 !important; /* Horizontal line between top and bottom rows */
-  }
-
-  /* Ensure all tabs maintain consistent border styling across all states */
-  .header-upper-row .top-nav .stage-tab.active:nth-child(1),
-  .header-upper-row .top-nav .stage-tab.active:nth-child(3) {
-    border-right: 1px solid #E06D37 !important;
-  }
-
-  .header-upper-row .top-nav .stage-tab.active:nth-child(1),
-  .header-upper-row .top-nav .stage-tab.active:nth-child(2) {
-    border-bottom: 1px solid #E06D37 !important;
-  }
-
-  /* Mobile navigation hover and active states */
-  .header-upper-row .top-nav .stage-tab:hover:not(.active) {
-    background: #3E4C71 !important;
-    color: white !important;
-    transform: scale(0.98) !important; /* Subtle scale effect */
-  }
-
-  .header-upper-row .top-nav .stage-tab.active {
-    background: #E06D37 !important;
-    color: white !important;
-    border-color: #E06D37 !important;
-  }
-
-  .header-upper-row .top-nav .stage-tab.active:hover {
-    background: #d45a2a !important; /* Darker shade on active hover */
-  }
-
-  /* Ensure proper positioning for 2x2 grid */
-  .header-upper-row .top-nav .stage-tab:nth-child(1) { order: 1; } /* CONNECT - top left */
-  .header-upper-row .top-nav .stage-tab:nth-child(2) { order: 2; } /* EXPLORE - top right */
-  .header-upper-row .top-nav .stage-tab:nth-child(3) { order: 3; } /* DISCOVER - bottom left */
-  .header-upper-row .top-nav .stage-tab:nth-child(4) { order: 4; } /* HARVEST - bottom right */
-
-  /* Logo image sizing removed for simplicity - let it scale naturally with container */
-
-  .two-line-title div {
-    font-size: 19px; /* Match updated navigation button font size */
-  }
-
-  /* Make sure the title text scales appropriately in mobile */
-  .header-info .view-title {
-    font-size: 19px !important; /* Match updated navigation button font size */
-    font-weight: 600 !important;
-    line-height: 1.2 !important;
-    white-space: nowrap !important; /* Force single line */
-    overflow: hidden !important; 
-    text-overflow: ellipsis !important; /* Add ellipsis if text too long */
-  }
-
-  .participant-badge {
-    font-size: 11px;
-    padding: 3px 8px;
+  .secondary-header .view-title {
+    font-size: 22px;
   }
 }
 
-  
-/* Force reload */
-/* Sync test Sat Jul 19 00:32:44 EDT 2025 */
-/* Logo nav sync fix Sat Jul 19 00:34:38 EDT 2025 */
-/* Logo image fixed size Sat Jul 19 00:36:35 EDT 2025 */
-/* CLEANED: Removed conflicting logo rules Sat Jul 19 00:49:30 EDT 2025 */
-/* MEGA CLEANUP COMPLETE Sat Jul 19 00:50:08 EDT 2025 */
-/* Fixed footer positioning Sat Jul 19 01:07:38 EDT 2025 */
+@media (max-width: 768px) {
+  .logo-container {
+    width: 60px;
+    flex-basis: 60px;
+  }
+  .stage-tab {
+    font-size: 18px;
+  }
+  .secondary-header .view-title {
+    font-size: 22px;
+  }
+}

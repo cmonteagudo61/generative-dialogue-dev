@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
-import AppLayout from './AppLayout';
+
 import { useVideo } from './VideoProvider';
-import './EmergingStoryPage.css';
 
 const EmergingStoryPage = ({ 
   canGoBack,
@@ -95,25 +94,7 @@ const EmergingStoryPage = ({
     </div>
   );
 
-  return (
-    <AppLayout 
-      activeSize={1}
-      viewMode="reflection"
-      participantCount={participantCount}
-      onViewModeChange={() => {}}
-      showVideoGrid={false}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-      currentIndex={currentIndex}
-      totalPages={totalPages}
-      developmentMode={developmentMode}
-    >
-      {summaryContent}
-    </AppLayout>
-  );
+  return summaryContent;
 };
 
-export default EmergingStoryPage; 
+export default EmergingStoryPage;

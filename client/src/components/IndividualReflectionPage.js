@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import AppLayout from './AppLayout';
-import { useVideo } from './VideoProvider';
 import './IndividualReflectionPage.css';
+import { useVideo } from './VideoProvider';
 
-  const IndividualReflectionPage = ({ 
+const IndividualReflectionPage = ({ 
   canGoBack,
   canGoForward, 
   onBack,
@@ -74,24 +73,7 @@ import './IndividualReflectionPage.css';
     </div>
   );
 
-  return (
-    <AppLayout
-      activeSize={activeView}
-      onSizeChange={handleViewChange}
-      viewMode="reflection" // Display "INDIVIDUAL REFLECTION" as single line header
-      participantCount={participantCount}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-      currentIndex={currentIndex}
-      totalPages={totalPages}
-      developmentMode={developmentMode}
-    >
-      {reflectionContent}
-    </AppLayout>
-  );
+  return reflectionContent;
 };
 
-export default IndividualReflectionPage; 
+export default IndividualReflectionPage;

@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
-import AppLayout from './AppLayout';
+
 import { useVideo } from './VideoProvider';
-import './SummaryPage.css';
 
 const SummaryPage = ({ 
   canGoBack,
@@ -95,23 +94,7 @@ const SummaryPage = ({
     </div>
   );
 
-  return (
-    <AppLayout
-      activeSize={1}
-      viewMode="summary"
-      participantCount={participantCount}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-      currentIndex={currentIndex}
-      totalPages={totalPages}
-      developmentMode={developmentMode}
-    >
-      {summaryContent}
-    </AppLayout>
-  );
+  return summaryContent;
 };
 
-export default SummaryPage; 
+export default SummaryPage;

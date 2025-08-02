@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useVideo } from './VideoProvider';
 import VideoGrid from './video/VideoGrid';
-import AppLayout from './AppLayout';
 import '../App.css';
 
 const getLayoutFromView = (activeView) => {
@@ -59,25 +58,7 @@ const ConnectDyadCollectiveWisdomPageInner = ({
   };
 
   return (
-    <AppLayout
-      activeSize={activeView}
-      viewMode={layout}
-      onSizeChange={handleViewChange}
-      participantCount={participantCount}
-      onLoopToggle={handleLoopToggle}
-      developmentMode={developmentMode}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-      activeStage="connect" // CONNECT stage is active
-      defaultActiveTab="we" // WE tab is active
-      dialogueQuestion="What brought us together today and what do we hope to discover through our connection?"
-      dialogueTimeframe="15 minutes"
-      dialogueFormat="DYAD breakout rooms"
-      isCollectiveWisdom={true}
-    >
+    <>
       <VideoGrid 
         participants={participants} 
         layout={layout} 
@@ -87,7 +68,7 @@ const ConnectDyadCollectiveWisdomPageInner = ({
         isLoopActive={isLoopActive}
       />
       {error && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
-    </AppLayout>
+    </>
   );
 };
 

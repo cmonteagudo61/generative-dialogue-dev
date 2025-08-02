@@ -58,6 +58,7 @@ export { default as DirectionBackwardHover } from './direction-backward-hover.sv
 export { default as ThumbsUpOff } from './thumbs-up-off.svg';
 export { default as ThumbsUpOn } from './thumbs-up-on.svg';
 export { default as ThumbsUpHover } from './thumbs-up-hover.svg';
+export { default as NewStrikeOut } from './New-Stike-Out.svg';
 
 export { default as ThumbsDownOff } from './thumbs-down-off.svg';
 export { default as ThumbsDownOn } from './thumbs-down-on.svg';

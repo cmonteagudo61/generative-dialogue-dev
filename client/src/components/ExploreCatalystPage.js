@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useVideo } from './VideoProvider';
 import VideoGrid from './video/VideoGrid';
-import AppLayout from './AppLayout';
 import '../App.css';
 
 const getLayoutFromView = (activeView) => {
@@ -62,21 +61,7 @@ const ExploreCatalystPageInner = ({
   };
 
   return (
-    <AppLayout
-      activeSize={activeView}
-      viewMode={layout}
-      onSizeChange={handleViewChange}
-      participantCount={participantCount}
-      onLoopToggle={handleLoopToggle}
-      developmentMode={developmentMode}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-      activeStage="explore" // Now in EXPLORE stage
-      defaultActiveTab="catalyst" // Set Catalyst tab as active for this page
-    >
+    <>
       <VideoGrid 
         participants={participants} 
         layout={layout} 
@@ -86,7 +71,7 @@ const ExploreCatalystPageInner = ({
         isLoopActive={isLoopActive}
       />
       {error && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
-    </AppLayout>
+    </>
   );
 };
 
@@ -94,4 +79,4 @@ const ExploreCatalystPage = (props) => {
   return <ExploreCatalystPageInner {...props} />;
 };
 
-export default ExploreCatalystPage; 
+export default ExploreCatalystPage;

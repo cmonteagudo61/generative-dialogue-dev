@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useVideo } from './VideoProvider';
 import VideoGrid from './video/VideoGrid';
-import AppLayout from './AppLayout';
 import '../App.css';
 
 const getLayoutFromView = (activeView) => {
@@ -64,25 +63,7 @@ const DyadSummaryReviewPageInner = ({
   };
 
   return (
-    <AppLayout
-      activeSize={activeView}
-      viewMode={layout}
-      onSizeChange={handleViewChange}
-      participantCount={participantCount}
-      onLoopToggle={handleLoopToggle}
-      developmentMode={developmentMode}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-      activeStage="connect" // Explicitly set CONNECT stage as active
-      defaultActiveTab="summary" // Set Summary tab as active for this page
-      dialogueQuestion="What brought us together today and what do we hope to discover through our connection?"
-      dialogueTimeframe="15 minutes"
-      dialogueFormat="DYAD breakout rooms"
-      isSummaryReview={true}
-    >
+    <>
       <VideoGrid 
         participants={participants} 
         layout={layout} 
@@ -92,7 +73,7 @@ const DyadSummaryReviewPageInner = ({
         isLoopActive={isLoopActive}
       />
       {error && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
-    </AppLayout>
+    </>
   );
 };
 
@@ -101,4 +82,3 @@ const DyadSummaryReviewPage = (props) => {
 };
 
 export default DyadSummaryReviewPage;
- 

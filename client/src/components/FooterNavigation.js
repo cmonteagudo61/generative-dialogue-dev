@@ -1,101 +1,137 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './FooterNavigation.css';
+import {
+  microphoneOn,
+  cameraOn,
+  dialoguePersonOn,
+  thumbsUpOn,
+  thumbsDownOn,
+  directionBackwardOn,
+  directionForwardOn,
+  loopOn,
+  microphoneOff,
+  cameraOff,
+  dialoguePersonOff,
+  thumbsUpOff,
+  thumbsDownOff,
+  directionBackwardOff,
+  directionForwardOff,
+  loopOff,
+  loopHover,
+  microphoneHover,
+  cameraHover,
+  dialoguePersonHover,
+  thumbsUpHover,
+  thumbsDownHover,
+  directionBackwardHover,
+  directionForwardHover
+} from '../assets/icons';
 
-// Import navigation icons
-import BackwardOff from '../assets/icons/direction-backward-off.svg';
-import BackwardOn from '../assets/icons/direction-backward-on.svg';
-import BackwardHover from '../assets/icons/direction-backward-hover.svg';
-import ForwardOff from '../assets/icons/direction-forward-off.svg';
-import ForwardOn from '../assets/icons/direction-forward-on.svg';
-import ForwardHover from '../assets/icons/direction-forward-hover.svg';
-
-const FooterNavigation = ({ currentPage, onNavigate }) => {
-  const pages = ['landing', 'permissions', 'input', 'videoconference'];
-  const currentIndex = pages.indexOf(currentPage);
+const FooterNavigation = ({
+  vote,
+  voteState,
+  canGoBack,
+  canGoForward,
+  onBack,
+  onForward,
+  isMuted,
+  isCameraOff,
+  isInCall,
+  onToggleMic,
+  onToggleCamera,
+  onToggleCall,
+  isLoopActive,
+  onToggleLoop,
+  totalTime,
+  segmentTime,
+}) => {
   
-  const canGoBack = currentIndex > 0;
-  const canGoForward = currentIndex < pages.length - 1;
+  const [personHover, setPersonHover] = useState(false);
+  const [isMicrophoneHover, setIsMicrophoneHover] = useState(false);
+  const [isCameraHover, setIsCameraHover] = useState(false);
+  const [isLoopHover, setIsLoopHover] = useState(false);
+  const [isThumbsUpHover, setIsThumbsUpHover] = useState(false);
+  const [isThumbsDownHover, setIsThumbsDownHover] = useState(false);
+  const [isBackHover, setIsBackHover] = useState(false);
+  const [isForwardHover, setIsForwardHover] = useState(false);
 
-  const handleBackward = () => {
-    if (canGoBack) {
-      onNavigate(pages[currentIndex - 1]);
-    }
+  const handleCameraClick = () => {
+    onToggleCamera();
+    setIsCameraHover(false);
   };
 
-  const handleForward = () => {
-    if (canGoForward) {
-      onNavigate(pages[currentIndex + 1]);
-    }
+  const handleMicClick = () => {
+    onToggleMic();
+    setIsMicrophoneHover(false);
   };
 
-  const getPageDisplayName = (page) => {
-    switch (page) {
-      case 'landing': return 'Landing Page';
-      case 'permissions': return 'Permission Setup';
-      case 'input': return 'Input Parameters';
-      case 'videoconference': return 'Video Conference';
-      default: return page;
-    }
+  const handleCallClick = () => {
+    onToggleCall();
+    setPersonHover(false);
+  };
+  
+  const handleLoopClick = () => {
+    onToggleLoop();
+    setIsLoopHover(false);
+  };
+
+  const handleVoteUp = () => {
+    vote('up');
+    setIsThumbsUpHover(false);
+  };
+  
+  const handleVoteDown = () => {
+    vote('down');
+    setIsThumbsDownHover(false);
   };
 
   return (
-    <div className="footer-navigation">
-      <div className="footer-nav-content">
-        {/* Page indicators */}
-        <div className="page-indicators">
-          {pages.map((page, index) => (
-            <div 
-              key={page}
-              className={`page-indicator ${currentPage === page ? 'active' : ''}`}
-              onClick={() => onNavigate(page)}
-            >
-              <div className="page-dot"></div>
-              <span className="page-label">{getPageDisplayName(page)}</span>
-            </div>
-          ))}
+    <div className="footer-bar">
+      {/* Left-aligned media controls */}
+      <div className="footer-left">
+        <button className={`control-button ${!isCameraOff ? 'active' : ''}`} onClick={handleCameraClick} onMouseEnter={() => setIsCameraHover(true)} onMouseLeave={() => setIsCameraHover(false)}>
+          <img src={isCameraOff ? (isCameraHover ? cameraHover : cameraOff) : (isCameraHover ? cameraHover : cameraOn)} alt="Camera" />
+        </button>
+        <button className={`control-button ${!isMuted ? 'active' : ''}`} onClick={handleMicClick} onMouseEnter={() => setIsMicrophoneHover(true)} onMouseLeave={() => setIsMicrophoneHover(false)}>
+          <img src={isMuted ? (isMicrophoneHover ? microphoneHover : microphoneOff) : (isMicrophoneHover ? microphoneHover : microphoneOn)} alt="Microphone" />
+        </button>
+        <button className={`control-button ${isInCall ? 'active' : ''}`} onClick={handleCallClick} onMouseEnter={() => setPersonHover(true)} onMouseLeave={() => setPersonHover(false)}>
+          <img src={isInCall ? (personHover ? dialoguePersonHover : dialoguePersonOn) : (personHover ? dialoguePersonHover : dialoguePersonOff)} alt="Call" />
+        </button>
+        <button className={`control-button ${isLoopActive ? 'active' : ''}`} onClick={handleLoopClick} onMouseEnter={() => setIsLoopHover(true)} onMouseLeave={() => setIsLoopHover(false)}>
+          <img src={isLoopActive ? loopOn : (isLoopHover ? loopHover : loopOff)} alt="Loop" />
+        </button>
+      </div>
+
+      {/* Center-aligned timer */}
+      <div className="footer-center">
+        <div className="timer-display">
+          <div className="timer-label">TOTAL TIME</div>
+          <div className="timer-value">{totalTime}</div>
         </div>
-
-        {/* Navigation controls */}
-        <div className="nav-controls">
-          <button 
-            className={`control-button nav-button ${!canGoBack ? 'disabled' : ''}`}
-            onClick={handleBackward}
-            disabled={!canGoBack}
-            title="Previous Page"
-          >
-            <img 
-              src={!canGoBack ? BackwardOff : BackwardOn} 
-              alt="Previous" 
-              className="nav-icon"
-            />
-          </button>
-
-          <div className="current-page-info">
-            <span className="page-counter">{currentIndex + 1} / {pages.length}</span>
-            <span className="page-name">{getPageDisplayName(currentPage)}</span>
-          </div>
-
-          <button 
-            className={`control-button nav-button ${!canGoForward ? 'disabled' : ''}`}
-            onClick={handleForward}
-            disabled={!canGoForward}
-            title="Next Page"
-          >
-            <img 
-              src={!canGoForward ? ForwardOff : ForwardOn} 
-              alt="Next" 
-              className="nav-icon"
-            />
-          </button>
+        <div className="timer-display">
+          <div className="timer-label">SEGMENT TIME</div>
+          <div className="timer-value">{segmentTime}</div>
         </div>
+      </div>
 
-        {/* Development indicator */}
-        <div className="dev-indicator">
-          <span>DEV NAVIGATION</span>
-        </div>
+      {/* Right-aligned navigation and voting controls */}
+      <div className="footer-right">
+        <button className={`control-button ${voteState === 'up' ? 'active' : ''}`} onClick={handleVoteUp} onMouseEnter={() => setIsThumbsUpHover(true)} onMouseLeave={() => setIsThumbsUpHover(false)}>
+            <img src={voteState === 'up' ? thumbsUpOn : (isThumbsUpHover ? thumbsUpHover : thumbsUpOff)} alt="Thumbs Up" />
+        </button>
+        <button className={`control-button ${voteState === 'down' ? 'active' : ''}`} onClick={handleVoteDown} onMouseEnter={() => setIsThumbsDownHover(true)} onMouseLeave={() => setIsThumbsDownHover(false)}>
+            <img src={voteState === 'down' ? thumbsDownOn : (isThumbsDownHover ? thumbsDownHover : thumbsDownOff)} alt="Thumbs Down" />
+        </button>
+        <button className={`control-button ${canGoBack ? 'active' : ''}`} onClick={onBack} disabled={!canGoBack} onMouseEnter={() => setIsBackHover(true)} onMouseLeave={() => setIsBackHover(false)}>
+          <img src={canGoBack ? (isBackHover ? directionBackwardHover : directionBackwardOn) : directionBackwardOff} alt="Back" />
+        </button>
+        <button className={`control-button ${canGoForward ? 'active' : ''}`} onClick={onForward} disabled={!canGoForward} onMouseEnter={() => setIsForwardHover(true)} onMouseLeave={() => setIsForwardHover(false)}>
+          <img src={canGoForward ? (isForwardHover ? directionForwardHover : directionForwardOn) : directionForwardOff} alt="Forward" />
+        </button>
       </div>
     </div>
   );
 };
 
-export default FooterNavigation; 
+export default FooterNavigation;

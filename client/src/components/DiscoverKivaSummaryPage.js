@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useVideo } from './VideoProvider';
 import VideoGrid from './video/VideoGrid';
-import AppLayout from './AppLayout';
 import '../App.css';
 
 const getLayoutFromView = (activeView) => {
@@ -62,25 +61,7 @@ const DiscoverKivaSummaryPageInner = ({
   };
 
   return (
-    <AppLayout
-      activeSize={activeView}
-      viewMode={layout}
-      onSizeChange={handleViewChange}
-      participantCount={participantCount}
-      onLoopToggle={handleLoopToggle}
-      developmentMode={developmentMode}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={onBack}
-      onForward={onForward}
-      currentPage={currentPage}
-      activeStage="discover" // DISCOVER stage is active
-      defaultActiveTab="summary" // SUMMARY tab is active
-      dialogueQuestion="What unexpected connections do you notice emerging from our collective exploration of community resilience?"
-      dialogueTimeframe="30 minutes"
-      dialogueFormat="KIVA breakout groups"
-      isKivaSummaryReview={true}
-    >
+    <>
       <VideoGrid 
         participants={participants} 
         layout={layout} 
@@ -90,10 +71,10 @@ const DiscoverKivaSummaryPageInner = ({
         isLoopActive={isLoopActive}
       />
       {error && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
-    </AppLayout>
+    </>
   );
 };
 
 const DiscoverKivaSummaryPage = (props) => <DiscoverKivaSummaryPageInner {...props} />;
 
-export default DiscoverKivaSummaryPage; 
+export default DiscoverKivaSummaryPage;
