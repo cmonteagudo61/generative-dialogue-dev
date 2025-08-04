@@ -218,52 +218,6 @@
   color: #B8860B;
 }
 
-/* Fixed Footer - Outside scrollable area */
-.landing-page-container .control-bar {
-  grid-row: 4; /* Fourth row in grid */
-  position: relative; /* Not position fixed, let grid handle it */
-  height: 50px !important; /* Match InputPage exactly */
-  background-color: #e0e0e3;
-  color: #3E4C71;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important; /* Position nav controls on the right */
-  padding: 5px 20px !important; /* Match InputPage exactly */
-  border-top: none;
-  flex-shrink: 0;
-  margin: 0;
-  box-sizing: border-box; /* Include padding in height calculation */
-  z-index: 1000;
-}
-
-.landing-page-container .control-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important; /* Perfect internal centering */
-  background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-right: 8px;
-  /* Reset all positioning to rely on flexbox centering */
-  position: static !important; /* Let flexbox handle positioning */
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  flex-shrink: 0; /* Prevent shrinking */
-}
-
-.landing-page-container .control-button:hover {
-  background-color: rgba(224, 109, 55, 0.15);
-}
-
-.landing-page-container .control-button.active {
-  background-color: #E06D37;
-  color: white;
-}
-
 /* Animations */
 @keyframes fadeInUp {
   from {
@@ -426,28 +380,3 @@
     font-size: 2rem;
   }
 }
-
-/* Mobile responsive - exact match to BottomContentArea */
-@media (max-width: 1100px) {
-  .landing-page-container .control-bar {
-    padding: 5px 16px 13px 16px !important; /* Perfect bottom buffering for mobile */
-    height: 58px !important; /* Adjusted for optimal bottom padding */
-    display: flex !important;
-    align-items: center !important; /* Force vertical centering on mobile */
-    justify-content: flex-end !important; /* Maintain layout structure */
-    box-sizing: border-box !important; /* Include padding in height calculation */
-  }
-
-  /* Reset all button positioning on mobile - let flexbox handle it */
-  .landing-page-container .control-button {
-    position: static !important; /* Remove all custom positioning */
-    top: auto !important; /* Reset top positioning */
-    margin: 0 !important; /* Remove all margins */
-    display: flex !important;
-    align-items: center !important; /* Force vertical centering */
-    justify-content: center !important;
-    flex-shrink: 0 !important; /* Prevent shrinking */
-  }
-}
-
-

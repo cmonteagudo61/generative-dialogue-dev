@@ -19,7 +19,6 @@
 }
 
 .footer-center {
-  flex-grow: 1;
   justify-content: center;
   gap: 40px;
   display: flex;
@@ -42,6 +41,13 @@
   justify-content: center;
   width: 44px;
   height: 44px;
+  outline: none; /* Remove focus outline */
+}
+
+.control-button:focus,
+.control-button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important; /* Also remove any box-shadow focus effect */
 }
 
 .control-button:hover:not(:disabled) {
@@ -88,4 +94,50 @@
 /* Grouping for right-hand controls */
 .footer-right > .control-button:nth-of-type(2) {
   margin-right: 16px; /* Add extra space after the second button (thumbs down) */
+}
+
+@media (max-width: 1100px) {
+  .footer-bar {
+    padding: 0 10px;
+    gap: 15px;
+  }
+  .footer-left, .footer-right {
+    gap: 8px;
+  }
+  .footer-center {
+    gap: 20px;
+  }
+  .footer-right > .control-button:nth-of-type(2) {
+    margin-right: 8px;
+  }
+}
+
+@media (max-width: 800px) {
+  .footer-bar {
+    gap: 10px;
+  }
+  .footer-center {
+    gap: 10px;
+  }
+  .footer-left, .footer-right {
+    gap: 4px;
+  }
+  .control-button {
+    width: 38px;
+    height: 38px;
+    padding: 6px;
+  }
+  .control-button img {
+    width: 28px;
+    height: 28px;
+  }
+  .timer-display {
+    min-width: 80px; /* Stabilize timer width */
+  }
+}
+
+@media (max-width: 600px) {
+  .segment-timer {
+    display: none;
+  }
 }
