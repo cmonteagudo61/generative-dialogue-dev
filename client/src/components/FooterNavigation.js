@@ -105,11 +105,11 @@ const FooterNavigation = ({
 
       {/* Center-aligned timer */}
       <div className="footer-center">
-        <div className="timer-display">
+        <div className="total-timer">
           <div className="timer-label">TOTAL TIME</div>
           <div className="timer-value">{totalTime}</div>
         </div>
-        <div className="timer-display segment-timer">
+        <div className="segment-timer">
           <div className="timer-label">SEGMENT TIME</div>
           <div className="timer-value">{segmentTime}</div>
         </div>

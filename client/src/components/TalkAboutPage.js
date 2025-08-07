@@ -19,17 +19,17 @@ const TalkAboutPage = ({
     return realParticipants.length > 0 ? realParticipants.length : 1093;
   }, [realParticipants]);
 
-  return (
-    <div className="talkabout-container">
-      <div className="talkabout-header">
+  const summaryContent = (
+    <div className="summary-container">
+      <div className="summary-header">
         <div className="header-titles">
-          <h1 className="talkabout-title">AI WE Summary</h1>
-          <h2 className="talkabout-subtitle">What do WE Need to Talk About?</h2>
+          <h1 className="summary-title">AI WE Summary</h1>
+          <h2 className="summary-subtitle">What do WE Need to Talk About?</h2>
         </div>
       </div>
       
-      <div className="talkabout-content">
-        <div className="talkabout-text">
+      <div className="summary-content">
+        <div className="summary-text">
           <p>
             Aliquam porta nisl dolor, molestie pellentesque elit molestie in. Morbi metus neque, elementum 
             ullamcorper hendrerit eget, tincidunt et nisl. Sed magna nunc, consequat vel aliquam vitae, porta ac 
@@ -93,6 +93,8 @@ const TalkAboutPage = ({
       </div>
     </div>
   );
+
+  return summaryContent;
 };
 
 export default TalkAboutPage; 

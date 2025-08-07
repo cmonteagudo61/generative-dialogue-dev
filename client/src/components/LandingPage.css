@@ -5,10 +5,11 @@
   display: grid;
   grid-template-rows: auto auto 1fr auto; /* header, hero, scrollable-content, footer */
   height: 100vh;
-  width: 100vw;
+  width: 100%; /* Changed from 100vw to prevent horizontal overflow */
   overflow: hidden;
   background: linear-gradient(180deg, #E6F3FF 0%, #B8D4F0 30%, #87CEEB 70%, #F0F8FF 100%);
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-sizing: border-box; /* Ensure padding is included in width calculation */
 }
 
 /* Fixed Header - Match InputPage exactly */

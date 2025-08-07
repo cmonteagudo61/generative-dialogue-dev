@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import FooterNavigation from './FooterNavigation';
 import './PermissionSetup.css';
-import './FooterNavigation.css'; // Import shared footer styles
 import { useVideo } from './VideoProvider';
-import {
-  directionBackwardOff,
-  directionBackwardOn,
-  directionBackwardHover,
-  directionForwardOff,
-  directionForwardOn,
-  directionForwardHover
-} from '../assets/icons';
 
 const PermissionSetup = ({ 
   onSetupComplete, 
@@ -18,7 +10,19 @@ const PermissionSetup = ({
   canGoForward, 
   onBack, 
   onForward, 
-  currentPage 
+  currentPage,
+  isMuted,
+  isCameraOff,
+  isInCall,
+  onToggleMic,
+  onToggleCamera,
+  onToggleCall,
+  isLoopActive,
+  onToggleLoop,
+  vote,
+  voteState,
+  totalTime,
+  segmentTime
 }) => {
     const [status, setStatus] = useState({ message: 'Ready to begin setup. Click the button below to start.', type: '' });
     const [isLoading, setIsLoading] = useState(false);
@@ -31,10 +35,6 @@ const PermissionSetup = ({
     // Use Daily.co video context
     const { joinRoom } = useVideo();
     
-    // Navigation state for development
-    const [isBackHover, setIsBackHover] = useState(false);
-    const [isForwardHover, setIsForwardHover] = useState(false);
-
     const updateStatus = (message, type = '') => {
         setStatus({ message, type });
     };
@@ -226,30 +226,24 @@ const PermissionSetup = ({
             </div>
 
             {/* Development Navigation Footer */}
-            <div className="footer-bar">
-                <div className="footer-left" /> {/* Empty placeholder for alignment */}
-                <div className="footer-center" /> {/* Empty placeholder for alignment */}
-                <div className="footer-right">
-                    <button 
-                        className={`control-button ${canGoBack ? 'active' : ''}`} 
-                        onClick={onBack} 
-                        disabled={!canGoBack}
-                        onMouseEnter={() => setIsBackHover(true)}
-                        onMouseLeave={() => setIsBackHover(false)}
-                    >
-                        <img src={canGoBack ? (isBackHover ? directionBackwardHover : directionBackwardOn) : directionBackwardOff} alt="Back" />
-                    </button>
-                    <button 
-                        className={`control-button ${canGoForward ? 'active' : ''}`} 
-                        onClick={onForward} 
-                        disabled={!canGoForward}
-                        onMouseEnter={() => setIsForwardHover(true)}
-                        onMouseLeave={() => setIsForwardHover(false)}
-                    >
-                        <img src={canGoForward ? (isForwardHover ? directionForwardHover : directionForwardOn) : directionForwardOff} alt="Forward" />
-                    </button>
-                </div>
-            </div>
+            <FooterNavigation
+                canGoBack={canGoBack}
+                canGoForward={canGoForward}
+                onBack={onBack}
+                onForward={onForward}
+                isMuted={isMuted}
+                isCameraOff={isCameraOff}
+                isInCall={isInCall}
+                onToggleMic={onToggleMic}
+                onToggleCamera={onToggleCamera}
+                onToggleCall={onToggleCall}
+                isLoopActive={isLoopActive}
+                onToggleLoop={onToggleLoop}
+                vote={vote}
+                voteState={voteState}
+                totalTime={totalTime}
+                segmentTime={segmentTime}
+            />
         </div>
     );
 };

@@ -51,15 +51,11 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   overflow: hidden;
-  position: relative;
-  margin-left: -64px; /* Extend to the left edge */
-  padding-left: 65px; /* Reduced from 88px to bring tabs much closer to left edge */
-  box-sizing: border-box;
-  width: calc(100% + 64px); /* Make sure it takes full width */
-  background-color: white; /* Ensure white background */
-  z-index: 4; /* Below the nav icons */
-  padding-top: 2px; /* Add space for the pinstripe */
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
 }
 
 /* Create a pseudo-element for the blue pinstripe that goes all the way across */
@@ -76,12 +72,15 @@
 
 .tab-navigation {
   display: flex;
-  justify-content: space-between; /* Space between tabs and controls */
-  align-items: flex-end; /* Bottom justify tabs to container */
-  background-color: white; /* White background */
-  padding: 10px 16px 0 1px; /* Set left padding to 1px for leftmost tab positioning */
-  padding-bottom: 0;
-  border-bottom: 1px solid #ddd; /* Light border below tabs */
+  justify-content: space-between;
+  align-items: flex-end; /* Align tabs to bottom of container */
+  padding: 0 10px 0 10px; /* Remove bottom padding */
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #3E4C71; /* Continuous blue pinstripe across entire bottom edge */
+  flex-basis: auto; /* Take only the space it needs */
+  flex-shrink: 0; /* Prevent tabs from shrinking */
+  flex-grow: 0; /* Prevent tabs from growing */
+  z-index: 2; /* Ensure tabs are above content */
 }
 
 .tab-controls-left {
@@ -98,13 +97,13 @@
 }
 
 .tab-btn {
-  padding: 3px 12px; /* Reduced from 16px to 12px for narrower tabs */
+  padding: 3px 12px 3px 12px; /* Consistent padding for all tabs */
   margin-right: 1px; /* Minimal 1px spacing between tabs */
   margin-top: 0px; /* Restored height by removing negative margins */
-  margin-bottom: 0px; /* Restored height by removing negative margins */
+  margin-bottom: -2px; /* More aggressive gap closure */
   background-color: #e8e8e8; /* Light grey background */
   border: 1px solid #ccc;
-  border-bottom: none;
+  border-bottom: none; /* Remove individual bottom border since we have continuous pinstripe */
   border-top: 2px solid #3E4C71; /* Thinner blue pinstripe on top */
   border-left: 2px solid #3E4C71; /* Blue pinstripe on left side */
   border-right: 2px solid #3E4C71; /* Blue pinstripe on right side */
@@ -112,11 +111,11 @@
   border-top-right-radius: 10px; /* Reduced curves for more subtle appearance */
   cursor: pointer;
   position: relative;
-  z-index: 1;
-  font-weight: 500;
+  z-index: 3; /* Ensure tabs are above content */
+  font-weight: 500; /* Consistent font-weight for all tabs */
   font-size: 23px; /* Increased from 22px (+1pt) */
   color: #555; /* Dark grey text */
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease; /* Only transition colors */
   line-height: 0.9; /* Tighter line height for more compact tabs */
 }
 
@@ -127,24 +126,16 @@
 .tab-btn.active {
   background-color: #3E4C71; /* Dark blue background when active */
   color: white; /* White text when active */
-  border-color: #3E4C71;
-  padding-bottom: 3px; /* Adjusted to match further increased tab height */
-  margin-bottom: -1px;
-  font-weight: 600; /* Make text slightly bolder in active tab */
+  /* Removed font-weight and border changes to prevent dancing */
 }
 
 .tab-content {
   flex: 1;
+  padding: 20px;
   overflow-y: auto;
   background-color: white;
-  border-top: 1px solid #ccc;
-  padding: 20px 20px 20px 8px; /* Reduced left padding from 20px to 8px */
-  line-height: 1.5;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-size: 18px; /* Added base font size for content */
+  position: relative;
+  z-index: 1;
 }
 
 /* Content sections */
@@ -473,10 +464,7 @@
   background-color: rgba(224, 109, 55, 0.15);
 }
 
-.control-button.active {
-  background-color: #E06D37;
-  color: white;
-}
+/* Removed conflicting control-button.active rule that was causing orange colors */
 
 /* Microphone button specific styling */
 #mic-btn {
@@ -548,9 +536,11 @@
 /* Responsive adjustments */
 @media (max-width: 1100px) {
   .tab-area {
-    margin-left: -60px; /* Adjust for updated mobile nav width (60px) */
-    padding-left: 61px; /* Minimal padding: 60px nav + 1px gap */
-    width: calc(100% + 60px);
+    margin: 0; /* Remove all margins */
+    padding: 2px 0 0 0; /* Only keep top padding for pinstripe */
+    width: 100%; /* Use full width */
+    min-width: 100%; /* Ensure minimum width is full */
+    max-width: 100%; /* Ensure maximum width is full */
   }
   
   /* Compact timer display for mobile */
@@ -583,7 +573,7 @@
   }
   
   .tab-navigation {
-    padding: 8px 12px 0 1px; /* Set left padding to 1px for mobile */
+    padding: 2px 12px 0 1px; /* Reduced top padding from 5px to 2px (another 3px less) */
   }
   
   .tab-btn {
@@ -664,7 +654,6 @@
 .transcription-control-btn {
   padding: 3px 16px; /* Match tab padding for consistent height */
   border: none;
-  border-radius: 6px;
   font-size: 16px; /* Increased from 14px to 16px */
   font-weight: 500;
   cursor: pointer;
@@ -673,32 +662,52 @@
   align-items: center;
   gap: 6px;
   width: 200px; /* Increased width to accommodate longer button text */
-  height: auto; /* Let height be determined by padding */
   justify-content: center;
   text-align: center;
   white-space: nowrap; /* Prevent text wrapping */
   overflow: hidden; /* Hide any overflow */
   box-sizing: border-box; /* Include padding in width calculation */
+  background-color: #3E4C71; /* Restore original color for medium views */
+  color: #fff; /* Restore original text color for medium views */
 }
 
 /* Desktop view - make all buttons identical and responsive */
-.transcription-control-btn,
-.transcription-status {
-  width: clamp(150px, 20vw, 200px) !important; /* Responsive width: 150px-200px */
-  height: 36px !important;
-  padding: 8px clamp(8px, 1.5vw, 16px) !important; /* Responsive padding */
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 6px !important;
-  font-size: clamp(14px, 1.5vw, 16px) !important; /* Responsive font size */
-  font-weight: 500 !important;
-  box-sizing: border-box !important;
-  background-color: #3E4C71 !important;
-  color: #fff !important;
-  border: none !important;
-  flex-shrink: 1 !important; /* Allow buttons to shrink */
+@media (min-width: 1101px) {
+  .transcription-control-btn,
+  .transcription-status {
+    width: clamp(150px, 20vw, 200px) !important; /* Responsive width: 150px-200px */
+    height: 25px !important; /* Compact height - 25px for shorter buttons */
+    padding: 6px clamp(8px, 1.5vw, 16px) !important; /* Responsive padding */
+    margin: 4px 0 1px 0 !important; /* 4px above + 1px below for minimal distance to pinstripe */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: clamp(14px, 1.5vw, 16px) !important; /* Responsive font size */
+    font-weight: 500 !important;
+    box-sizing: border-box !important;
+    background-color: #3E4C71 !important;
+    color: #fff !important;
+    border: none !important;
+    flex-shrink: 1 !important; /* Allow buttons to shrink */
+  }
 }
+
+/* Mobile view - clean simple approach */
+@media (max-width: 800px) {
+  .transcription-control-btn,
+  .transcription-status {
+    width: 44px !important; /* Square mini buttons */
+    height: 44px !important;
+    padding: 8px !important;
+    margin: 1px 0 !important; /* Consistent minimal spacing */
+    font-size: 12px !important;
+    flex-shrink: 0 !important; /* Prevent shrinking */
+    background-color: #3E4C71 !important; /* Restore original color */
+    color: #fff !important; /* White text */
+  }
+}
+
+
 
   /* Mobile view - clean simple approach */
 @media (max-width: 1100px) {
@@ -710,6 +719,7 @@
     width: 32px !important;
     height: 32px !important;
     padding: 0 !important;
+    margin-bottom: 1px !important; /* Lift buttons off pinstripe */
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -724,6 +734,7 @@
     width: 32px !important;
     height: 32px !important;
     padding: 0 !important;
+    margin-bottom: 1px !important; /* Lift buttons off pinstripe */
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -757,12 +768,12 @@
 }
 
 .transcription-control-btn.danger {
-  background-color: #E06D37; /* Match app's orange for stop button */
+  background-color: #3E4C71; /* Match app's dark blue theme */
   color: white;
 }
 
 .transcription-control-btn.danger:hover {
-  background-color: #CC5A2B; /* Darker orange for hover */
+  background-color: #334060; /* Darker blue for hover */
   transform: translateY(-1px);
 }
 

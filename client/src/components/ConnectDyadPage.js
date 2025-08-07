@@ -32,19 +32,17 @@ const ConnectDyadPageInner = ({
   currentPage,
   currentIndex,
   totalPages,
-  developmentMode
+  developmentMode,
+  activeSize, // Add this prop for left navigation
+  onSizeChange // Add this prop for left navigation
 }) => {
-  // Start with community view for Connect Catalyst - everyone is still gathered together
-  const [activeView, setActiveView] = useState('all'); // Community view
-  // No pre-selected participants needed for community view during catalyst
+  // Use activeSize from props instead of internal state
   const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [isLoopActive, setIsLoopActive] = useState(false);
   const { participants, realParticipants, error } = useVideo();
-  const layout = getLayoutFromView(activeView);
+  const layout = getLayoutFromView(activeSize); // Use activeSize from props
   const participantCount = useMemo(() => realParticipants.length, [realParticipants]);
 
-  const handleViewChange = (newView) => setActiveView(newView);
-  
   const handleParticipantSelect = (participant) => {
     // Toggle selection for any mode
     setSelectedParticipants(prev => 

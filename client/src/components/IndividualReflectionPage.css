@@ -29,7 +29,7 @@ body:has(.individual-reflection-container) .view-content {
 /* Header matching prototype - smaller, discreet blue title */
 .reflection-header {
   text-align: center;
-  margin-bottom: 20px; /* Reduced margin for more content space */
+  margin-bottom: 15px; /* Reduced margin from 20px to 15px */
 }
 
 /* Override any inherited hero-subtitle styles - force default blue with maximum specificity */
@@ -38,7 +38,7 @@ body:has(.individual-reflection-container) .view-content {
   font-weight: 400 !important;
   color: #4A5A85 !important; /* Default app blue color, matching navigation and other elements */
   text-align: center !important;
-  margin: 0 0 15px 0 !important; /* Reduced margin */
+  margin: 0 0 0 0 !important; /* Reduced margin to zero */
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
   letter-spacing: 1px !important;
   text-shadow: none !important; /* Explicitly no drop shadow */

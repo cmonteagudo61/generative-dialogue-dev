@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useVideo } from './VideoProvider';
 import VideoGrid from './video/VideoGrid';
 import '../App.css';
@@ -32,19 +32,25 @@ const HarvestPageInner = ({
   currentPage,
   currentIndex,
   totalPages,
-  developmentMode
+  developmentMode,
+  activeSize,
+  onSizeChange
 }) => {
-  // Start with individual view for HARVEST stage
-  const [activeView, setActiveView] = useState(1); // Individual view (makes icon blue)
+  // Start with community view for HARVEST stage - final gathering
   const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [isLoopActive, setIsLoopActive] = useState(false);
   
   const { participants, realParticipants, error } = useVideo();
-  const layout = getLayoutFromView(activeView);
+  const layout = getLayoutFromView(activeSize || 'all'); // Use activeSize prop or default to community
   const participantCount = useMemo(() => realParticipants.length, [realParticipants]);
 
-  const handleViewChange = (newView) => setActiveView(newView);
-  
+  // Set community view as active when component mounts
+  useEffect(() => {
+    if (onSizeChange) {
+      onSizeChange('all'); // Set to community view
+    }
+  }, [onSizeChange]);
+
   const handleParticipantSelect = (participant) => {
     setSelectedParticipants(prev => 
       prev.includes(participant.session_id) 
@@ -59,10 +65,16 @@ const HarvestPageInner = ({
 
   return (
     <>
-      {/* Hide video feed for individual harvest activities */}
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', background: '#f5f5f5', color: '#666' }}>
-        Individual Activity - No Video Feed Required
-      </div>
+      {/* Show community video feeds for final gathering */}
+      <VideoGrid 
+        layout={layout}
+        participants={realParticipants}
+        selectedParticipants={selectedParticipants}
+        onParticipantSelect={handleParticipantSelect}
+        isLoopActive={isLoopActive}
+        onLoopToggle={handleLoopToggle}
+        developmentMode={developmentMode}
+      />
       {error && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
     </>
   );

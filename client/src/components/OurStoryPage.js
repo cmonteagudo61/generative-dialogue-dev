@@ -20,16 +20,16 @@ const OurStoryPage = ({
   }, [realParticipants]);
 
   const summaryContent = (
-    <div className="ourstory-container">
-      <div className="ourstory-header">
+    <div className="summary-container">
+      <div className="summary-header">
         <div className="header-titles">
-          <h1 className="ourstory-title">AI WE Summary</h1>
-          <h2 className="ourstory-subtitle">What is OUR Emerging Story Over Time?</h2>
+          <h1 className="summary-title">AI WE Summary</h1>
+          <h2 className="summary-subtitle">What is OUR Emerging Story Over Time?</h2>
         </div>
       </div>
       
-      <div className="ourstory-content">
-        <div className="ourstory-text">
+      <div className="summary-content">
+        <div className="summary-text">
           <p>
             Aliquam porta nisl dolor, molestie pellentesque elit molestie in. Morbi metus neque, elementum 
             ullamcorper hendrerit eget, tincidunt et nisl. Sed magna nunc, consequat vel aliquam vitae, porta ac 

@@ -20,16 +20,16 @@ const QuestionsPage = ({
   }, [realParticipants]);
 
   const summaryContent = (
-    <div className="questions-container">
-      <div className="questions-header">
+    <div className="summary-container">
+      <div className="summary-header">
         <div className="header-titles">
-          <h1 className="questions-title">AI WE Summary</h1>
-          <h2 className="questions-subtitle">What Questions do WE Hold?</h2>
+          <h1 className="summary-title">AI WE Summary</h1>
+          <h2 className="summary-subtitle">What Questions do WE Hold?</h2>
         </div>
       </div>
       
-      <div className="questions-content">
-        <div className="questions-text">
+      <div className="summary-content">
+        <div className="summary-text">
           <p>
             Aliquam porta nisl dolor, molestie pellentesque elit molestie in. Morbi metus neque, elementum 
             ullamcorper hendrerit eget, tincidunt et nisl. Sed magna nunc, consequat vel aliquam vitae, porta ac 

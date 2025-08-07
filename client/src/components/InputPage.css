@@ -5,10 +5,11 @@
   display: grid;
   grid-template-rows: auto auto 1fr; /* header, hero, scrollable-content */
   height: 100vh;
-  width: 100vw;
+  width: 100%; /* Changed from 100vw to prevent horizontal overflow */
   overflow: hidden;
   background: #f5f5f5;
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-sizing: border-box; /* Ensure padding is included in width calculation */
 }
 
 /* Fixed Header */

@@ -4,7 +4,6 @@ import VideoGrid from './video/VideoGrid';
 import AudioStreamer from './AudioStreamer';
 import LiveAIInsights from './LiveAIInsights';
 import AIVideoControls from './AIVideoControls';
-import BottomContentArea from './BottomContentArea';
 import '../App.css';
 
 const getLayoutFromView = (activeView) => {
@@ -37,11 +36,11 @@ const GenerativeDialogueInner = ({
   currentIndex,
   totalPages,
   developmentMode,
-  isLoopActive // Receive this from App.js
+  isLoopActive, // Receive this from App.js
+  activeSize, // Add this prop for left navigation
+  onSizeChange // Add this prop for left navigation
 }) => {
-  // Start with community view to test loop
-  const [activeView, setActiveView] = useState('all');
-  // Pre-select 6 participants for fishbowl demo
+  // Use activeSize from props instead of internal state
   const [selectedParticipants, setSelectedParticipants] = useState([
     'mock-1', 'mock-2', 'mock-3', 'mock-4', 'mock-5', 'mock-6'
   ]);
@@ -55,11 +54,9 @@ const GenerativeDialogueInner = ({
   const [showAIControls, setShowAIControls] = useState(false);
   
   const { participants, realParticipants, error } = useVideo();
-  const layout = getLayoutFromView(activeView);
+  const layout = getLayoutFromView(activeSize); // Use activeSize from props
   const participantCount = useMemo(() => realParticipants.length, [realParticipants]);
 
-  const handleViewChange = useCallback((newView) => setActiveView(newView), []);
-  
   const handleParticipantSelect = useCallback((participant) => {
     // Toggle selection for fishbowl
     setSelectedParticipants(prev => 
@@ -138,17 +135,6 @@ const GenerativeDialogueInner = ({
         onTranscriptionUpdate={handleTranscriptUpdate}
         onSpeakerIdentified={handleSpeakerIdentified}
         onAIInsight={handleProcessTranscript}
-      />
-      
-      <BottomContentArea
-        showTranscription={showTranscription}
-        setShowTranscription={setShowTranscription}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        onBack={onBack}
-        onForward={onForward}
-        currentPage={currentPage}
-        developmentMode={developmentMode}
       />
       
       {/* AI Video Controls */}

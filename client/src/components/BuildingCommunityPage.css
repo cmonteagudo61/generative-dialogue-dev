@@ -1,26 +1,28 @@
 /* Building Community Page - Following LandingPage pattern */
 .building-community-page {
-  min-height: 100vh;
+  height: 100vh; /* Use fixed height instead of min-height */
   background: #f5f5f5; /* Light grey background like other pages */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+  align-items: center; /* Center content horizontally */
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow-x: hidden;
-  overflow-y: auto;
-  padding: 20px 0;
+  overflow-y: auto; /* Allow scrolling if content is too tall */
   box-sizing: border-box;
   position: relative;
 }
 
 .building-community-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1200px; /* Center content in large browsers */
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center; /* Center content vertically */
   flex: 1;
+  padding: 10px 0 20px 0; /* Reduced bottom padding */
+  overflow-y: auto; /* Allow content to scroll if needed */
+  min-height: 0; /* Allow container to shrink */
 }
 
 /* Header section - similar to LandingPage */
@@ -28,13 +30,14 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-bottom: 30px;
-  padding: 20px 0;
+  margin-bottom: 30px !important; /* Increased spacing to separate from main title */
+  padding: 20px 0; /* Increased padding for better header spacing */
 }
 
 .header-content {
   display: flex;
   align-items: center;
+  justify-content: center; /* Center the header content */
   gap: 20px;
 }
 
@@ -64,24 +67,27 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center; /* Center content vertically */
   flex: 1;
+  min-height: 0; /* Allow content to shrink */
 }
 
 /* Hero section with large title */
 .hero-section {
   text-align: center;
-  margin-bottom: 40px;
+  margin-top: 40px !important; /* Add top margin to push title down */
+  margin-bottom: 14px !important; /* Reduced from 28px by 50% */
 }
 
 .building-title {
-  font-size: 3rem;
+  font-size: 1.875rem; /* Increased from 1.5rem by 25% */
   font-weight: 700;
   color: #E17B43; /* Orange color */
   margin: 0;
   line-height: 1.1;
   letter-spacing: 1px;
   text-transform: uppercase;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  text-shadow: none; /* Remove drop shadow */
 }
 
 /* Diagram section */
@@ -91,33 +97,36 @@
   justify-content: center;
   align-items: center;
   flex: 1;
-  min-height: 600px;
+  min-height: 400px; /* Reduced to match diagram size */
 }
 
 .circular-diagram {
   position: relative;
-  width: 600px;
-  height: 600px;
+  width: 480px;
+  height: 480px;
   margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Phase items positioned around the circle */
 .phase-item {
   position: absolute;
-  width: 180px;
-  height: 80px;
+  width: 140px;
+  height: 65px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: white;
-  border-radius: 10px;
+  border-radius: 8px;
   box-shadow: 0 3px 12px rgba(0,0,0,0.15);
   border: 2px solid #4A5A85;
   z-index: 10;
 }
 
 .phase-text {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #4A5A85;
   text-align: center;
@@ -130,44 +139,44 @@
 /* Position each phase around the circle - trigonometric positioning at equal radius */
 .phase-1 {
   /* 0 degrees (12 o'clock) */
-  top: 15%;
+  top: 12%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 
 .phase-2 {
   /* 60 degrees (2 o'clock) */
-  top: 33%;
-  left: 80%;
+  top: 30%;
+  left: 78%;
   transform: translate(-50%, -50%);
 }
 
 .phase-3 {
   /* 120 degrees (4 o'clock) */
-  top: 67%;
-  left: 80%;
+  top: 70%;
+  left: 78%;
   transform: translate(-50%, -50%);
 }
 
 .phase-4 {
   /* 180 degrees (6 o'clock) */
-  top: 85%;
+  top: 88%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 220px; /* Wider for longer text */
+  width: 170px; /* Wider for longer text */
 }
 
 .phase-5 {
   /* 240 degrees (8 o'clock) */
-  top: 67%;
-  left: 20%;
+  top: 70%;
+  left: 22%;
   transform: translate(-50%, -50%);
 }
 
 .phase-6 {
   /* 300 degrees (10 o'clock) */
-  top: 33%;
-  left: 20%;
+  top: 30%;
+  left: 22%;
   transform: translate(-50%, -50%);
 }
 
@@ -177,8 +186,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 220px;
-  height: 220px;
+  width: 170px;
+  height: 170px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -189,7 +198,7 @@
 }
 
 .participation-text {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 500;
   color: #E17B43;
   text-align: center;
@@ -274,6 +283,8 @@
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   flex-shrink: 0; /* Prevent shrinking */
+  overflow: hidden; /* Ensure no content extends beyond the border radius */
+  box-sizing: border-box; /* Include padding in size calculation */
 }
 
 .building-community-page .control-button:hover {
@@ -285,139 +296,140 @@
   cursor: not-allowed;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .building-community-page {
-    padding: 15px 0;
-  }
-  
-  .building-title {
-    font-size: 2.2rem;
-  }
-  
-  .main-title {
-    font-size: 1.4rem;
-  }
-  
-  .actual-logo {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .header-content {
-    gap: 15px;
-  }
-  
-  .circular-diagram {
-    width: 480px;
-    height: 480px;
-  }
-  
-  .phase-item {
-    width: 140px;
-    height: 65px;
-  }
-  
-  .phase-text {
-    font-size: 0.85rem;
-  }
-  
-  .center-text {
-    width: 170px;
-    height: 170px;
-  }
-  
-  .participation-text {
-    font-size: 1.1rem;
-  }
-  
-  /* Adjust positions for smaller screen - maintain trigonometric positioning */
-  .phase-1 {
-    /* 0 degrees */
-    top: 12%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  
-  .phase-2 {
-    /* 60 degrees */
-    top: 30%;
-    left: 78%;
-    transform: translate(-50%, -50%);
-  }
-  
-  .phase-3 {
-    /* 120 degrees */
-    top: 70%;
-    left: 78%;
-    transform: translate(-50%, -50%);
-  }
-  
-  .phase-4 {
-    /* 180 degrees */
-    top: 88%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 170px; /* Wider for longer text on tablet */
-  }
-  
-  .phase-5 {
-    /* 240 degrees */
-    top: 70%;
-    left: 22%;
-    transform: translate(-50%, -50%);
-  }
-  
-  .phase-6 {
-    /* 300 degrees */
-    top: 30%;
-    left: 22%;
-    transform: translate(-50%, -50%);
-  }
+/* Ensure button images don't create white corners */
+.building-community-page .control-button img {
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: transparent;
 }
 
-@media (max-width: 480px) {
-  .building-title {
-    font-size: 1.8rem;
-  }
-  
-  .main-title {
-    font-size: 1.2rem;
-    letter-spacing: 1px;
-  }
-  
-  .actual-logo {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .circular-diagram {
-    width: 360px;
-    height: 360px;
-  }
-  
-  .phase-item {
-    width: 120px;
-    height: 55px;
-  }
-  
-  .phase-4 {
-    width: 140px; /* Extra width for 6 o'clock position on mobile */
-  }
-  
-  .phase-text {
-    font-size: 0.75rem;
-  }
-  
-  .center-text {
-    width: 140px;
-    height: 140px;
-  }
-  
-  .participation-text {
-    font-size: 1rem;
-  }
-} 
+/* Ensure footer is visible and properly positioned */
+.building-community-page .footer-navigation {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100vw;
+  background: #f8f8f8;
+  z-index: 1000;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Ensure footer content extends full width */
+.building-community-page .footer-navigation .control-bar {
+  width: 100vw;
+  max-width: none;
+  margin: 0;
+  padding: 5px 20px;
+}
+
+/* Target the FooterNavigation component directly */
+.building-community-page footer {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 1000 !important;
+}
+
+/* Target the control bar inside FooterNavigation */
+.building-community-page footer .control-bar {
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 5px 20px !important;
+  box-sizing: border-box !important;
+}
+
+/* Target the red test div */
+.building-community-page div[style*="background: red"] {
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+}
+
+/* Target the FooterNavigation component's footer-bar class */
+.building-community-page .footer-bar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 25px !important;
+  z-index: 1000 !important;
+  box-sizing: border-box !important;
+  height: 54px !important; /* Match FooterNavigation height */
+  background-color: #e0e0e3 !important; /* Match FooterNavigation background */
+}
+
+/* Ensure buttons use the correct FooterNavigation styling */
+.building-community-page .footer-bar .control-button {
+  width: 44px !important;
+  height: 44px !important;
+  background: #e0e0e3 !important;
+  border: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 8px !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Ensure button images use the correct size */
+.building-community-page .footer-bar .control-button img {
+  width: 34px !important;
+  height: 34px !important;
+  object-fit: contain !important;
+}
+
+/* Override any parent container constraints */
+.building-community-page > div:last-child {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 1000 !important;
+}
+
+/* Ensure the red test div is also full width */
+.building-community-page > div:nth-last-child(2) {
+  position: relative !important;
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+ 
 
 /* Mobile responsive - exact match to standardized footer */
 @media (max-width: 1100px) {

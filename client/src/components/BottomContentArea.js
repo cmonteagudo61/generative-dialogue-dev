@@ -1,8 +1,8 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import './BottomContentArea.css';
 
-const BottomContentArea = () => { // Removed all unused props
-  const [activeTab, setActiveTab] = useState('dialogue'); // Default to dialogue tab
+const BottomContentArea = ({ currentPage }) => {
+  const [activeTab, setActiveTab] = useState(null); // Start with no active tab
   const [isRecording, setIsRecording] = useState(false);
   const [transcriptionStatus, setTranscriptionStatus] = useState('Disconnected');
   const [finalTranscript, setFinalTranscript] = useState('');
@@ -113,10 +113,68 @@ const BottomContentArea = () => { // Removed all unused props
   }, [stopRealTimeTranscription]);
 
   const switchTab = (tabName) => {
+    // Don't allow tab switching on orientation page
+    if (currentPage === 'videoconference') {
+      return;
+    }
     setActiveTab(tabName);
   };
 
   const isConnected = transcriptionStatus === 'Connected' || isRecording;
+
+  // Map pages to their corresponding substages
+  const getSubstageFromPage = (page) => {
+    const substageMapping = {
+      // ORIENTATION stage (Page 4) - no active tab
+      'videoconference': null, // No active tab for orientation
+      
+      // CONNECT stage
+      'connect-dyad': 'catalyst',
+      'dyad-dialogue-connect': 'dialogue', 
+      'dyad-summary-review': 'summary',
+      'connect-dyad-collective-wisdom': 'we',
+      
+      // EXPLORE stage
+      'explore-catalyst': 'catalyst',
+      'explore-triad-dialogue': 'dialogue',
+      'explore-triad-summary': 'summary', 
+      'explore-collective-wisdom': 'we',
+      
+      // DISCOVER stage
+      'discover-fishbowl-catalyst': 'catalyst',
+      'discover-kiva-dialogue': 'dialogue',
+      'discover-kiva-summary': 'summary',
+      'discover-collective-wisdom': 'we',
+      
+      // HARVEST stage
+      'harvest': 'we', // Community gathering - WE tab active
+      'reflection': 'we', // Individual reflection
+      'summary': 'we', // AI summaries
+      'we-summary': 'we',
+      'new-insights': 'we',
+      'questions': 'we',
+      'talkabout': 'we',
+      'cantalk': 'we',
+      'emergingstory': 'we',
+      'ourstory': 'we',
+      'buildingcommunity': 'we'
+    };
+    
+    // Only return null for orientation page, otherwise default to 'dialogue'
+    if (page === 'videoconference') {
+      return null;
+    }
+    return substageMapping[page] || 'dialogue';
+  };
+
+  // Update active tab when currentPage changes
+  useEffect(() => {
+    if (currentPage) {
+      const substage = getSubstageFromPage(currentPage);
+      console.log('Current page:', currentPage, 'Active tab:', substage); // Debug log
+      setActiveTab(substage); // This will be null for orientation page
+    }
+  }, [currentPage]);
 
   return (
     <div className="bottom-content-area">
@@ -186,9 +244,28 @@ const BottomContentArea = () => { // Removed all unused props
         </div>
         
         <div className="tab-content">
+          {activeTab === 'catalyst' && (
+            <div style={{ padding: '1rem', color: 'black' }}>
+              <h3>Catalyst</h3>
+              <p>Instructions and activities to help catalyze an effective dialogue.</p>
+            </div>
+          )}
           {activeTab === 'dialogue' && (
             <div style={{ padding: '1rem', color: 'black', whiteSpace: 'pre-wrap' }}>
                 {finalTranscript}
+            </div>
+          )}
+          {activeTab === 'summary' && (
+            <div style={{ padding: '1rem', color: 'black' }}>
+              <h3>Summary</h3>
+              <p>AI-generated insights and voting results will appear here.</p>
+            </div>
+          )}
+          {activeTab === 'we' && (
+            <div style={{ padding: '1rem', color: 'black' }}>
+              <h3>Collective Wisdom</h3>
+              <p>This is the final gathering and send-off before individual reflection.</p>
+              <p>Share your collective insights and prepare for the next phase of the dialogue.</p>
             </div>
           )}
         </div>

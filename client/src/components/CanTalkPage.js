@@ -19,17 +19,17 @@ const CanTalkPage = ({
     return realParticipants.length > 0 ? realParticipants.length : 1093;
   }, [realParticipants]);
 
-  return (
-    <div className="cantalk-container">
-      <div className="cantalk-header">
+  const summaryContent = (
+    <div className="summary-container">
+      <div className="summary-header">
         <div className="header-titles">
-          <h1 className="cantalk-title">AI WE Summary</h1>
-          <h2 className="cantalk-subtitle">What CAN we Talk About?</h2>
+          <h1 className="summary-title">AI WE Summary</h1>
+          <h2 className="summary-subtitle">What CAN we Talk About?</h2>
         </div>
       </div>
       
-      <div className="cantalk-content">
-        <div className="cantalk-text">
+      <div className="summary-content">
+        <div className="summary-text">
           <p>
             Aliquam porta nisl dolor, molestie pellentesque elit molestie in. Morbi metus neque, elementum 
             ullamcorper hendrerit eget, tincidunt et nisl. Sed magna nunc, consequat vel aliquam vitae, porta ac 
@@ -93,6 +93,8 @@ const CanTalkPage = ({
       </div>
     </div>
   );
+
+  return summaryContent;
 };
 
 export default CanTalkPage; 

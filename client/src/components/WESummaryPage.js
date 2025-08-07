@@ -19,17 +19,17 @@ const WESummaryPage = ({
     return realParticipants.length > 0 ? realParticipants.length : 1093;
   }, [realParticipants]);
 
-  return (
-    <div className="we-summary-container">
-      <div className="we-summary-header">
+  const summaryContent = (
+    <div className="summary-container">
+      <div className="summary-header">
         <div className="header-titles">
-          <h1 className="we-summary-title">AI WE Summary</h1>
-          <h2 className="we-summary-subtitle">What Divides Us?</h2>
+          <h1 className="summary-title">AI WE Summary</h1>
+          <h2 className="summary-subtitle">What Divides Us?</h2>
         </div>
       </div>
       
-      <div className="we-summary-content">
-        <div className="we-summary-text">
+      <div className="summary-content">
+        <div className="summary-text">
           <p>
             Aliquam porta nisl dolor, molestie pellentesque elit molestie in. Morbi metus neque, elementum 
             ullamcorper hendrerit eget, tincidunt et nisl. Sed magna nunc, consequat vel aliquam vitae, porta ac 
@@ -93,6 +93,8 @@ const WESummaryPage = ({
       </div>
     </div>
   );
+
+  return summaryContent;
 };
 
 export default WESummaryPage; 

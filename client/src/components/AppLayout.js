@@ -72,19 +72,48 @@ const AppLayout = ({
   vote,
   voteState,
   totalTime,
-  segmentTime
+  segmentTime,
+  onNavigate
 }) => {
   const isNarrow = useMediaQuery('(max-width: 1100px)');
+  const isMobile = useMediaQuery('(max-width: 480px)');
+  console.log('isNarrow:', isNarrow, 'isMobile:', isMobile, 'participantCount:', participantCount);
 
   const getCurrentStage = () => {
     if (activeStage) return activeStage;
-    if (currentPage === 'videoconference') return null;
+    if (currentPage === 'videoconference') return null; // Orientation page - no active stage
     if (currentPage === 'landing' || currentPage === 'input' || currentPage === 'permissions') return 'connect';
-    if (currentPage === 'reflection') return 'discover';
-    return 'harvest';
+    if (currentPage === 'reflection') return 'harvest';
+    if (currentPage.startsWith('connect-')) return 'connect';
+    if (currentPage.startsWith('explore-')) return 'explore';
+    if (currentPage.startsWith('discover-')) return 'discover';
+    if (currentPage.startsWith('harvest') || currentPage === 'reflection' || currentPage === 'summary' || currentPage === 'we-summary' || currentPage === 'new-insights' || currentPage === 'questions' || currentPage === 'talkabout' || currentPage === 'cantalk' || currentPage === 'emergingstory' || currentPage === 'ourstory' || currentPage === 'buildingcommunity') return 'harvest';
+    return 'connect';
   };
 
   const activeTab = getCurrentStage();
+
+  // Navigation function for top navigation
+  const handleStageNavigation = (stage) => {
+    if (!onNavigate) return;
+    
+    switch (stage) {
+      case 'connect':
+        onNavigate('connect-dyad');
+        break;
+      case 'explore':
+        onNavigate('explore-catalyst');
+        break;
+      case 'discover':
+        onNavigate('discover-fishbowl-catalyst');
+        break;
+      case 'harvest':
+        onNavigate('harvest');
+        break;
+      default:
+        break;
+    }
+  };
 
   const headerInfo = (
     <div className="header-info">
@@ -101,7 +130,7 @@ const AppLayout = ({
       <div className="participant-counter-fixed">
         {participantCount != null && (
           <span className="participant-badge">
-            {participantCount} {participantCount === 1 ? 'participant' : 'participants'}
+            {isMobile ? participantCount : `${participantCount} ${participantCount === 1 ? 'participant' : 'participants'}`}
           </span>
         )}
       </div>
@@ -120,7 +149,7 @@ const AppLayout = ({
               <div
                 key={tab.key}
                 className={`stage-tab${activeTab === tab.key ? ' active' : ''}`}
-                onClick={() => console.log(`Navigating to ${tab.label} stage`)}
+                onClick={() => handleStageNavigation(tab.key)}
               >
                 {tab.label}
               </div>

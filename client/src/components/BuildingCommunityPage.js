@@ -1,13 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './BuildingCommunityPage.css';
-import {
-  directionBackwardOff,
-  directionBackwardOn,
-  directionBackwardHover,
-  directionForwardOff,
-  directionForwardOn,
-  directionForwardHover
-} from '../assets/icons';
+import FooterNavigation from './FooterNavigation';
 
 const BuildingCommunityPage = ({ 
   canGoBack,
@@ -19,40 +12,6 @@ const BuildingCommunityPage = ({
   totalPages,
   developmentMode
 }) => {
-  const [backButtonState, setBackButtonState] = useState('off');
-  const [forwardButtonState, setForwardButtonState] = useState('off');
-
-  const getBackButtonIcon = () => {
-    switch (backButtonState) {
-      case 'on': return directionBackwardOn;
-      case 'hover': return directionBackwardHover;
-      default: return directionBackwardOff;
-    }
-  };
-
-  const getForwardButtonIcon = () => {
-    switch (forwardButtonState) {
-      case 'on': return directionForwardOn;
-      case 'hover': return directionForwardHover;
-      default: return directionForwardOff;
-    }
-  };
-
-  const handleBackClick = () => {
-    if (canGoBack && onBack) {
-      setBackButtonState('on');
-      onBack();
-      setTimeout(() => setBackButtonState('off'), 200);
-    }
-  };
-
-  const handleForwardClick = () => {
-    if (canGoForward && onForward) {
-      setForwardButtonState('on');
-      onForward();
-      setTimeout(() => setForwardButtonState('off'), 200);
-    }
-  };
 
   return (
     <div className="building-community-page">
@@ -156,69 +115,31 @@ const BuildingCommunityPage = ({
         </main>
       </div>
 
-      {/* Development Navigation Footer */}
-      {developmentMode && (
-        <div className="control-bar">
-          <div className="page-info">
-            <span className="page-indicator">Building Community ({currentIndex + 1}/{totalPages})</span>
-          </div>
-          <div className="nav-controls">
-            <button 
-              id="back-btn" 
-              className="control-button"
-              onClick={handleBackClick}
-              onMouseEnter={() => canGoBack && setBackButtonState(backButtonState === 'on' ? 'on' : 'hover')}
-              onMouseLeave={() => setBackButtonState(backButtonState === 'on' ? 'on' : 'off')}
-              disabled={!canGoBack}
-              style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                outline: 'none',
-                borderRadius: '50%',
-                boxShadow: 'none',
-                opacity: !canGoBack ? 0.4 : 1,
-                cursor: !canGoBack ? 'not-allowed' : 'pointer'
-              }}
-            >
-              <img 
-                src={getBackButtonIcon()} 
-                alt="Back" 
-                style={{width: '34px', height: '34px'}}
-              />
-            </button>
-            <button 
-              id="forward-btn" 
-              className="control-button"
-              onClick={handleForwardClick}
-              onMouseEnter={() => canGoForward && setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'hover')}
-              onMouseLeave={() => setForwardButtonState(forwardButtonState === 'on' ? 'on' : 'off')}
-              disabled={!canGoForward}
-              style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                outline: 'none',
-                borderRadius: '50%',
-                boxShadow: 'none',
-                overflow: 'hidden',
-                opacity: !canGoForward ? 0.4 : 1,
-                cursor: !canGoForward ? 'not-allowed' : 'pointer'
-              }}
-            >
-              <img 
-                src={getForwardButtonIcon()} 
-                alt="Forward" 
-                style={{
-                  width: '34px',
-                  height: '34px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  display: 'block'
-                }}
-              />
-            </button>
-          </div>
-        </div>
-      )}
+      <div style={{background: 'red', color: 'white', padding: '10px', textAlign: 'center'}}>
+        FOOTER TEST - This should be visible at the bottom
+      </div>
+      <FooterNavigation 
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        onBack={onBack}
+        onForward={onForward}
+        currentPage={currentPage}
+        currentIndex={currentIndex}
+        totalPages={totalPages}
+        developmentMode={developmentMode}
+        vote={() => {}}
+        voteState="neutral"
+        isMuted={false}
+        isCameraOff={false}
+        isInCall={true}
+        onToggleMic={() => {}}
+        onToggleCamera={() => {}}
+        onToggleCall={() => {}}
+        isLoopActive={false}
+        onToggleLoop={() => {}}
+        totalTime="00:00"
+        segmentTime="00:00"
+      />
     </div>
   );
 };

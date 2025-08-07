@@ -1,0 +1,298 @@
+/* AI Summary Page - Matching Mobile Prototype Exactly */
+.ai-summary-container {
+  width: 100%;
+  height: 100%;
+  background: #f5f5f5; /* Light grey background like prototype */
+  display: flex;
+  flex-direction: column;
+  padding: 15px; /* Reduced padding for more content width */
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-y: auto;
+  box-sizing: border-box;
+  text-align: left !important; /* Override global center alignment */
+}
+
+/* Override the global .App text-align: center rule */
+body .ai-summary-container,
+body .ai-summary-container * {
+  text-align: left !important;
+}
+
+/* AI Summary pages should show normal navigation - only harvest-outro should be standalone */
+
+/* More aggressive hiding of any potential green line sources */
+.ai-summary-container ~ *,
+.ai-summary-container ~ * * {
+  border-color: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Hide any elements that might be creating the green line */
+.ai-summary-container ~ [style*="green"],
+.ai-summary-container ~ [style*="#00"],
+.ai-summary-container ~ [style*="#0f"],
+.ai-summary-container ~ [style*="#3f"] {
+  display: none !important;
+}
+
+/* Hide any video elements that might be interfering */
+.ai-summary-container ~ .video-grid,
+.ai-summary-container ~ .video-grid-wrapper,
+.ai-summary-container ~ [class*="video"] {
+  display: none !important;
+}
+
+/* Ensure no green elements are visible anywhere */
+.ai-summary-container ~ *,
+.ai-summary-container ~ * * {
+  border-color: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Specifically target any green-colored elements */
+.ai-summary-container ~ [style*="green"],
+.ai-summary-container ~ [style*="#00"],
+.ai-summary-container ~ [style*="#0f"],
+.ai-summary-container ~ [style*="#3f"],
+.ai-summary-container ~ [style*="#4CAF50"],
+.ai-summary-container ~ [style*="#8BC34A"],
+.ai-summary-container ~ [style*="#CDDC39"] {
+  display: none !important;
+}
+
+/* AI Summary pages should show normal navigation - only harvest-outro should be standalone */
+
+/* Override parent container constraints for AI Summary page */
+.ai-summary-container .view-content {
+  overflow-y: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  background: #f5f5f5 !important;
+}
+
+/* Ensure the main app layout allows scrolling for this page */
+body:has(.ai-summary-container) .view-content {
+  overflow-y: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  background: #f5f5f5 !important;
+}
+
+/* Force the viewing area to show the AI summary content properly */
+.ai-summary-container .viewing-area,
+.ai-summary-container .view-content {
+  background: #f5f5f5 !important;
+  overflow: visible !important;
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* Override any parent container backgrounds */
+.ai-summary-container .app-layout,
+.ai-summary-container .main-content,
+.ai-summary-container .content-area {
+  background: #f5f5f5 !important;
+}
+
+/* Ensure all text elements in AI Summary pages are left-justified */
+.ai-summary-container *,
+.ai-summary-container h1,
+.ai-summary-container h2,
+.ai-summary-container h3,
+.ai-summary-container h4,
+.ai-summary-container h5,
+.ai-summary-container h6,
+.ai-summary-container p,
+.ai-summary-container div,
+.ai-summary-container span {
+  text-align: left !important;
+}
+
+
+
+/* Target any potential green line sources more specifically */
+/* Removed these rules as they were hiding the AppLayout navigation */
+
+/* Hide any elements that might be creating the green line */
+.ai-summary-container ~ [class*="logo"],
+.ai-summary-container ~ [class*="nav"],
+.ai-summary-container ~ [class*="header"] {
+  display: none !important;
+}
+
+/* Header matching prototype - smaller, discreet blue title */
+.summary-header {
+  text-align: left; /* Left justify the header */
+  margin-bottom: 0; /* Reduced margin for more content space */
+}
+
+/* Override any inherited hero-subtitle styles - force default blue with maximum specificity */
+.ai-summary-container .summary-header .hero-subtitle {
+  font-size: 1.5rem !important;
+  font-weight: 400 !important;
+  color: #4A5A85 !important; /* Default app blue color, matching navigation and other elements */
+  text-align: left !important; /* Left justify the title */
+  margin: 0 0 15px 0 !important; /* Reduced margin */
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  letter-spacing: 1px !important;
+  text-shadow: none !important; /* Explicitly no drop shadow */
+  text-decoration: none !important;
+  background: none !important; /* Remove any background gradients */
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: #4A5A85 !important;
+  background-clip: unset !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Question title styling */
+.question-title {
+  font-size: 1.2rem !important;
+  font-weight: 400 !important;
+  color: #E17B43 !important; /* Orange color like prototype */
+  text-align: left !important; /* Left justify the question title */
+  margin: 0 0 20px 0 !important;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Content container */
+.summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Space between top and bottom sections */
+  width: 100%;
+  max-width: none; /* Remove any max-width constraints */
+  min-height: 600px; /* Ensure enough height to trigger scrolling */
+  padding-bottom: 100px; /* Add extra space at bottom for scrolling */
+  background: #f5f5f5 !important;
+  flex: 1; /* Take up available space */
+}
+
+/* Top scrollable section - AI Summary */
+.summary-top-section {
+  background: #f8f8f8; /* Lighter grey background for better contrast */
+  border: 2px solid #4A5A85; /* Blue pinstripe border */
+  border-radius: 0; /* Sharp corners, no border radius */
+  padding: 20px;
+  min-height: 200px;
+  max-height: 300px; /* Limit height to force scrolling */
+  overflow-y: auto; /* Make scrollable */
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2; /* Ensure content is above any background elements */
+}
+
+.summary-text {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  color: #333;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.summary-text p {
+  margin: 0 !important;
+}
+
+/* Bottom scrollable section - Analysis */
+.summary-bottom-section {
+  background: #ffffff; /* Pure white background for maximum contrast */
+  border: 2px solid #4A5A85; /* Blue pinstripe border */
+  border-radius: 0; /* Sharp corners, no border radius */
+  padding: 20px;
+  min-height: 200px;
+  max-height: 300px; /* Limit height to force scrolling */
+  overflow-y: auto; /* Make scrollable */
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2; /* Ensure content is above any background elements */
+}
+
+.analysis-title {
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  text-align: left !important;
+  margin: 0 0 15px 0 !important;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  letter-spacing: 0.5px !important;
+}
+
+.themes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.theme-item {
+  /* Simple placeholder styling - will be customized when real content is integrated */
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #f8f8f8;
+  border-radius: 4px;
+}
+
+.theme-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.theme-name {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.theme-percentage {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4A5A85;
+}
+
+.theme-description {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.4;
+  text-align: left;
+}
+
+/* Footer positioning for AI Summary pages */
+.ai-summary-container .footer-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001; /* Above the content */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ai-summary-container {
+    padding: 10px;
+  }
+  
+  .summary-top-section,
+  .summary-bottom-section {
+    padding: 15px;
+  }
+  
+  .summary-text {
+    font-size: 14px;
+  }
+  
+  .theme-name,
+  .theme-percentage {
+    font-size: 13px;
+  }
+  
+  .theme-description {
+    font-size: 13px;
+  }
+} 

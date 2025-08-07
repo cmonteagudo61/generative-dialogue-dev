@@ -32,23 +32,19 @@ const DyadDialoguePageConnectInner = ({
   currentPage,
   currentIndex,
   totalPages,
-  developmentMode
+  developmentMode,
+  activeSize, // Add this prop for left navigation
+  onSizeChange // Add this prop for left navigation
 }) => {
-  // Start with dyad view for Connect stage - use local state like working ConnectDyadPage
-  const [activeView, setActiveView] = useState('2'); // Dyad view
-  // Pre-select 2 participants for dyad demo
-  const [selectedParticipants, setSelectedParticipants] = useState([
-    'mock-1', 'mock-2'
-  ]);
+  // Use activeSize from props instead of internal state
+  const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [isLoopActive, setIsLoopActive] = useState(false);
   const { participants, realParticipants, error } = useVideo();
-  const layout = getLayoutFromView(activeView);
+  const layout = getLayoutFromView(activeSize); // Use activeSize from props
   const participantCount = useMemo(() => realParticipants.length, [realParticipants]);
 
-  const handleViewChange = (newView) => setActiveView(newView);
-  
   const handleParticipantSelect = (participant) => {
-    // Toggle selection for dyads
+    // Toggle selection for any mode
     setSelectedParticipants(prev => 
       prev.includes(participant.session_id) 
         ? prev.filter(id => id !== participant.session_id)

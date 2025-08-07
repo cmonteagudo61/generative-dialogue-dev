@@ -14,6 +14,8 @@ import CommunityViewExperimental from './CommunityViewExperimental';
 import CommunityViewDebug from './CommunityViewDebug';
 import FishbowlView from './FishbowlView';
 import LoopMagnifier from './LoopMagnifier';
+import VideoTile from './VideoTile';
+import MockTile from './MockTile';
 
 const getGridTemplate = (layout) => {
   switch (layout) {
@@ -173,9 +175,9 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
               }}
             >
               {p.tracks?.video?.state === 'playable' && p.tracks?.video?.persistentTrack ? (
-                <VideoTileWithFit participant={p} getObjectFit={getObjectFit} />
+                <VideoTile participant={p} getObjectFit={getObjectFit} />
               ) : p.mockImage ? (
-                <MockTileBackground image={p.mockImage} userName={p.user_name} />
+                <MockTile image={p.mockImage} userName={p.user_name} />
               ) : (
                 <div style={{ color: '#fff', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#222' }}>
                   Waiting for video...
@@ -234,9 +236,9 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
               }}
             >
               {p.tracks?.video?.state === 'playable' && p.tracks?.video?.persistentTrack ? (
-                <VideoTileWithFit participant={p} getObjectFit={getObjectFit} />
+                <VideoTile participant={p} getObjectFit={getObjectFit} />
               ) : p.mockImage ? (
-                <MockTileBackground image={p.mockImage} userName={p.user_name} />
+                <MockTile image={p.mockImage} userName={p.user_name} />
               ) : (
                 <div style={{ color: '#fff', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#222' }}>
                   Waiting for video...
@@ -295,9 +297,9 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
               }}
             >
               {p.tracks?.video?.state === 'playable' && p.tracks?.video?.persistentTrack ? (
-                <VideoTileWithFit participant={p} getObjectFit={getObjectFit} />
+                <VideoTile participant={p} getObjectFit={getObjectFit} />
               ) : p.mockImage ? (
-                <MockTileBackground image={p.mockImage} userName={p.user_name} />
+                <MockTile image={p.mockImage} userName={p.user_name} />
               ) : (
                 <div style={{ color: '#fff', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#222' }}>
                   Waiting for video...
@@ -331,9 +333,9 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
           }}
         >
           {p.tracks?.video?.state === 'playable' && p.tracks?.video?.persistentTrack ? (
-            <VideoTileWithFit participant={p} getObjectFit={getObjectFit} />
+            <VideoTile participant={p} getObjectFit={getObjectFit} />
           ) : p.mockImage ? (
-            <MockTileBackground image={p.mockImage} userName={p.user_name} />
+            <MockTile image={p.mockImage} userName={p.user_name} />
           ) : (
             <div style={{ color: '#fff', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#222' }}>
               Waiting for video...
@@ -396,127 +398,5 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
 
   return <div className={`video-grid-wrapper ${layout}-view`}>{gridElement}</div>;
 };
-
-// Helper component to dynamically set object-fit for both video and mock image
-const VideoTileWithFit = ({ participant, getObjectFit, isMock }) => {
-  const ref = React.useRef(null);
-  const [objectFit, setObjectFit] = React.useState('cover');
-
-  React.useEffect(() => {
-    if (!ref.current) return;
-    setObjectFit(getObjectFit(ref.current));
-    const handleResize = () => setObjectFit(getObjectFit(ref.current));
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [getObjectFit]);
-
-  React.useEffect(() => {
-    if (!isMock && ref.current && participant.tracks?.video?.persistentTrack) {
-      ref.current.srcObject = new window.MediaStream([participant.tracks.video.persistentTrack]);
-    }
-  }, [participant, isMock]);
-
-  if (isMock) {
-    return (
-      <img
-        ref={ref}
-        src={participant.mockImage}
-        alt={participant.user_name}
-        style={{ width: '100%', height: '100%', objectFit, background: '#222', display: 'block' }}
-      />
-    );
-  }
-  return (
-    <video
-      autoPlay
-      playsInline
-      muted={participant.local}
-      ref={(el) => {
-        ref.current = el;
-        if (el && participant.tracks?.video?.persistentTrack) {
-          el.srcObject = new window.MediaStream([participant.tracks.video.persistentTrack]);
-          
-          // Force cover behavior to prevent letterboxing
-          const enforceVideoCover = () => {
-            if (el && el.parentElement) {
-              const container = el.parentElement;
-              const containerRect = container.getBoundingClientRect();
-              // eslint-disable-next-line no-unused-vars
-              const videoAspectRatio = el.videoWidth / el.videoHeight;
-              // eslint-disable-next-line no-unused-vars
-              const containerAspectRatio = containerRect.width / containerRect.height;
-              
-              // Always use cover to crop video instead of letterboxing
-              el.style.width = '100%';
-              el.style.height = '100%';
-              el.style.objectFit = 'cover';
-              el.style.objectPosition = 'center';
-              el.style.position = 'absolute';
-              el.style.top = '0';
-              el.style.left = '0';
-            }
-          };
-          
-          // Add ResizeObserver to dynamically enforce cover behavior
-          if (typeof ResizeObserver !== 'undefined') {
-            const resizeObserver = new ResizeObserver(entries => {
-              enforceVideoCover();
-            });
-            
-            const container = el.parentElement;
-            if (container) {
-              resizeObserver.observe(container);
-            }
-            
-            // Initial enforcement
-            setTimeout(enforceVideoCover, 100);
-            
-            return () => resizeObserver.disconnect();
-          }
-          
-          // Fallback enforcement
-          setTimeout(enforceVideoCover, 100);
-        }
-      }}
-      style={{ 
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%', 
-        height: '100%', 
-        objectFit: 'cover',
-        objectPosition: 'center',
-        background: '#000', 
-        display: 'block',
-        transform: 'scale(1)',
-        transformOrigin: 'center'
-      }}
-    />
-  );
-};
-
-// New: Mock tile as background image div
-const MockTileBackground = ({ image, userName }) => (
-  <div
-    style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      width: '100%',
-      height: '100%',
-      background: image ? `url(${image}) center center / cover no-repeat, #222` : '#222',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      boxSizing: 'border-box',
-      zIndex: 1,
-      backgroundSize: 'cover',
-    }}
-    aria-label={userName}
-  />
-);
 
 export default VideoGrid; 

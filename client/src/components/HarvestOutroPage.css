@@ -1,0 +1,203 @@
+/* Harvest Outro Page - Full Screen */
+.harvest-outro-container {
+  width: 100vw;
+  height: 100vh;
+  background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.outro-header {
+  text-align: center;
+  margin-bottom: 40px;
+  z-index: 10;
+}
+
+.hero-subtitle {
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #4A5A85;
+  text-align: center;
+  margin: 0 0 20px 0;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 2px;
+}
+
+.outro-subtitle {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #E17B43;
+  text-align: center;
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 1px;
+}
+
+.outro-graphic {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  z-index: 5;
+}
+
+.graphic-circle {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  border: 3px solid #4A5A85;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.circle-center {
+  text-align: center;
+  z-index: 10;
+}
+
+.center-text {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #4A5A85;
+  display: block;
+  max-width: 200px;
+  line-height: 1.4;
+}
+
+.circle-elements {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.circle-element {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.element-circle {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #E17B43;
+  border-radius: 50%;
+  background: #E17B43;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.element-text {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4A5A85;
+  text-align: center;
+  max-width: 120px;
+  line-height: 1.2;
+}
+
+/* Position elements around the circle */
+.element-1 {
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.element-2 {
+  top: 25%;
+  right: 10%;
+}
+
+.element-3 {
+  bottom: 25%;
+  right: 10%;
+}
+
+.element-4 {
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.element-5 {
+  bottom: 25%;
+  left: 10%;
+}
+
+.element-6 {
+  top: 25%;
+  left: 10%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .graphic-circle {
+    width: 400px;
+    height: 400px;
+  }
+  
+  .hero-subtitle {
+    font-size: 2rem;
+  }
+  
+  .outro-subtitle {
+    font-size: 1.2rem;
+  }
+  
+  .element-text {
+    font-size: 0.7rem;
+    max-width: 100px;
+  }
+  
+  .element-circle {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .graphic-circle {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.5rem;
+  }
+  
+  .outro-subtitle {
+    font-size: 1rem;
+  }
+  
+  .element-text {
+    font-size: 0.6rem;
+    max-width: 80px;
+  }
+  
+  .element-circle {
+    width: 40px;
+    height: 40px;
+  }
+} 

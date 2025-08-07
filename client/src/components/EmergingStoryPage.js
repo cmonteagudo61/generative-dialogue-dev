@@ -20,16 +20,16 @@ const EmergingStoryPage = ({
   }, [realParticipants]);
 
   const summaryContent = (
-    <div className="emergingstory-container">
-      <div className="emergingstory-header">
+    <div className="summary-container">
+      <div className="summary-header">
         <div className="header-titles">
-          <h1 className="emergingstory-title">AI WE Summary</h1>
-          <h2 className="emergingstory-subtitle">What is The Emerging Story Coming Out of THIS Dialogue?</h2>
+          <h1 className="summary-title">AI WE Summary</h1>
+          <h2 className="summary-subtitle">What is The Emerging Story Coming Out of THIS Dialogue?</h2>
         </div>
       </div>
       
-      <div className="emergingstory-content">
-        <div className="emergingstory-text">
+      <div className="summary-content">
+        <div className="summary-text">
           <p>
             Aliquam porta nisl dolor, molestie pellentesque elit molestie in. Morbi metus neque, elementum 
             ullamcorper hendrerit eget, tincidunt et nisl. Sed magna nunc, consequat vel aliquam vitae, porta ac 

@@ -1,14 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
+import FooterNavigation from './FooterNavigation';
 import './LandingPage.css';
-import './FooterNavigation.css'; // Import shared footer styles
-import {
-  directionBackwardOff,
-  directionBackwardOn,
-  directionBackwardHover,
-  directionForwardOff,
-  directionForwardOn,
-  directionForwardHover
-} from '../assets/icons';
 
 const LandingPage = ({ 
   onContinue, 
@@ -17,11 +9,20 @@ const LandingPage = ({
   canGoForward, 
   onBack, 
   onForward, 
-  currentPage 
+  currentPage,
+  isMuted,
+  isCameraOff,
+  isInCall,
+  onToggleMic,
+  onToggleCamera,
+  onToggleCall,
+  isLoopActive,
+  onToggleLoop,
+  vote,
+  voteState,
+  totalTime,
+  segmentTime
 }) => {
-  const [isBackHover, setIsBackHover] = useState(false);
-  const [isForwardHover, setIsForwardHover] = useState(false);
-
   return (
     <div className="landing-page-container">
       {/* Fixed Header */}
@@ -85,31 +86,25 @@ const LandingPage = ({
         </main>
       </div>
 
-      {/* Fixed Footer */}
-      <div className="footer-bar">
-        <div className="footer-left" /> {/* Empty placeholder for alignment */}
-        <div className="footer-center" /> {/* Empty placeholder for alignment */}
-        <div className="footer-right">
-            <button 
-              className={`control-button ${canGoBack ? 'active' : ''}`} 
-              onClick={onBack} 
-              disabled={!canGoBack}
-              onMouseEnter={() => setIsBackHover(true)}
-              onMouseLeave={() => setIsBackHover(false)}
-            >
-              <img src={canGoBack ? (isBackHover ? directionBackwardHover : directionBackwardOn) : directionBackwardOff} alt="Back" />
-            </button>
-            <button 
-              className={`control-button ${canGoForward ? 'active' : ''}`} 
-              onClick={onForward} 
-              disabled={!canGoForward}
-              onMouseEnter={() => setIsForwardHover(true)}
-              onMouseLeave={() => setIsForwardHover(false)}
-            >
-              <img src={canGoForward ? (isForwardHover ? directionForwardHover : directionForwardOn) : directionForwardOff} alt="Forward" />
-            </button>
-        </div>
-      </div>
+      {/* Unified Footer Navigation */}
+      <FooterNavigation 
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        onBack={onBack}
+        onForward={onForward}
+        isMuted={isMuted}
+        isCameraOff={isCameraOff}
+        isInCall={isInCall}
+        onToggleMic={onToggleMic}
+        onToggleCamera={onToggleCamera}
+        onToggleCall={onToggleCall}
+        isLoopActive={isLoopActive}
+        onToggleLoop={onToggleLoop}
+        vote={vote}
+        voteState={voteState}
+        totalTime={totalTime}
+        segmentTime={segmentTime}
+      />
     </div>
   );
 };

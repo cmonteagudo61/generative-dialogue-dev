@@ -20,16 +20,16 @@ const NewInsightsPage = ({
   }, [realParticipants]);
 
   const summaryContent = (
-    <div className="new-insights-container">
-      <div className="new-insights-header">
+    <div className="summary-container">
+      <div className="summary-header">
         <div className="header-titles">
-          <h1 className="new-insights-title">AI WE Summary</h1>
-          <h2 className="new-insights-subtitle">What New Insights?</h2>
+          <h1 className="summary-title">AI WE Summary</h1>
+          <h2 className="summary-subtitle">What New Insights?</h2>
         </div>
       </div>
       
-      <div className="new-insights-content">
-        <div className="new-insights-text">
+      <div className="summary-content">
+        <div className="summary-text">
           <p>
             Aliquam porta nisl dolor, molestie pellentesque elit molestie in. Morbi metus neque, elementum 
             ullamcorper hendrerit eget, tincidunt et nisl. Sed magna nunc, consequat vel aliquam vitae, porta ac 
