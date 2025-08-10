@@ -45,6 +45,7 @@ function AppContent() {
   const { realParticipants } = useVideo();
   const [currentPage, setCurrentPage] = useState('landing');
   const [voteState, setVoteState] = useState(null);
+  const [voteTallies, setVoteTallies] = useState({ up: 0, down: 0, total: 0 });
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [isInCall, setIsInCall] = useState(true);
@@ -300,7 +301,44 @@ function AppContent() {
     activeSize,
     onSizeChange: handleSizeChange,
     participantCount: realParticipants.length > 0 ? realParticipants.length : 1093,
+    voteTallies,
   };
+
+  // Backend vote persistence linked to footer buttons
+  useEffect(() => {
+    const API_BASE = 'http://localhost:5680';
+    // Identify session/breakout like the bottom area does
+    let sid = localStorage.getItem('gd_session_id');
+    if (!sid) {
+      sid = `dev-session-${Date.now()}`;
+      localStorage.setItem('gd_session_id', sid);
+    }
+    let bid = localStorage.getItem('gd_breakout_id');
+    if (!bid) {
+      bid = 'breakout-1';
+      localStorage.setItem('gd_breakout_id', bid);
+    }
+
+    const cast = async (dir) => {
+      try {
+        const res = await fetch(`${API_BASE}/api/session/${encodeURIComponent(sid)}/breakout/${encodeURIComponent(bid)}/vote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ vote: dir })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setVoteTallies(data.tallies || { up: 0, down: 0, total: 0 });
+        }
+      } catch (e) {
+        // no-op in dev
+      }
+    };
+
+    if (voteState === 'up' || voteState === 'down') {
+      cast(voteState);
+    }
+  }, [voteState]);
 
   let pageElement;
   switch (currentPage) {

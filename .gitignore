@@ -116,3 +116,7 @@ Temporary Items
 *.backup
 *.tmp
 *.temp 
+# backups
+stable-backup-*/
+*.tar.gz
+backups/**

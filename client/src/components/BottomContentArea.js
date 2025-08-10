@@ -1,11 +1,25 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import './BottomContentArea.css';
 
-const BottomContentArea = ({ currentPage }) => {
+const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
   const [activeTab, setActiveTab] = useState(null); // Start with no active tab
   const [isRecording, setIsRecording] = useState(false);
   const [transcriptionStatus, setTranscriptionStatus] = useState('Disconnected');
   const [finalTranscript, setFinalTranscript] = useState('');
+  const [aiProcessedTranscript, setAiProcessedTranscript] = useState('');
+  const [aiEnhancedText, setAiEnhancedText] = useState('');
+  const [aiSummaryText, setAiSummaryText] = useState('');
+  const [aiThemesText, setAiThemesText] = useState('');
+  const [aiServiceUsed, setAiServiceUsed] = useState('');
+  const [isProcessingAI, setIsProcessingAI] = useState(false);
+  const [isEditingAI, setIsEditingAI] = useState(false);
+  const [editedAiText, setEditedAiText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditingSummary, setIsEditingSummary] = useState(false);
+  const [isEditingThemes, setIsEditingThemes] = useState(false);
+  const [voteTallies, setVoteTallies] = useState({ up: 0, down: 0, total: 0 });
+  const [sessionId, setSessionId] = useState('');
+  const [breakoutId, setBreakoutId] = useState('');
 
   const [isConnecting, setIsConnecting] = useState(false);
   const [lastConnectionAttempt, setLastConnectionAttempt] = useState(0);
@@ -15,6 +29,7 @@ const BottomContentArea = ({ currentPage }) => {
   const streamRef = useRef(null);
   const connectionLockRef = useRef(false);
   const CONNECTION_DEBOUNCE_MS = 2000;
+  const API_BASE = 'http://localhost:5680';
   
   const stopRealTimeTranscription = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -24,7 +39,8 @@ const BottomContentArea = ({ currentPage }) => {
       streamRef.current.getTracks().forEach(track => track.stop());
     }
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.close();
+      try { wsRef.current.send(JSON.stringify({ type: 'stop' })); } catch (e) {}
+      try { wsRef.current.close(); } catch (e) {}
     }
     setIsRecording(false);
   }, []);
@@ -52,20 +68,34 @@ const BottomContentArea = ({ currentPage }) => {
         const newMediaRecorder = new MediaRecorder(stream);
         mediaRecorderRef.current = newMediaRecorder;
 
-        wsRef.current = new WebSocket('ws://localhost:8080/realtime');
+        wsRef.current = new WebSocket('ws://localhost:5680/realtime');
 
         wsRef.current.onopen = () => {
           console.log('🔌 WebSocket connection established.');
           setTranscriptionStatus('Connected');
+          
+          // Send start command to backend
+          console.log('🚀 Sending start command to backend...');
+          wsRef.current.send(JSON.stringify({ type: 'start' }));
+          setTranscriptionStatus('Recording');
+          
           if (mediaRecorderRef.current) {
             mediaRecorderRef.current.start(500);
           }
         };
 
         wsRef.current.onmessage = event => {
+          console.log('🔍 WebSocket message received:', event.data);
           const data = JSON.parse(event.data);
-          if (data.type === 'final') {
+          if (data.type === 'transcript' && data.isFinal) {
+            console.log('📝 Final transcript received:', data.transcript);
             setFinalTranscript(prev => `${prev}\n${data.transcript}`);
+          } else if (data.type === 'transcript' && !data.isFinal) {
+            console.log('📝 Interim transcript received:', data.transcript);
+          } else if (data.type === 'status') {
+            console.log('📊 Status message:', data.message);
+          } else if (data.type === 'error') {
+            console.error('❌ Error message:', data.message);
           }
         };
 
@@ -100,6 +130,7 @@ const BottomContentArea = ({ currentPage }) => {
   }, [isConnecting, lastConnectionAttempt, stopRealTimeTranscription]);
   
   const startRecording = () => {
+    console.log('🎤 Start recording clicked');
     startRealTimeTranscription();
   };
 
@@ -110,7 +141,119 @@ const BottomContentArea = ({ currentPage }) => {
   const clearTranscription = useCallback(() => {
     stopRealTimeTranscription();
     setFinalTranscript('');
+    setAiProcessedTranscript('');
+    setAiEnhancedText('');
+    setAiSummaryText('');
+    setAiThemesText('');
+    setEditedAiText('');
   }, [stopRealTimeTranscription]);
+
+  // Very small markdown-to-HTML renderer for basic formatting (headings, bold, lists)
+  const renderMarkdown = useCallback((text) => {
+    if (!text) return '';
+    // Escape HTML first
+    let safe = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    // Headings (support up to 6 levels)
+    safe = safe.replace(/^######\s+(.*)$/gm, '<h6>$1</h6>');
+    safe = safe.replace(/^#####\s+(.*)$/gm, '<h5>$1</h5>');
+    safe = safe.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+    safe = safe.replace(/^###\s+(.*)$/gm, '<h4>$1</h4>');
+    safe = safe.replace(/^##\s+(.*)$/gm, '<h3>$1</h3>');
+    safe = safe.replace(/^#\s+(.*)$/gm, '<h2>$1</h2>');
+    // Bold
+    safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Ordered lists (basic 1., 2., ...)
+    safe = safe.replace(/^\s*\d+\.\s+(.*)$/gm, '<li>$1</li>');
+    // Lists (basic)
+    safe = safe.replace(/^\s*[-*]\s+(.*)$/gm, '<li>$1</li>');
+    // Wrap any consecutive <li> blocks with <ul> (supports single or multiple items)
+    safe = safe.replace(/(?:^|\n)((?:<li>.*?<\/li>)(?:\n<li>.*?<\/li>)*)/gs, (match, group) => {
+      if (!group || group.trim().length === 0) return match;
+      return `\n<ul>${group}</ul>`;
+    });
+    // Paragraphs: split on double newlines
+    const blocks = safe.split(/\n\n+/).map(block => {
+      // If already a heading or list, don't wrap in <p>
+      if (/^<h[2-4]>/.test(block) || /^<ul>/.test(block)) return block;
+      // Convert single newlines to <br>
+      const withBreaks = block.replace(/\n/g, '<br/>');
+      return `<p>${withBreaks}</p>`;
+    });
+    return blocks.join('');
+  }, []);
+
+  // Rich HTML renderers
+  const enhancedHtml = useMemo(() => renderMarkdown(aiEnhancedText), [aiEnhancedText, renderMarkdown]);
+  // Make sure lists and emphasis render properly
+  const summaryHtml = useMemo(() => renderMarkdown(aiSummaryText), [aiSummaryText, renderMarkdown]);
+  const themesHtml = useMemo(() => renderMarkdown(aiThemesText), [aiThemesText, renderMarkdown]);
+
+  // Show only the last 3 lines from the live transcript for compact display
+  const lastThreeLines = useMemo(() => {
+    if (!finalTranscript) return '';
+    const lines = finalTranscript.split(/\n+/);
+    const last3 = lines.slice(-3);
+    return last3.join('\n');
+  }, [finalTranscript]);
+
+  const processTranscriptWithAI = useCallback(async (transcript) => {
+    if (!transcript || transcript.trim() === '') {
+      console.log('No transcript to process');
+      return;
+    }
+
+    setIsProcessingAI(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/ai/format`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ transcript }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setAiProcessedTranscript(result.formatted);
+        setAiEnhancedText(result.enhancedText || '');
+        setAiSummaryText(result.summaryText || '');
+        setAiThemesText(result.themesText || '');
+        setAiServiceUsed(result.service || '');
+        if (!editedAiText) setEditedAiText(result.enhancedText || '');
+        console.log('AI processing successful:', result);
+      } else {
+        console.error('AI processing failed:', response.status);
+        setAiProcessedTranscript('AI processing failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error processing transcript with AI:', error);
+      setAiProcessedTranscript('Error connecting to AI service.');
+    } finally {
+      setIsProcessingAI(false);
+    }
+  }, []);
+
+  // Auto-process transcript with AI when it changes
+  useEffect(() => {
+    if (finalTranscript && finalTranscript.trim() !== '') {
+      // Debounce AI processing to avoid too many requests
+      const timeoutId = setTimeout(() => {
+        processTranscriptWithAI(finalTranscript);
+      }, 2000); // Wait 2 seconds after transcript stops changing
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [finalTranscript, processTranscriptWithAI]);
+
+  // Auto-generate WE when switching to WE tab or after submission
+  useEffect(() => {
+    if (activeTab === 'we') {
+      generateWE();
+    }
+  }, [activeTab]);
 
   const switchTab = (tabName) => {
     // Don't allow tab switching on orientation page
@@ -176,6 +319,74 @@ const BottomContentArea = ({ currentPage }) => {
     }
   }, [currentPage]);
 
+  // Initialize session and breakout identifiers (simple, local-first)
+  useEffect(() => {
+    let sid = localStorage.getItem('gd_session_id');
+    if (!sid) {
+      sid = `dev-session-${Date.now()}`;
+      localStorage.setItem('gd_session_id', sid);
+    }
+    setSessionId(sid);
+    // Basic breakout id; can be replaced by real routing context later
+    let bid = localStorage.getItem('gd_breakout_id');
+    if (!bid) {
+      bid = 'breakout-1';
+      localStorage.setItem('gd_breakout_id', bid);
+    }
+    setBreakoutId(bid);
+  }, []);
+
+  // Reflect external vote tallies from footer when provided
+  useEffect(() => {
+    if (externalTallies && typeof externalTallies.total === 'number') {
+      setVoteTallies(externalTallies);
+    }
+  }, [externalTallies]);
+
+  // Removed explicit reprocess button; reprocessing happens automatically when needed
+
+  const submitEditsToGroup = async () => {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/session/${encodeURIComponent(sessionId)}/breakout/${encodeURIComponent(breakoutId)}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: finalTranscript || null,
+          enhancedText: aiEnhancedText || null,
+          summaryText: aiSummaryText || null,
+          themesText: aiThemesText || null,
+          quotes: []
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        console.log('Submitted to group:', data);
+      } else {
+        console.error('Submit failed with status', res.status);
+      }
+    } catch (err) {
+      console.error('Submit error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Voting handled in footer; tally still shown when available
+
+  const [weMeta, setWeMeta] = useState(null);
+  const generateWE = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/session/${encodeURIComponent(sessionId)}/aggregate`);
+      if (res.ok) {
+        const data = await res.json();
+        setWeMeta(data.meta || null);
+      }
+    } catch (err) {
+      console.error('WE aggregate error:', err);
+    }
+  };
+
   return (
     <div className="bottom-content-area">
       <div className="tab-area">
@@ -211,61 +422,158 @@ const BottomContentArea = ({ currentPage }) => {
             </div>
           </div>
           
-          <div className="tab-controls-right">
-            <button 
-              className="transcription-control-btn primary"
-              onClick={startRecording}
-              disabled={isConnected}
-              title="Start live transcription with AI processing"
-            >
-              <span className="btn-icon" style={{ color: 'initial' }}>🎤</span>
-              <span className="btn-text">Start</span>
-            </button>
-
-            <button 
-              className="transcription-control-btn"
-              onClick={clearTranscription}
-              title="Clear all transcription data and AI summaries"
-            >
-              <span className="btn-icon" style={{ color: 'initial' }}>🗑️</span>
-              <span className="btn-text">Clear</span>
-            </button>
-            
-            <button 
-              className="transcription-control-btn danger"
-              onClick={stopRecording}
-              disabled={!isConnected}
-              title="Disconnect from live transcription"
-            >
-              <span className="btn-icon" style={{ color: 'initial' }}>🚫</span>
-              <span className="btn-text">Disconnect</span>
-            </button>
-          </div>
+          <div className="tab-controls-right" />
         </div>
         
         <div className="tab-content">
           {activeTab === 'catalyst' && (
             <div style={{ padding: '1rem', color: 'black' }}>
-              <h3>Catalyst</h3>
+              <h3 className="tab-section-title">Catalyst</h3>
               <p>Instructions and activities to help catalyze an effective dialogue.</p>
             </div>
           )}
           {activeTab === 'dialogue' && (
-            <div style={{ padding: '1rem', color: 'black', whiteSpace: 'pre-wrap' }}>
-                {finalTranscript}
+            <div className="dialogue-content">
+              <div className="dialogue-section">
+                <h4 className="tab-section-title">
+                  Live Stream {isConnected ? <span className="status-dot on" /> : <span className="status-dot off" />}<span style={{fontWeight:500,color:'#3E4C71'}}>{isConnected ? 'LIVE' : 'OFF'}</span>
+                  <span className="inline-controls">
+                    <button className="inline-btn" onClick={isConnected ? stopRecording : startRecording} title={isConnected ? 'Stop' : 'Start'}>
+                      {isConnected ? 'Stop' : 'Start'}
+                    </button>
+                    <button className="inline-btn" onClick={clearTranscription} title="Clear (dev only)">Clear</button>
+                  </span>
+                </h4>
+                <div className="ai-hint">Transcribed by Deepgram</div>
+                <div className="live-transcript">
+                  {lastThreeLines || 'No live transcription yet. Click "Start" to begin.'}
+                </div>
+              </div>
+              
+              <div className="dialogue-section">
+                <h4 className="tab-section-title">
+                  AI Processed Transcript
+                  <span className="inline-controls">
+                    <button className="inline-btn" onClick={() => { setEditedAiText(aiEnhancedText); setIsEditingAI(true); }}>Optional Edit</button>
+                  </span>
+                </h4>
+                <div className="ai-hint">Enhanced by {aiServiceUsed ? aiServiceUsed.charAt(0).toUpperCase() + aiServiceUsed.slice(1) : 'AI Service'}</div>
+                <div className="ai-transcript">
+                  {isProcessingAI ? (
+                    <p>🔄 Processing transcript with AI...</p>
+                  ) : (
+                    <>
+                      {isEditingAI ? (
+                        <div>
+                          <textarea
+                            style={{ width: '100%', minHeight: '120px' }}
+                            value={editedAiText}
+                            onChange={(e) => setEditedAiText(e.target.value)}
+                          />
+                          <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+                            <button className="transcription-control-btn primary" onClick={() => { setAiEnhancedText(editedAiText); setIsEditingAI(false); }}>Save</button>
+                            <button className="transcription-control-btn" onClick={() => setIsEditingAI(false)}>Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div dangerouslySetInnerHTML={{ __html: enhancedHtml }} />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           )}
           {activeTab === 'summary' && (
-            <div style={{ padding: '1rem', color: 'black' }}>
-              <h3>Summary</h3>
-              <p>AI-generated insights and voting results will appear here.</p>
+            <div style={{ padding: '1rem', color: 'black', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <h4 className="tab-section-title">
+                  Highlights (Concise)
+                  <span className="inline-controls">
+                    {isEditingSummary ? (
+                      <>
+                        <button className="inline-btn" onClick={() => setIsEditingSummary(false)}>Done</button>
+                      </>
+                    ) : (
+                      <button className="inline-btn" onClick={() => setIsEditingSummary(true)}>Edit</button>
+                    )}
+                  </span>
+                </h4>
+                <div className="ai-hint">Generated by Grok (xAI)</div>
+                {isEditingSummary ? (
+                  <textarea
+                    style={{ width: '100%', minHeight: '120px', fontFamily: 'inherit', border: '1px solid #e9ecef', borderRadius: 6, padding: 8 }}
+                    value={aiSummaryText}
+                    onChange={(e) => setAiSummaryText(e.target.value)}
+                  />
+                ) : (
+                  <div className="ai-transcript" style={{ marginTop: '6px' }}>
+                    <div dangerouslySetInnerHTML={{ __html: summaryHtml }} />
+                  </div>
+                )}
+              </div>
+              <div>
+                <h4 className="tab-section-title">
+                  Top Themes
+                  <span className="inline-controls">
+                    {isEditingThemes ? (
+                      <button className="inline-btn" onClick={() => setIsEditingThemes(false)}>Done</button>
+                    ) : (
+                      <button className="inline-btn" onClick={() => setIsEditingThemes(true)}>Edit</button>
+                    )}
+                  </span>
+                </h4>
+                <div className="ai-hint">Extracted by Grok (xAI)</div>
+                {isEditingThemes ? (
+                  <textarea
+                    style={{ width: '100%', minHeight: '140px', fontFamily: 'inherit', border: '1px solid #e9ecef', borderRadius: 6, padding: 8 }}
+                    value={aiThemesText}
+                    onChange={(e) => setAiThemesText(e.target.value)}
+                  />
+                ) : (
+                  <div className="ai-transcript" style={{ marginTop: '6px' }}>
+                    <div dangerouslySetInnerHTML={{ __html: themesHtml }} />
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <button className="transcription-control-btn primary" onClick={submitEditsToGroup} disabled={isSubmitting}>{isSubmitting ? 'Submitting…' : 'Submit to Group'}</button>
+                <span style={{ color: '#3E4C71' }}>Cast your vote in the footer</span>
+                <span className="transcription-status" style={{ background: 'transparent', color: '#3E4C71', minWidth: 180 }}>
+                  {`Votes: +${voteTallies.up} / -${voteTallies.down} (Total: ${voteTallies.total})`}
+                </span>
+              </div>
             </div>
           )}
           {activeTab === 'we' && (
-            <div style={{ padding: '1rem', color: 'black' }}>
-              <h3>Collective Wisdom</h3>
-              <p>This is the final gathering and send-off before individual reflection.</p>
-              <p>Share your collective insights and prepare for the next phase of the dialogue.</p>
+            <div style={{ padding: '1rem', color: 'black', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {weMeta && (
+                <div className="we-panel" style={{ background: 'white' }}>
+                  <h4 className="tab-section-title">Meta Narrative</h4>
+                  <div className="ai-hint">Aggregated server‑side; narrative derived from Grok (xAI)</div>
+                  <div dangerouslySetInnerHTML={{ __html: renderMarkdown(weMeta.narrative || '') }} />
+                  <h4 className="tab-section-title" style={{ marginTop: '12px' }}>Meta Themes</h4>
+                  <div className="ai-hint">Aggregated server‑side; themes derived from Grok (xAI)</div>
+                  <div dangerouslySetInnerHTML={{ __html: renderMarkdown(weMeta.themesText || '') }} />
+                  {Array.isArray(weMeta.quotes) && weMeta.quotes.length > 0 && (
+                    <div style={{ marginTop: '12px' }}>
+                      <h4 className="tab-section-title">Voices from the Field</h4>
+                      <ul>
+                        {weMeta.quotes.map((q, idx) => (
+                          <li key={idx}>{q}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {weMeta.votes && (
+                    <div style={{ marginTop: '12px', color: '#3E4C71' }}>
+                      {`Votes Tally: +${weMeta.votes.up} / -${weMeta.votes.down} (Total: ${weMeta.votes.total})`}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

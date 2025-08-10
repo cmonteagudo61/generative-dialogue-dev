@@ -56,6 +56,13 @@
   width: 100%;
   min-width: 100%;
   max-width: 100%;
+  padding: 3px 0 0 0; /* uniform top spacing between viewing area and tabs */
+}
+
+@media (min-width: 1101px) {
+  .tab-area {
+    padding-top: 4px; /* add 1px more space on wider browsers */
+  }
 }
 
 /* Create a pseudo-element for the blue pinstripe that goes all the way across */
@@ -197,6 +204,163 @@
 .dialogue-section ul,
 .dialogue-section strong {
   text-align: left !important;
+}
+
+/* New dialogue content styles */
+.dialogue-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 1rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Use the same panel styling across Dialogue, Summary, and WE */
+/* Clean, no-fuss look (like Catalyst) for Dialogue */
+.dialogue-section {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+/* Keep simple white panels for Summary and WE */
+.summary-card,
+.we-panel {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.dialogue-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 21px; /* +1 for better readability */
+  font-weight: 600;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* match Catalyst title typography */
+  letter-spacing: 0.5px;
+  color: #3E4C71; /* default blue */
+  border: none;
+  padding-bottom: 0;
+}
+
+/* Unified section title style for all bottom content areas */
+.tab-section-title {
+  margin: 0 0 10px 0;
+  font-size: 21px;
+  font-weight: 600;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 0.5px;
+  color: #3E4C71;
+}
+
+/* Subtle AI model attribution under titles */
+.ai-hint {
+  margin: -6px 0 8px 0;
+  color: #6c757d;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Live indicator dot */
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.08) inset;
+}
+.status-dot.on { background-color: #2e7d32; }
+.status-dot.off { background-color: #b00020; }
+
+/* Inline controls inside section headers */
+.inline-controls {
+  float: right;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.inline-btn {
+  padding: 4px 10px;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #3E4C71;
+  color: #fff;
+  border-radius: 4px;
+}
+
+.inline-btn:hover { background-color: #334060; }
+
+.live-transcript {
+  height: calc(3.6em + 10px); /* show third line more comfortably */
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 8px;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.2em;
+  color: #1e1e1e;
+  white-space: pre-wrap;
+}
+
+.ai-transcript {
+  min-height: 100px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: transparent !important;
+  border: none !important; /* remove black/pinstripes */
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #1e1e1e;
+  white-space: normal;
+}
+
+/* Basic markdown styles inside AI transcript */
+.ai-transcript h3,
+.ai-transcript h4 {
+  margin: 8px 0 6px 0;
+  font-weight: 600;
+  color: #3E4C71;
+}
+
+.ai-transcript strong {
+  font-weight: 600;
+  color: #000;
+}
+
+.ai-transcript em {
+  font-style: italic;
+}
+
+.ai-transcript u {
+  text-decoration: underline;
+}
+
+.ai-transcript p {
+  margin: 6px 0;
+}
+
+.ai-transcript ul {
+  margin: 6px 0 6px 18px;
+}
+
+.ai-transcript li {
+  margin: 2px 0;
 }
 
 .dialogue-title {
@@ -537,7 +701,7 @@
 @media (max-width: 1100px) {
   .tab-area {
     margin: 0; /* Remove all margins */
-    padding: 2px 0 0 0; /* Only keep top padding for pinstripe */
+    padding: 3px 0 0 0; /* Uniform top spacing across sizes */
     width: 100%; /* Use full width */
     min-width: 100%; /* Ensure minimum width is full */
     max-width: 100%; /* Ensure maximum width is full */
@@ -696,14 +860,14 @@
 @media (max-width: 800px) {
   .transcription-control-btn,
   .transcription-status {
-    width: 44px !important; /* Square mini buttons */
-    height: 44px !important;
-    padding: 8px !important;
-    margin: 1px 0 !important; /* Consistent minimal spacing */
-    font-size: 12px !important;
-    flex-shrink: 0 !important; /* Prevent shrinking */
-    background-color: #3E4C71 !important; /* Restore original color */
-    color: #fff !important; /* White text */
+    width: clamp(150px, 20vw, 200px) !important;
+    height: 36px !important;
+    padding: 6px 12px !important;
+    margin: 2px 0 !important;
+    font-size: 14px !important;
+    flex-shrink: 0 !important;
+    background-color: #3E4C71 !important;
+    color: #fff !important;
   }
 }
 
@@ -716,18 +880,23 @@
   }
   
   .transcription-control-btn {
-    width: 32px !important;
-    height: 32px !important;
-    padding: 0 !important;
-    margin-bottom: 1px !important; /* Lift buttons off pinstripe */
+    width: clamp(150px, 20vw, 200px) !important;
+    height: 36px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 1px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
   }
 
-  .transcription-control-btn .btn-text,
-  .transcription-status .status-text {
-    display: none;
+  .transcription-status {
+    width: clamp(150px, 20vw, 200px) !important;
+    height: 36px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 1px !important; /* Lift buttons off pinstripe */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .transcription-status {

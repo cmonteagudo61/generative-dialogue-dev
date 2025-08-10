@@ -76,17 +76,210 @@ app.get('/health', (req, res) => {
 // AI Processing Endpoints
 app.post('/api/ai/format', async (req, res) => {
   try {
-    const { transcript } = req.body;
+    const { transcript, options } = req.body;
     if (!transcript) {
       return res.status(400).json({ error: 'Transcript required' });
     }
-    
-    console.log('🔄 Processing transcript formatting with Grok...');
-    const result = await grokAPI.formatTranscript(transcript);
-    res.json({ formatted: result, service: 'grok' });
+
+    // Prefer the enhanced transcript service (Claude/OpenAI) for real value add
+    let enhancedText = null;
+    let enhancementMeta = null;
+    try {
+      console.log('🔄 Enhancing transcript with AI enhancer...');
+      const enhanced = await enhancer.enhanceTranscript(transcript, options || {});
+      if (enhanced?.success) {
+        enhancedText = enhanced.enhanced;
+        enhancementMeta = {
+          service: enhanced.service?.toLowerCase() || 'enhancer',
+          improvements: enhanced.improvements,
+          timestamp: enhanced.timestamp
+        };
+      } else {
+        console.warn('⚠️ Enhancer returned unsuccessful result');
+      }
+    } catch (enhanceErr) {
+      console.warn('⚠️ Enhancer failed:', enhanceErr?.message);
+    }
+
+    // In parallel, compute optional value-add: summary and themes (best-effort)
+    let summaryText = null;
+    let themesText = null;
+    try {
+      const shouldDoExtras = (transcript?.length || 0) > 80;
+      if (shouldDoExtras) {
+        console.log('🧠 Generating value-add: summary and themes...');
+        const [summaryRes, themesRes] = await Promise.allSettled([
+          grokAPI.summarizeText(transcript),
+          grokAPI.extractThemes(transcript)
+        ]);
+        if (summaryRes.status === 'fulfilled') summaryText = summaryRes.value;
+        if (themesRes.status === 'fulfilled') themesText = themesRes.value;
+      }
+    } catch (extrasErr) {
+      console.warn('⚠️ Extras generation failed:', extrasErr?.message);
+    }
+
+    // If no enhanced text yet, fallback to Grok formatter
+    if (!enhancedText) {
+      console.log('🔄 Using Grok formatter as base text...');
+      try {
+        enhancedText = await grokAPI.formatTranscript(transcript);
+        enhancementMeta = { service: 'grok' };
+      } catch (fallbackErr) {
+        console.error('❌ Grok formatter failed:', fallbackErr?.message);
+        // Last resort: return original transcript wrapped minimally
+        enhancedText = transcript;
+        enhancementMeta = { service: 'raw' };
+      }
+    }
+
+    // Compose a single formatted payload with clear value-add sections
+    const sections = [];
+    sections.push('Cleaned Transcript:\n' + enhancedText.trim());
+    if (summaryText) {
+      sections.push('Highlights (Concise):\n\n' + summaryText.trim());
+    }
+    if (themesText) {
+      sections.push('Top Themes (Auto-Extracted):\n\n' + themesText.trim());
+    }
+    const combined = sections.join('\n\n');
+
+    return res.json({
+      formatted: combined,
+      enhancedText: enhancedText || transcript,
+      summaryText: summaryText || null,
+      themesText: themesText || null,
+      ...enhancementMeta
+    });
   } catch (error) {
     console.error('❌ Format error:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ----- Simple in-memory session store for submissions and votes -----
+const sessionStore = {
+  // [sessionId]: {
+  //   breakouts: {
+  //     [breakoutId]: {
+  //       submissions: [ { text, enhancedText, summaryText, themesText, quotes, timestamp } ],
+  //       votes: [ { participantId, vote, timestamp } ]
+  //     }
+  //   }
+  // }
+};
+
+function getBreakoutBucket(sessionId, breakoutId) {
+  if (!sessionStore[sessionId]) sessionStore[sessionId] = { breakouts: {} };
+  if (!sessionStore[sessionId].breakouts[breakoutId]) {
+    sessionStore[sessionId].breakouts[breakoutId] = { submissions: [], votes: [] };
+  }
+  return sessionStore[sessionId].breakouts[breakoutId];
+}
+
+// Submit edited/approved content for a breakout
+app.post('/api/session/:sessionId/breakout/:breakoutId/submit', (req, res) => {
+  try {
+    const { sessionId, breakoutId } = req.params;
+    const { text, enhancedText, summaryText, themesText, quotes } = req.body || {};
+    if (!text && !enhancedText && !summaryText && !themesText) {
+      return res.status(400).json({ error: 'At least one of text/enhancedText/summaryText/themesText is required' });
+    }
+    const bucket = getBreakoutBucket(sessionId, breakoutId);
+    bucket.submissions.push({
+      text: text || null,
+      enhancedText: enhancedText || null,
+      summaryText: summaryText || null,
+      themesText: themesText || null,
+      quotes: Array.isArray(quotes) ? quotes : [],
+      timestamp: Date.now()
+    });
+    return res.json({ ok: true, submissions: bucket.submissions.length });
+  } catch (err) {
+    console.error('❌ Submit error:', err);
+    res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+// Record a vote on a breakout summary (up/down)
+app.post('/api/session/:sessionId/breakout/:breakoutId/vote', (req, res) => {
+  try {
+    const { sessionId, breakoutId } = req.params;
+    const { participantId, vote } = req.body || {};
+    if (!vote || !['up', 'down'].includes(vote)) {
+      return res.status(400).json({ error: 'Vote must be "up" or "down"' });
+    }
+    const bucket = getBreakoutBucket(sessionId, breakoutId);
+    bucket.votes.push({ participantId: participantId || null, vote, timestamp: Date.now() });
+    const up = bucket.votes.filter(v => v.vote === 'up').length;
+    const down = bucket.votes.filter(v => v.vote === 'down').length;
+    return res.json({ ok: true, tallies: { up, down, total: up + down } });
+  } catch (err) {
+    console.error('❌ Vote error:', err);
+    res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+// Aggregate across all breakouts in a session to produce WE meta view
+app.get('/api/session/:sessionId/aggregate', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const session = sessionStore[sessionId];
+    if (!session) {
+      return res.json({
+        sessionId,
+        meta: { narrative: '', themesText: '', quotes: [], votes: { up: 0, down: 0, total: 0 } }
+      });
+    }
+    const allBreakouts = Object.values(session.breakouts || {});
+    const allTexts = [];
+    const allVotes = { up: 0, down: 0 };
+    const allQuotes = [];
+    for (const b of allBreakouts) {
+      for (const s of b.submissions) {
+        if (s.enhancedText) allTexts.push(s.enhancedText);
+        else if (s.text) allTexts.push(s.text);
+        if (Array.isArray(s.quotes)) allQuotes.push(...s.quotes);
+      }
+      for (const v of b.votes) {
+        if (v.vote === 'up') allVotes.up += 1; else if (v.vote === 'down') allVotes.down += 1;
+      }
+    }
+    const combinedText = allTexts.join('\n\n');
+    let metaNarrative = '';
+    let metaThemesText = '';
+    if (combinedText.trim().length > 0) {
+      try {
+        // Reuse the formatter to produce a meta narrative and themes
+        const resp = await fetch(`http://localhost:${process.env.PORT || 5680}/api/ai/format`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcript: combinedText })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          metaNarrative = data.enhancedText || '';
+          metaThemesText = data.themesText || '';
+        }
+      } catch (err) {
+        console.warn('⚠️ Meta aggregation format failed:', err?.message);
+      }
+    }
+    const total = allVotes.up + allVotes.down;
+    // Limit quotes to top 10 most recent for now
+    const quotes = allQuotes.slice(-10);
+    return res.json({
+      sessionId,
+      meta: {
+        narrative: metaNarrative,
+        themesText: metaThemesText,
+        quotes,
+        votes: { up: allVotes.up, down: allVotes.down, total }
+      }
+    });
+  } catch (err) {
+    console.error('❌ Aggregate error:', err);
+    res.status(500).json({ error: 'Internal error' });
   }
 });
 
@@ -356,6 +549,7 @@ app.ws('/realtime', (ws, req) => {
   let retryCount = 0;
   const maxRetries = 5;
   const baseRetryDelay = 1000; // 1 second
+  let shouldReconnect = true; // prevent reconnection after explicit stop/close
 
   // Connect to Deepgram WebSocket
   const connectToDeepgram = () => {
@@ -468,7 +662,7 @@ app.ws('/realtime', (ws, req) => {
       }));
 
       // Implement reconnection logic with exponential backoff
-      if (retryCount < maxRetries) {
+      if (shouldReconnect && ws.readyState === ws.OPEN && retryCount < maxRetries) {
         retryCount++;
         const delay = Math.pow(2, retryCount) * baseRetryDelay + Math.random() * 1000;
         console.log(`🔌 Attempting to reconnect to Deepgram in ${delay.toFixed(0)}ms (attempt ${retryCount}/${maxRetries})...`);
@@ -518,13 +712,16 @@ app.ws('/realtime', (ws, req) => {
         if (data.type === 'start') {
           connectToDeepgram();
         } else if (data.type === 'stop') {
-          if (deepgramWs && isConnected) {
-            deepgramWs.close();
+          shouldReconnect = false;
+          if (deepgramWs) {
+            try { deepgramWs.close(); } catch (e) {}
           }
           if (keepAliveInterval) {
             clearInterval(keepAliveInterval);
             keepAliveInterval = null;
           }
+          isConnected = false;
+          ws.send(JSON.stringify({ type: 'status', message: 'Stopped by client', connected: false }));
         } else if (data.type === 'ping') {
           ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
         }
@@ -547,8 +744,9 @@ app.ws('/realtime', (ws, req) => {
   
   ws.on('close', () => {
     console.log('🔌 Client WebSocket disconnected');
+    shouldReconnect = false;
     if (deepgramWs) {
-      deepgramWs.close();
+      try { deepgramWs.close(); } catch (e) {}
     }
     if (keepAliveInterval) {
       clearInterval(keepAliveInterval);

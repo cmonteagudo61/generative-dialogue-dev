@@ -344,12 +344,12 @@ const MagnifierContent = React.memo(({
                 return (
                   <div style={{
                     position: 'absolute',
-                    bottom: '4px',
-                    left: '4px',
+                    bottom: '2px', /* reduced by ~50% */
+                    left: '2px',  /* reduced by ~50% */
                     background: 'rgba(0,0,0,0.7)',
                     color: 'white',
                     padding: '1px 2.5px',
-                    borderRadius: '2px',
+                    borderRadius: '0px',
                     fontSize: '6px',
                     zIndex: 10,
                     whiteSpace: 'nowrap'

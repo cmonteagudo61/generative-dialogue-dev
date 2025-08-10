@@ -34,11 +34,11 @@ const DiscoverCollectiveWisdomPageInner = ({
   totalPages,
   developmentMode,
   activeSize, // Add this prop for left navigation
-  onSizeChange // Add this prop for left navigation
+  onSizeChange, // Add this prop for left navigation
+  isLoopActive = false
 }) => {
   // Use activeSize from props instead of internal state
   const [selectedParticipants, setSelectedParticipants] = useState([]);
-  const [isLoopActive, setIsLoopActive] = useState(false);
   const { participants, realParticipants, error } = useVideo();
   const layout = getLayoutFromView(activeSize); // Use activeSize from props
   const participantCount = useMemo(() => realParticipants.length, [realParticipants]);
@@ -52,11 +52,7 @@ const DiscoverCollectiveWisdomPageInner = ({
     );
   };
 
-  const handleLoopToggle = (isActive) => {
-    console.log('🔄 Loop toggle called:', { isActive, currentState: isLoopActive });
-    setIsLoopActive(isActive);
-    console.log('✅ Loop state updated to:', isActive);
-  };
+  // Loop controlled globally
 
   return (
     <>

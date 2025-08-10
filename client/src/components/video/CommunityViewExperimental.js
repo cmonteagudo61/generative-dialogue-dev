@@ -688,12 +688,12 @@ const CommunityViewExperimental = React.memo(({
           color: white;
           z-index: 99999;
           position: absolute;
-          bottom: 5px;
-          left: 5px;
+          bottom: 2.5px; /* reduced spacing to bottom by 50% */
+          left: 2.5px;  /* reduced spacing to left by 50% */
           padding: 4px 8px;
           font-size: 12px;
           font-weight: bold;
-          border-radius: 0px;
+          border-radius: 0px; /* square corners */
           border: 1px solid #333;
           pointer-events: none;
           transition: opacity 0.2s ease, visibility 0.2s ease;

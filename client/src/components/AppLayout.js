@@ -71,6 +71,7 @@ const AppLayout = ({
   isLoopActive,
   vote,
   voteState,
+  voteTallies,
   totalTime,
   segmentTime,
   onNavigate
@@ -185,6 +186,7 @@ const AppLayout = ({
             isKivaSummaryReview={isKivaSummaryReview}
             isDiscoverCollectiveWisdom={isDiscoverCollectiveWisdom}
             isHarvestClosing={isHarvestClosing}
+            voteTallies={voteTallies}
           />
         )}
       </div>
