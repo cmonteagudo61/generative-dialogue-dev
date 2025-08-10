@@ -1,0 +1,596 @@
+.App {
+  text-align: center;
+  width: 100%; /* Changed from 100vw to prevent horizontal overflow */
+  min-height: 100vh; /* Allow app to expand beyond viewport */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Ensure padding is included in width calculation */
+}
+
+/* Global fixes for AI Summary pages */
+.ai-summary-container {
+  text-align: left !important;
+  width: 100vw;
+  height: 100vh;
+  background: #f5f5f5;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+/* Global fixes for Harvest stage pages to ensure left-justified text */
+.summary-container,
+.we-summary-container,
+.new-insights-container,
+.questions-container,
+.talkabout-container,
+.cantalk-container,
+.emergingstory-container,
+.ourstory-container,
+.buildingcommunity-container {
+  text-align: left !important;
+}
+
+.summary-container *,
+.we-summary-container *,
+.new-insights-container *,
+.questions-container *,
+.talkabout-container *,
+.cantalk-container *,
+.emergingstory-container *,
+.ourstory-container *,
+.buildingcommunity-container * {
+  text-align: left !important;
+}
+
+/* Model formatting for Harvest stage pages - matching AI Summary pages exactly */
+.summary-container,
+.we-summary-container,
+.new-insights-container,
+.questions-container,
+.talkabout-container,
+.cantalk-container,
+.emergingstory-container,
+.ourstory-container,
+.buildingcommunity-container {
+  width: 100%;
+  min-height: 100%;
+  background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-y: auto;
+  box-sizing: border-box;
+  text-align: left !important;
+}
+
+/* Header styling for Harvest pages */
+.summary-header,
+.we-summary-header,
+.new-insights-header,
+.questions-header,
+.talkabout-header,
+.cantalk-header,
+.emergingstory-header,
+.ourstory-header,
+.buildingcommunity-header {
+  margin-bottom: 20px;
+  background: #f8f8f8;
+  padding: 15px;
+  border-radius: 0;
+}
+
+.summary-title,
+.we-summary-title,
+.new-insights-title,
+.questions-title,
+.talkabout-title,
+.cantalk-title,
+.emergingstory-title,
+.ourstory-title,
+.buildingcommunity-title {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #4A5A85 !important;
+  text-align: left !important;
+  margin: 0 0 10px 0 !important;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  letter-spacing: 0.5px !important;
+}
+
+.summary-subtitle,
+.we-summary-subtitle,
+.new-insights-subtitle,
+.questions-subtitle,
+.talkabout-subtitle,
+.cantalk-subtitle,
+.emergingstory-subtitle,
+.ourstory-subtitle,
+.buildingcommunity-subtitle {
+  font-size: 1.2rem !important;
+  font-weight: 400 !important;
+  color: #E17B43 !important;
+  text-align: left !important;
+  margin: 0 0 1px 0 !important;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Content container styling - match model exactly */
+.summary-content,
+.we-summary-content,
+.new-insights-content,
+.questions-content,
+.talkabout-content,
+.cantalk-content,
+.emergingstory-content,
+.ourstory-content,
+.buildingcommunity-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: none;
+  min-height: 400px;
+  padding-bottom: 50px;
+  background: #f5f5f5 !important;
+  flex: 1;
+}
+
+/* Top section styling - match model exactly */
+.summary-text,
+.we-summary-text,
+.new-insights-text,
+.questions-text,
+.talkabout-text,
+.cantalk-text,
+.emergingstory-text,
+.ourstory-text,
+.buildingcommunity-text {
+  background: #f8f8f8;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  min-height: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+}
+
+/* Remove paragraph margins to match template */
+.summary-text p,
+.we-summary-text p,
+.new-insights-text p,
+.questions-text p,
+.talkabout-text p,
+.cantalk-text p,
+.emergingstory-text p,
+.ourstory-text p,
+.buildingcommunity-text p {
+  margin: 0 !important;
+}
+
+.summary-text p,
+.we-summary-text p,
+.new-insights-text p,
+.questions-text p,
+.talkabout-text p,
+.cantalk-text p,
+.emergingstory-text p,
+.ourstory-text p,
+.buildingcommunity-text p {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  color: #333;
+  line-height: 1.6;
+  text-align: left;
+  margin: 0 0 12px 0;
+}
+
+/* Bottom section styling - match model exactly */
+.top-themes,
+.we-summary-themes,
+.new-insights-themes,
+.questions-themes,
+.talkabout-themes,
+.cantalk-themes,
+.emergingstory-themes,
+.ourstory-themes,
+.buildingcommunity-themes {
+  background: #ffffff;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  min-height: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+}
+
+/* Remove paragraph margins in bottom sections too */
+.top-themes p,
+.we-summary-themes p,
+.new-insights-themes p,
+.questions-themes p,
+.talkabout-themes p,
+.cantalk-themes p,
+.emergingstory-themes p,
+.ourstory-themes p,
+.buildingcommunity-themes p {
+  margin: 0 !important;
+}
+
+.themes-title,
+.we-summary-themes-title,
+.new-insights-themes-title,
+.questions-themes-title,
+.talkabout-themes-title,
+.cantalk-themes-title,
+.emergingstory-themes-title,
+.ourstory-themes-title,
+.buildingcommunity-themes-title {
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  text-align: left !important;
+  margin: 0 0 15px 0 !important;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  letter-spacing: 0.5px !important;
+}
+
+.themes-list,
+.we-summary-themes-list,
+.new-insights-themes-list,
+.questions-themes-list,
+.talkabout-themes-list,
+.cantalk-themes-list,
+.emergingstory-themes-list,
+.ourstory-themes-list,
+.buildingcommunity-themes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.theme-item,
+.we-summary-theme-item,
+.new-insights-theme-item,
+.questions-theme-item,
+.talkabout-theme-item,
+.cantalk-theme-item,
+.emergingstory-theme-item,
+.ourstory-theme-item,
+.buildingcommunity-theme-item {
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #f8f8f8;
+  border-radius: 4px;
+}
+
+.theme-label,
+.we-summary-theme-label,
+.new-insights-theme-label,
+.questions-theme-label,
+.talkabout-theme-label,
+.cantalk-theme-label,
+.emergingstory-theme-label,
+.ourstory-theme-label,
+.buildingcommunity-theme-label {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.theme-text,
+.we-summary-theme-text,
+.new-insights-theme-text,
+.questions-theme-text,
+.talkabout-theme-text,
+.cantalk-theme-text,
+.emergingstory-theme-text,
+.ourstory-theme-text,
+.buildingcommunity-theme-text {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+  margin-bottom: 5px;
+}
+
+.theme-percentage,
+.we-summary-theme-percentage,
+.new-insights-theme-percentage,
+.questions-theme-percentage,
+.talkabout-theme-percentage,
+.cantalk-theme-percentage,
+.emergingstory-theme-percentage,
+.ourstory-theme-percentage,
+.buildingcommunity-theme-percentage {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4A5A85;
+  text-align: right;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+nav ul li {
+  display: inline;
+  margin-right: 10px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  max-width: 300px;
+  margin-bottom: 20px;
+}
+
+form input, form textarea {
+  margin-bottom: 10px;
+  padding: 5px;
+}
+
+button {
+  cursor: pointer;
+  padding: 5px 10px;
+  margin-right: 5px;
+}
+
+/* App container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Header section with logo and top nav */
+.header-section {
+  display: flex;
+  width: 100%;
+  background-color: #E6DDD2;
+  border-bottom: 2px solid #E06D37;
+  z-index: 20;
+}
+
+/* Logo container styles moved to AppLayout.css for better organization */
+
+/* Left navigation bar */
+.left-nav {
+  width: 64px;
+  background-color: #D9D9D9;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-right: 1px solid #ddd;
+}
+
+/* Navigation items */
+.nav-item {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #D9D9D9;
+  border-bottom: 1px solid #3E4C71;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: none;
+}
+
+.nav-item:last-child {
+  border-bottom: none;
+}
+
+.nav-item:hover:not(.active) {
+  background-color: #D07B47;
+}
+
+.nav-item.active {
+  background-color: #3E4C71;
+}
+
+/* Earth logo */
+.earth-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+/* Navigation icons */
+.nav-icon {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  object-fit: contain;
+  display: block;
+  transition: none;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+  backface-visibility: hidden;
+}
+
+/* Main content area */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+/* Grid wrapper */
+.grid-wrapper {
+  display: flex;
+  height: 45vh;
+  min-height: 300px;
+}
+
+@media (min-width: 768px) {
+  .grid-wrapper {
+    height: 50vh;
+  }
+}
+
+/* Top navigation */
+.top-nav {
+  display: flex;
+  height: 54px;
+  flex-grow: 1;
+}
+
+.stage-tab {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #e0e0e3;
+  color: #E06D37;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-size: 14px;
+  border-top: none;
+  border-bottom: none;
+  border-left: 1px solid #E06D37;
+  border-right: 1px solid #E06D37;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stage-tab:last-child {
+  border-right: none;
+}
+
+.stage-tab.active {
+  background-color: #E06D37;
+  color: white;
+  border-color: #E06D37;
+}
+
+.stage-tab:hover:not(.active) {
+  background-color: rgba(224, 109, 55, 0.1);
+  color: #E06D37;
+}
+
+/* Viewing area */
+.viewing-area {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background-color: #f5f5f5;
+  overflow: hidden;
+  box-shadow: none;
+  border-bottom: none;
+}
+
+.view-title {
+  text-align: center;
+  padding: 12px 0;
+  background-color: #D9D9D9;
+  color: #3E4C71;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #c0c0c6;
+  position: relative;
+}
+
+.view-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #222;
+  justify-content: stretch;
+  align-items: stretch;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+/* Participants grid */
+.participants-grid {
+  gap: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Self view */
+.participants-grid.self-view {
+  grid-template-columns: 1fr;
+  place-items: center;
+  max-width: 80%;
+  margin: auto;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+/* Remove gap, padding, and background from any other grid selectors if present */
+.participants-grid.dyad-view,
+.participants-grid.triad-view,
+.participants-grid.quad-view,
+.participants-grid.kiva-view,
+.participants-grid.community-view {
+  gap: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+

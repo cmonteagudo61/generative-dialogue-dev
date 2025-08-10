@@ -1,0 +1,539 @@
+/* InputPage Styles - Robust Scrolling Layout */
+
+/* Main Container - CSS Grid Layout */
+.input-page-container {
+  display: grid;
+  grid-template-rows: auto auto 1fr; /* header, hero, scrollable-content */
+  height: 100vh;
+  width: 100%; /* Changed from 100vw to prevent horizontal overflow */
+  overflow: hidden;
+  background: #f5f5f5;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-sizing: border-box; /* Ensure padding is included in width calculation */
+}
+
+/* Fixed Header */
+.input-header {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px 40px 15px;
+  border-bottom: none;
+  z-index: 9999;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  grid-row: 1;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 60px;
+  width: 100%;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.actual-logo {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  min-width: 60px;
+  max-width: 100%;
+}
+
+.title-section {
+  flex: 1;
+  text-align: center;
+}
+
+.main-title {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin: 0 0 5px 0;
+  background: linear-gradient(135deg, #D4A574, #C8986B, #B8946F);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: #B8946F;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+/* Fixed Hero Banner - Match LandingPage size */
+.fixed-hero {
+  position: relative;
+  width: 100%;
+  height: 45vh; /* Match LandingPage - slightly less than half browser height */
+  min-height: 400px; /* Match LandingPage minimum height */
+  overflow: hidden;
+  grid-row: 2;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+
+.hero-image:hover {
+  transform: scale(1.05);
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(0, 0, 0, 0.1) 40%,
+    rgba(0, 0, 0, 0.2) 60%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 1s ease-out 0.5s both;
+}
+
+.hero-subtitle {
+  font-size: 2.8rem; /* Match LandingPage size */
+  font-weight: 700;
+  color: #B8860B;
+  text-align: center;
+  margin: 0;
+  font-family: 'Arial Black', 'Arial', sans-serif;
+  text-shadow: 
+    1px 1px 0px #DAA520,
+    2px 2px 0px #B8860B,
+    3px 3px 0px #A0522D,
+    4px 4px 6px rgba(0, 0, 0, 0.7);
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/* Scrollable Content Area */
+.scrollable-content {
+  grid-row: 3;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #f5f5f5;
+  padding: 0;
+  /* Custom scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #C8986B #f5f5f5;
+}
+
+.scrollable-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+  background: #C8986B;
+  border-radius: 4px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: #B8946F;
+}
+
+/* Section Title - More compact */
+.section-title {
+  font-size: 18px; /* Reduced from 20px */
+  font-weight: 700;
+  color: #374151;
+  margin: 0 !important;
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 12px 25px; /* Reduced from 15px 30px */
+  background: #E5E7EB;
+  border-radius: 8px;
+}
+
+/* Main Content - More compact */
+.input-main {
+  flex: 1;
+  padding: 0 40px 15px; /* Reduced bottom padding from 20px to 15px */
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.parameters-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding-top: 0;
+}
+
+/* Input Grid - More compact spacing */
+.input-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Reduced from 15px */
+  margin-bottom: 15px; /* Reduced from 20px */
+}
+
+.input-row {
+  display: flex;
+  gap: 12px; /* Reduced from 15px */
+  align-items: flex-start;
+  width: 100%;
+}
+
+.input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: calc((100% - 24px) / 3); /* Updated for new gap */
+}
+
+.input-group-wide {
+  flex: 1.5;
+  max-width: calc((100% - 12px) / 2); /* Updated for new gap */
+}
+
+/* Input Fields - Much more compact */
+.input-field {
+  width: 100%;
+  padding: 10px 15px; /* Reduced from 15px 20px */
+  border: 2px solid #4A5A85;
+  border-radius: 0;
+  font-size: 14px; /* Reduced from 16px */
+  font-weight: 400;
+  color: #333;
+  background: #e8e8e8;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  height: 45px; /* Reduced from 60px */
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: #4A5A85;
+  background: #f0f0f0;
+  box-shadow: none;
+}
+
+.input-field:hover {
+  border-color: #4A5A85;
+}
+
+.input-field::placeholder {
+  color: #6B7A8F;
+  font-style: italic;
+  font-size: 16px; /* Reduced from 22px */
+  font-weight: 400;
+}
+
+/* Catalyst Section - More compact */
+.catalyst-section {
+  margin-top: 15px; /* Reduced from 20px */
+}
+
+.catalyst-title {
+  font-size: 16px; /* Reduced from 18px */
+  font-weight: 700;
+  color: #374151;
+  margin: 0 0 12px 0; /* Reduced from 15px */
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.catalyst-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; /* Reduced from 15px */
+  justify-content: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.catalyst-option {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Reduced from 12px */
+  cursor: pointer;
+  font-size: 14px; /* Reduced from 16px */
+  font-weight: 500;
+  color: #374151;
+  transition: color 0.2s ease;
+  user-select: none;
+}
+
+.catalyst-option:hover {
+  color: #1F2937;
+}
+
+.catalyst-option input[type="checkbox"] {
+  width: 18px; /* Reduced from 20px */
+  height: 18px; /* Reduced from 20px */
+  border: 2px solid #4A5A85;
+  border-radius: 50%;
+  background: #e8e8e8;
+  cursor: pointer;
+  position: relative;
+  appearance: none;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.catalyst-option input[type="checkbox"]:checked {
+  background: #4A5A85;
+  border-color: #4A5A85;
+}
+
+.catalyst-option input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 5px; /* Reduced from 6px */
+  height: 5px; /* Reduced from 6px */
+  border-radius: 50%;
+  background: #FFFFFF;
+}
+
+.catalyst-option input[type="checkbox"]:hover {
+  border-color: #4A5A85;
+}
+
+.catalyst-option input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Additional Content - More compact */
+.additional-content {
+  margin: 20px 0; /* Reduced from 30px 0 */
+  padding: 15px; /* Reduced from 20px */
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    text-shadow: 
+      1px 1px 0px #DAA520,
+      2px 2px 0px #B8860B,
+      3px 3px 0px #A0522D,
+      4px 4px 6px rgba(0, 0, 0, 0.7);
+  }
+  50% {
+    text-shadow: 
+      1px 1px 0px #DAA520,
+      2px 2px 0px #B8860B,
+      3px 3px 0px #A0522D,
+      4px 4px 8px rgba(0, 0, 0, 0.8),
+      0px 0px 20px rgba(218, 165, 32, 0.3);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .input-header {
+    padding: 30px 40px 15px;
+  }
+  
+  .input-main {
+    padding: 15px 40px 30px;
+  }
+  
+  .header-content {
+    gap: 20px;
+  }
+  
+  .main-title {
+    font-size: 32px;
+    letter-spacing: 1px;
+  }
+}
+
+@media (max-width: 900px) {
+  .input-header {
+    padding: 20px 20px 15px;
+  }
+  
+  .header-content {
+    gap: 15px;
+  }
+  
+  .actual-logo {
+    height: 50px;
+    min-width: 50px;
+  }
+  
+  .main-title {
+    font-size: 28px;
+    letter-spacing: 0.5px;
+  }
+}
+
+@media (max-width: 768px) {
+  .input-header {
+    padding: 15px 15px 10px;
+  }
+  
+  .header-content {
+    gap: 10px;
+  }
+  
+  .actual-logo {
+    height: 45px;
+    min-width: 45px;
+  }
+  
+  .main-title {
+    font-size: 24px;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+  }
+  
+  .fixed-hero {
+    height: 40vh; /* Match LandingPage mobile size */
+    min-height: 300px; /* Match LandingPage mobile minimum */
+  }
+  
+  .hero-subtitle {
+    font-size: 2.5rem; /* Match LandingPage mobile size */
+  }
+}
+
+@media (max-width: 600px) {
+  .header-content {
+    flex-direction: column;
+    gap: 10px;
+    min-height: auto;
+    padding: 5px 0;
+  }
+  
+  .logo-container {
+    align-self: flex-start;
+  }
+  
+  .title-section {
+    text-align: center;
+    width: 100%;
+  }
+  
+  .main-title {
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+  }
+  
+  .input-row {
+    flex-direction: column;
+    gap: 15px; /* Slightly more space on mobile for easier touch */
+  }
+  
+  .input-group {
+    max-width: 100%;
+  }
+  
+  .input-group-wide {
+    flex: 1;
+    max-width: 100%;
+  }
+  
+  /* Mobile input fields - keep them usable on touch devices */
+  .input-field {
+    height: 48px; /* Slightly taller for mobile touch targets */
+    padding: 12px 15px; /* More padding for easier touch */
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  .fixed-hero {
+    height: 35vh; /* Match LandingPage mobile size */
+    min-height: 250px; /* Match LandingPage mobile minimum */
+  }
+  
+  .hero-subtitle {
+    font-size: 2.2rem; /* Match LandingPage mobile size */
+  }
+  
+  .section-title {
+    font-size: 18px; /* Keep readable on mobile */
+    padding: 10px 15px; /* More compact on mobile */
+    margin: 0 !important;
+  }
+  
+  /* Mobile catalyst options - keep usable */
+  .catalyst-option {
+    font-size: 15px; /* Slightly larger for mobile readability */
+    gap: 12px; /* More space for easier touch */
+  }
+  
+  .catalyst-option input[type="checkbox"] {
+    width: 20px; /* Larger touch targets on mobile */
+    height: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .input-header {
+    padding: 15px 15px 10px;
+  }
+  
+  .input-main {
+    padding: 10px 15px 15px;
+  }
+  
+  .actual-logo {
+    height: 40px;
+    min-width: 40px;
+  }
+  
+  .main-title {
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+  }
+  
+  .input-grid {
+    gap: 20px;
+  }
+  
+  .input-row {
+    gap: 15px;
+  }
+  
+  .section-title {
+    font-size: 18px;
+    padding: 10px 15px;
+    margin: 0 !important;
+  }
+  
+  .hero-subtitle {
+    font-size: 3rem;
+  }
+} 

@@ -1,0 +1,271 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.header-section {
+  flex-shrink: 0;
+  display: flex;
+  width: 100%;
+  background-color: #E6DDD2;
+  z-index: 20;
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  background-color: #f5f5f5; /* Ensure consistent light background */
+}
+
+.secondary-header {
+  padding: 1px 20px;
+  background-color: #D9D9D9; /* Match the view-title background */
+  flex-shrink: 0;
+  border-bottom: none; /* Remove any border that might create dark line */
+}
+
+.secondary-header .header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: none;
+  padding: 0;
+  height: auto;
+}
+
+.secondary-header .view-title {
+  font-size: 24px;
+}
+
+.secondary-header .participant-badge {
+    font-size: 12px;
+    padding: 3px 8px;
+}
+
+
+.grid-wrapper {
+  flex: 1;
+  display: flex;
+  flex-basis: calc(50vh - 41px);
+  flex-shrink: 0;
+  min-height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bottom-content-area {
+  flex: 1 1 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+}
+
+.footer-bar {
+  flex-shrink: 0;
+  height: 60px;
+}
+
+.header-upper-row {
+  display: flex;
+  width: 100%;
+  height: 80px;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.logo-container {
+  width: 80px;
+  height: 100%;
+  background-color: #393d54;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-right: none; /* Remove the border that creates the green line */
+  flex: 0 0 80px;
+  box-sizing: border-box;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.app-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.top-nav {
+  display: flex;
+  height: 100%;
+  flex: 1 1 auto;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  height: auto;
+  background-color: #D9D9D9;
+  flex: 1;
+  box-shadow: none !important; /* Remove any box shadow */
+  filter: none !important; /* Remove any filter effects */
+  text-shadow: none !important; /* Remove any text shadow */
+}
+
+.participant-counter-fixed {
+  flex-shrink: 0;
+  z-index: 1000;
+  position: relative;
+}
+
+.stage-tab {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #e0e0e3;
+  color: #E06D37;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-size: 22px;
+  border-right: none; /* Remove the green/orange border */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.stage-tab:last-child {
+  border-right: none;
+}
+.stage-tab.active,
+.stage-tab.active:hover {
+  background-color: #E06D37;
+  color: white;
+  border-color: transparent; /* Remove the green/orange border */
+}
+.stage-tab:hover:not(.active) {
+  background-color: #3E4C71;
+  color: white;
+}
+
+.view-title {
+  font-size: 23px;
+  font-weight: 600;
+  color: #3E4C71;
+  white-space: normal;
+  overflow: visible;
+  text-align: left;
+  line-height: 1.2;
+  text-shadow: none !important; /* Explicitly remove any drop shadow with high specificity */
+  box-shadow: none !important; /* Remove box shadow around the container */
+  word-wrap: break-word;
+  hyphens: auto;
+  padding: 6px 0;
+}
+
+/* Force remove any text-shadow from any title element */
+.view-title,
+.building-title,
+.main-title,
+h1, h2, h3, h4, h5, h6 {
+  text-shadow: none !important;
+}
+
+.viewing-area {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background-color: #D9D9D9;
+  overflow: hidden;
+  height: 100%;
+}
+
+.view-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5; /* Light grey background instead of dark */
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.participant-badge {
+  background: #3E4C71;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 4px 12px;
+  z-index: 1001;
+  position: relative;
+}
+
+/* Force remove any shadow effects from all header elements */
+.header-info,
+.header-info *,
+.secondary-header,
+.secondary-header *,
+.header-section,
+.header-section * {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+}
+
+@media (max-width: 1100px) {
+  .header-upper-row {
+    height: 60px; /* Reduced from 80px by 25% */
+  }
+  .app-logo {
+    width: 58px; /* Reduced from 64px by 10% */
+    height: 58px; /* Reduced from 64px by 10% */
+  }
+  .top-nav {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: calc(100% - 80px);
+  }
+  .stage-tab {
+    height: 30px; /* Reduced from 40px by 25% */
+    font-size: 24px;
+    border-left: 1px solid #E06D37;
+    border-right: 1px solid #E06D37;
+    border-top: 1px solid #E06D37;
+    border-bottom: 1px solid #E06D37;
+  }
+  .stage-tab:nth-child(2n) {
+    border-right: none;
+  }
+  .stage-tab:nth-child(3), .stage-tab:nth-child(4) {
+    border-bottom: none;
+  }
+  .secondary-header .view-title {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo-container {
+    width: 60px;
+    flex-basis: 60px;
+  }
+  .stage-tab {
+    font-size: 18px;
+  }
+  .secondary-header .view-title {
+    font-size: 22px;
+  }
+}

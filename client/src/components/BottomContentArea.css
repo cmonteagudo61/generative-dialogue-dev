@@ -1,0 +1,1053 @@
+/* Bottom content area */
+.bottom-content-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* Take available space from parent container */
+  height: 100%; /* Fill parent container completely */
+  overflow: hidden;
+  position: relative;
+  background-color: white;
+  margin: 0; /* Remove any margin */
+  padding: 0; /* Remove any padding */
+  text-align: left; /* Ensure left alignment by default */
+}
+
+/* Force left alignment for all content elements */
+.bottom-content-area p,
+.bottom-content-area h1,
+.bottom-content-area h2,
+.bottom-content-area h3,
+.bottom-content-area h4,
+.bottom-content-area h5,
+.bottom-content-area h6,
+.bottom-content-area div,
+.bottom-content-area span,
+.bottom-content-area li,
+.bottom-content-area ol,
+.bottom-content-area ul {
+  text-align: left !important;
+}
+
+/* Specific overrides for content areas that need strong left alignment */
+.guiding-question,
+.dialogue-instructions,
+.summary-content,
+.voice-card,
+.voice-quote,
+.theme-tags {
+  text-align: left !important;
+}
+
+/* Preserve center alignment only for UI controls */
+.timer-cell,
+.transcription-control-btn,
+.transcription-status,
+.vote-btn {
+  text-align: center !important;
+}
+
+/* Tab folder area */
+.tab-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  padding: 3px 0 0 0; /* uniform top spacing between viewing area and tabs */
+}
+
+@media (min-width: 1101px) {
+  .tab-area {
+    padding-top: 4px; /* add 1px more space on wider browsers */
+  }
+}
+
+/* Create a pseudo-element for the blue pinstripe that goes all the way across */
+.tab-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #3E4C71; /* Blue pinstripe to match navigation */
+  z-index: 6;
+}
+
+.tab-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end; /* Align tabs to bottom of container */
+  padding: 0 10px 0 10px; /* Remove bottom padding */
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #3E4C71; /* Continuous blue pinstripe across entire bottom edge */
+  flex-basis: auto; /* Take only the space it needs */
+  flex-shrink: 0; /* Prevent tabs from shrinking */
+  flex-grow: 0; /* Prevent tabs from growing */
+  z-index: 2; /* Ensure tabs are above content */
+}
+
+.tab-controls-left {
+  display: flex;
+  gap: 1px; /* Minimal 1px space between tabs */
+}
+
+.tab-controls-right {
+  display: flex;
+  gap: clamp(2px, 2vw, 16px); /* Responsive gap: 2px minimum, 16px maximum */
+  align-items: center; /* Keep right controls vertically centered */
+  flex-shrink: 1; /* Allow the control area to shrink */
+  min-width: min-content; /* Don't force minimum width */
+}
+
+.tab-btn {
+  padding: 3px 12px 3px 12px; /* Consistent padding for all tabs */
+  margin-right: 1px; /* Minimal 1px spacing between tabs */
+  margin-top: 0px; /* Restored height by removing negative margins */
+  margin-bottom: -2px; /* More aggressive gap closure */
+  background-color: #e8e8e8; /* Light grey background */
+  border: 1px solid #ccc;
+  border-bottom: none; /* Remove individual bottom border since we have continuous pinstripe */
+  border-top: 2px solid #3E4C71; /* Thinner blue pinstripe on top */
+  border-left: 2px solid #3E4C71; /* Blue pinstripe on left side */
+  border-right: 2px solid #3E4C71; /* Blue pinstripe on right side */
+  border-top-left-radius: 10px; /* Reduced curves for more subtle appearance */
+  border-top-right-radius: 10px; /* Reduced curves for more subtle appearance */
+  cursor: pointer;
+  position: relative;
+  z-index: 3; /* Ensure tabs are above content */
+  font-weight: 500; /* Consistent font-weight for all tabs */
+  font-size: 23px; /* Increased from 22px (+1pt) */
+  color: #555; /* Dark grey text */
+  transition: background-color 0.15s ease, color 0.15s ease; /* Only transition colors */
+  line-height: 0.9; /* Tighter line height for more compact tabs */
+}
+
+.tab-btn:hover:not(.active) {
+  background-color: #f0f0f0;
+}
+
+.tab-btn.active {
+  background-color: #3E4C71; /* Dark blue background when active */
+  color: white; /* White text when active */
+  /* Removed font-weight and border changes to prevent dancing */
+}
+
+.tab-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: white;
+  position: relative;
+  z-index: 1;
+}
+
+/* Content sections */
+.content-section {
+  height: 100%;
+  overflow-y: auto;
+  width: 100%;
+  text-align: left !important;
+  align-self: flex-start;
+  font-size: 18px; /* Increased base content font size */
+}
+
+/* Ensure all content within sections is left-aligned */
+.content-section * {
+  text-align: left !important;
+}
+
+/* Override any inherited center alignment */
+#catalystContent,
+#dialogueContent,
+#summaryContent,
+#weContent {
+  text-align: left !important;
+}
+
+#catalystContent *,
+#dialogueContent *,
+#summaryContent *,
+#weContent * {
+  text-align: left !important;
+}
+
+/* Enhanced styling for dialogue tab with transcription functionality */
+.dialogue-tab-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0; /* Remove default padding to let EnhancedTranscription manage spacing */
+  overflow: hidden; /* Let the inner component handle scrolling */
+}
+
+.dialogue-section {
+  max-width: 800px;
+  margin: 0;
+  text-align: left !important;
+}
+
+.dialogue-section p,
+.dialogue-section h1,
+.dialogue-section h2,
+.dialogue-section h3,
+.dialogue-section h4,
+.dialogue-section h5,
+.dialogue-section h6,
+.dialogue-section div,
+.dialogue-section span,
+.dialogue-section li,
+.dialogue-section ol,
+.dialogue-section ul,
+.dialogue-section strong {
+  text-align: left !important;
+}
+
+/* New dialogue content styles */
+.dialogue-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 1rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Use the same panel styling across Dialogue, Summary, and WE */
+/* Clean, no-fuss look (like Catalyst) for Dialogue */
+.dialogue-section {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+/* Keep simple white panels for Summary and WE */
+.summary-card,
+.we-panel {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.dialogue-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 21px; /* +1 for better readability */
+  font-weight: 600;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* match Catalyst title typography */
+  letter-spacing: 0.5px;
+  color: #3E4C71; /* default blue */
+  border: none;
+  padding-bottom: 0;
+}
+
+/* Unified section title style for all bottom content areas */
+.tab-section-title {
+  margin: 0 0 10px 0;
+  font-size: 21px;
+  font-weight: 600;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 0.5px;
+  color: #3E4C71;
+}
+
+/* Subtle AI model attribution under titles */
+.ai-hint {
+  margin: -6px 0 8px 0;
+  color: #6c757d;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Live indicator dot */
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.08) inset;
+}
+.status-dot.on { background-color: #2e7d32; }
+.status-dot.off { background-color: #b00020; }
+
+/* Inline controls inside section headers */
+.inline-controls {
+  float: right;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.inline-btn {
+  padding: 4px 10px;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #3E4C71;
+  color: #fff;
+  border-radius: 4px;
+}
+
+.inline-btn:hover { background-color: #334060; }
+
+.live-transcript {
+  height: calc(3.6em + 10px); /* show third line more comfortably */
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 8px;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.2em;
+  color: #1e1e1e;
+  white-space: pre-wrap;
+}
+
+.ai-transcript {
+  min-height: 100px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: transparent !important;
+  border: none !important; /* remove black/pinstripes */
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #1e1e1e;
+  white-space: normal;
+}
+
+/* Basic markdown styles inside AI transcript */
+.ai-transcript h3,
+.ai-transcript h4 {
+  margin: 8px 0 6px 0;
+  font-weight: 600;
+  color: #3E4C71;
+}
+
+.ai-transcript strong {
+  font-weight: 600;
+  color: #000;
+}
+
+.ai-transcript em {
+  font-style: italic;
+}
+
+.ai-transcript u {
+  text-decoration: underline;
+}
+
+.ai-transcript p {
+  margin: 6px 0;
+}
+
+.ai-transcript ul {
+  margin: 6px 0 6px 18px;
+}
+
+.ai-transcript li {
+  margin: 2px 0;
+}
+
+.dialogue-title {
+  color: #3E4C71;
+  font-size: 22px; /* Increased from 18px to 22px */
+  font-weight: 600;
+  margin-bottom: 16px;
+  margin-top: 0;
+  text-align: left;
+}
+
+.dialogue-instructions {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  margin: 16px 0;
+  border-left: 4px solid #3E4C71;
+  text-align: left;
+  overflow-y: auto;
+  max-height: 300px; /* Add max height with scrolling for longer content */
+}
+
+.dialogue-instructions h4 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #3E4C71;
+  font-size: 20px; /* Increased from 16px to 20px */
+  text-align: left;
+}
+
+.dialogue-instructions ol {
+  margin: 12px 0;
+  padding-left: 20px;
+  font-size: 18px; /* Added font size for list items */
+  text-align: left;
+}
+
+.dialogue-instructions li {
+  margin-bottom: 4px;
+  text-align: left;
+}
+
+.dialogue-instructions p {
+  font-size: 18px; /* Added font size for paragraphs */
+  text-align: left;
+  margin: 12px 0;
+  line-height: 1.6;
+}
+
+.guiding-question {
+  background-color: #e7f3ff;
+  padding: 16px;
+  border-radius: 6px;
+  margin: 16px 0;
+  border-left: 4px solid #2196F3;
+  font-size: 20px; /* Increased from 16px to 20px */
+  text-align: left;
+  overflow-y: auto;
+  max-height: 200px; /* Add max height with scrolling */
+}
+
+/* Transcription styling */
+.transcription p {
+  margin: 12px 0;
+  line-height: 1.6;
+  font-size: 18px; /* Added font size */
+  text-align: left;
+}
+
+.transcription strong {
+  color: #3E4C71;
+  font-weight: 600;
+}
+
+/* Summary card styling */
+.summary-card {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+}
+
+.summary-title {
+  font-weight: 600;
+  color: #3E4C71;
+  font-size: 20px; /* Increased from 16px to 20px */
+  text-align: left;
+}
+
+.ai-tag {
+  background-color: #4CAF50;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px; /* Increased from 12px to 14px */
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-content {
+  padding: 16px 20px;
+  text-align: left;
+  overflow-y: auto;
+  max-height: 400px; /* Add max height with scrolling for longer content */
+}
+
+.summary-content p {
+  margin: 12px 0;
+  line-height: 1.6;
+  font-size: 20px; /* Increased from ~16px to 20px */
+  text-align: left;
+}
+
+.summary-content strong {
+  color: #3E4C71;
+  font-weight: 600;
+}
+
+.vote-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #ddd;
+}
+
+.vote-controls span {
+  font-weight: 500;
+  color: #555;
+  font-size: 18px; /* Added font size */
+  text-align: left;
+}
+
+.vote-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px; /* Increased from 14px to 18px */
+  color: #555;
+}
+
+.vote-btn:hover {
+  background-color: #f0f0f0;
+  border-color: #bbb;
+}
+
+/* Voice card styling */
+.voice-card {
+  background-color: #f8f9fa;
+  border-left: 4px solid #3E4C71;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  text-align: left;
+  overflow-y: auto;
+  max-height: 300px; /* Add max height with scrolling for longer content */
+}
+
+.voice-speaker {
+  font-weight: 600;
+  color: #3E4C71;
+  margin-bottom: 8px;
+  font-size: 18px; /* Increased from 14px to 18px */
+  text-align: left;
+}
+
+.voice-quote {
+  line-height: 1.6;
+  font-style: italic;
+  color: #333;
+  font-size: 18px; /* Added font size */
+  text-align: left;
+}
+
+/* Theme tags */
+.theme-tags {
+  margin-top: 24px;
+  text-align: left;
+}
+
+.theme-tags h4 {
+  margin-bottom: 12px;
+  color: #3E4C71;
+  font-size: 20px; /* Increased from 16px to 20px */
+  text-align: left;
+}
+
+.theme-tags > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  text-align: left;
+}
+
+.theme-tag {
+  background-color: #e7f3ff;
+  color: #2196F3;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 14px; /* Increased from 12px to 14px */
+  font-weight: 500;
+  border: 1px solid #bbdefb;
+}
+
+/* Bottom control bar - Minimal buffering, no clipping */
+.control-bar {
+  height: 50px !important; /* Sufficient height to prevent clipping */
+  background-color: #e0e0e3; /* Light grey background for footer */
+  color: #3E4C71; /* Dark blue text color */
+  display: flex !important;
+  align-items: center !important; /* Perfect vertical centering */
+  justify-content: space-between !important; /* Maintain layout structure */
+  padding: 5px 20px !important; /* Minimal 5px top/bottom - prevents clipping */
+  border-top: none; /* Remove border */
+  flex-shrink: 0; /* Prevent shrinking */
+  margin: 0; /* Remove any margin */
+  position: relative; /* Ensure proper positioning */
+  box-sizing: border-box; /* Include padding in height calculation */
+}
+
+.media-controls {
+  display: flex;
+  gap: 8px; /* Add consistent spacing between media control buttons */
+}
+
+.control-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important; /* Perfect internal centering */
+  background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: 8px;
+  /* Reset all positioning to rely on flexbox centering */
+  position: static !important; /* Let flexbox handle positioning */
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.control-button:hover {
+  background-color: rgba(224, 109, 55, 0.15);
+}
+
+/* Removed conflicting control-button.active rule that was causing orange colors */
+
+/* Microphone button specific styling */
+#mic-btn {
+  transition: all 0.2s ease;
+}
+
+.timer-display {
+  display: flex;
+}
+
+.timer-cell {
+  margin: 0 15px;
+  text-align: center;
+}
+
+.timer-label {
+  font-size: 14px; /* Increased from 11px to 14px */
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px; /* Reduced from 4px to 2px */
+}
+
+.timer-value {
+  font-size: 20px; /* Increased from 16px to 20px */
+  font-weight: 600;
+  color: #3E4C71;
+}
+
+/* Compact timer styles for desktop */
+.timer-cell-combined {
+  margin: 0 12px;
+  text-align: center;
+  min-width: 160px; /* Desktop width for combined display */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center the timer content vertically */
+}
+
+.timer-label-combined {
+  font-size: 11px; /* Compact size */
+  margin-bottom: 1px; /* Minimal gap but prevents text crowding */
+  color: #666;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.timer-value-combined {
+  font-size: 16px; /* Compact but readable */
+  font-weight: 600;
+  color: #333;
+  font-family: 'Courier New', monospace; /* Monospace for better time alignment */
+  line-height: 1;
+  margin-top: 0; /* No extra margin */
+}
+
+/* Spin animation for loading states */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1100px) {
+  .tab-area {
+    margin: 0; /* Remove all margins */
+    padding: 3px 0 0 0; /* Uniform top spacing across sizes */
+    width: 100%; /* Use full width */
+    min-width: 100%; /* Ensure minimum width is full */
+    max-width: 100%; /* Ensure maximum width is full */
+  }
+  
+  /* Compact timer display for mobile */
+  .timer-cell {
+    margin: 0 8px; /* Reduced from 15px to 8px */
+  }
+  
+  .timer-label {
+    font-size: 11px; /* Smaller on mobile */
+    margin-bottom: 1px;
+  }
+  
+  .timer-value {
+    font-size: 16px; /* Smaller on mobile */
+  }
+
+  /* Override compact timer for mobile */
+  .timer-cell-combined {
+    margin: 0 6px !important; /* Tighter spacing on mobile */
+    min-width: 120px !important; /* Smaller minimum width for mobile */
+  }
+  
+  .timer-label-combined {
+    font-size: 10px !important; /* Smaller label on mobile */
+    margin-bottom: 0px !important; /* Tightest spacing for mobile */
+  }
+  
+  .timer-value-combined {
+    font-size: 14px !important; /* Smaller value on mobile but still readable */
+  }
+  
+  .tab-navigation {
+    padding: 2px 12px 0 1px; /* Reduced top padding from 5px to 2px (another 3px less) */
+  }
+  
+  .tab-btn {
+    padding: 3px 12px !important; /* Increased height by another 1pt for mobile */
+    margin-top: 0px !important; /* Restored height */
+    margin-bottom: 0px !important; /* Restored height */
+    font-size: 23px; /* Match the font size from desktop styling */
+    line-height: 0.9 !important; /* Keep tight line height */
+  }
+  
+  .tab-content {
+    padding: 16px 16px 16px 6px; /* Reduced left padding from 16px to 6px */
+    font-size: 16px; /* Increased base font for mobile */
+  }
+  
+  .content-section {
+    font-size: 16px; /* Increased for mobile */
+  }
+  
+  .control-bar {
+    padding: 5px 16px 13px 16px !important; /* Perfect bottom buffering for mobile */
+    height: 58px !important; /* Adjusted for optimal bottom padding */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering on mobile */
+    justify-content: space-between !important; /* Maintain layout structure */
+    box-sizing: border-box !important; /* Include padding in height calculation */
+  }
+
+  /* Reset all button positioning on mobile - let flexbox handle it */
+  .control-button {
+    position: static !important; /* Remove all custom positioning */
+    top: auto !important; /* Reset top positioning */
+    margin: 0 !important; /* Remove all margins */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering */
+    justify-content: center !important;
+    flex-shrink: 0 !important; /* Prevent shrinking */
+  }
+
+  #back-btn, #forward-btn {
+    position: static !important; /* Remove all custom positioning */
+    top: auto !important; /* Reset positioning */
+    margin: 0 !important; /* Remove all margins */
+  }
+  
+  .timer-cell {
+    margin: 0 10px;
+  }
+  
+  .timer-label {
+    font-size: 12px; /* Increased from 10px to 12px for mobile */
+  }
+  
+  .timer-value {
+    font-size: 18px; /* Increased from 14px to 18px for mobile */
+  }
+
+
+  
+  .dialogue-title {
+    font-size: 20px; /* Adjusted for mobile */
+  }
+  
+  .summary-title {
+    font-size: 18px; /* Adjusted for mobile */
+  }
+  
+  .voice-speaker {
+    font-size: 16px; /* Adjusted for mobile */
+  }
+  
+  .vote-btn {
+    font-size: 16px; /* Adjusted for mobile */
+  }
+}
+
+/* Transcription control buttons in tab navigation - match tab height */
+.transcription-control-btn {
+  padding: 3px 16px; /* Match tab padding for consistent height */
+  border: none;
+  font-size: 16px; /* Increased from 14px to 16px */
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 200px; /* Increased width to accommodate longer button text */
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide any overflow */
+  box-sizing: border-box; /* Include padding in width calculation */
+  background-color: #3E4C71; /* Restore original color for medium views */
+  color: #fff; /* Restore original text color for medium views */
+}
+
+/* Desktop view - make all buttons identical and responsive */
+@media (min-width: 1101px) {
+  .transcription-control-btn,
+  .transcription-status {
+    width: clamp(150px, 20vw, 200px) !important; /* Responsive width: 150px-200px */
+    height: 25px !important; /* Compact height - 25px for shorter buttons */
+    padding: 6px clamp(8px, 1.5vw, 16px) !important; /* Responsive padding */
+    margin: 4px 0 1px 0 !important; /* 4px above + 1px below for minimal distance to pinstripe */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: clamp(14px, 1.5vw, 16px) !important; /* Responsive font size */
+    font-weight: 500 !important;
+    box-sizing: border-box !important;
+    background-color: #3E4C71 !important;
+    color: #fff !important;
+    border: none !important;
+    flex-shrink: 1 !important; /* Allow buttons to shrink */
+  }
+}
+
+/* Mobile view - clean simple approach */
+@media (max-width: 800px) {
+  .transcription-control-btn,
+  .transcription-status {
+    width: clamp(150px, 20vw, 200px) !important;
+    height: 36px !important;
+    padding: 6px 12px !important;
+    margin: 2px 0 !important;
+    font-size: 14px !important;
+    flex-shrink: 0 !important;
+    background-color: #3E4C71 !important;
+    color: #fff !important;
+  }
+}
+
+
+
+  /* Mobile view - clean simple approach */
+@media (max-width: 1100px) {
+  .tab-controls-right {
+    gap: 2px;
+  }
+  
+  .transcription-control-btn {
+    width: clamp(150px, 20vw, 200px) !important;
+    height: 36px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 1px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .transcription-status {
+    width: clamp(150px, 20vw, 200px) !important;
+    height: 36px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 1px !important; /* Lift buttons off pinstripe */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .transcription-status {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    margin-bottom: 1px !important; /* Lift buttons off pinstripe */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .transcription-status .status-icon {
+    font-size: 18px;
+  }
+  
+  /* Force the disconnected status to be square like the buttons */
+  .transcription-status.disconnected {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: #3E4C71 !important;
+    color: #fff !important;
+  }
+}
+
+.transcription-control-btn.primary {
+  background-color: #3E4C71; /* Match app's dark blue */
+  color: white;
+}
+
+.transcription-control-btn.primary:hover {
+  background-color: #334060; /* Darker shade for hover */
+  transform: translateY(-1px);
+}
+
+.transcription-control-btn.danger {
+  background-color: #3E4C71; /* Match app's dark blue theme */
+  color: white;
+}
+
+.transcription-control-btn.danger:hover {
+  background-color: #334060; /* Darker blue for hover */
+  transform: translateY(-1px);
+}
+
+.transcription-control-btn.warning {
+  background-color: #3E4C71; /* Match app's dark blue theme */
+  color: #fff; /* White text for contrast */
+  border: 1px solid #3E4C71;
+}
+
+.transcription-control-btn.warning:hover {
+  background-color: #334060; /* Darker blue on hover */
+  transform: translateY(-1px);
+}
+
+.transcription-control-btn.warning .btn-icon {
+  color: #fff; /* Make trash icon white for contrast against red */
+  font-weight: bold; /* Make it bolder */
+  font-size: 18px; /* Slightly larger for better visibility */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add shadow for crispness */
+}
+
+.transcription-control-btn.primary .btn-icon {
+  color: #fff; /* Ensure microphone icon is white for contrast */
+  font-weight: bold; /* Make it bold */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add subtle shadow for crispness */
+}
+
+.transcription-control-btn.danger .btn-icon {
+  color: #fff; /* Ensure stop icon is white for contrast */
+  font-weight: bold; /* Make it bold */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Add subtle shadow for crispness */
+}
+
+.transcription-status {
+  font-size: 14px; /* Increased from 12px to 14px */
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  width: 140px; /* Fixed width for status consistency */
+  height: 28px; /* Fixed height for status consistency */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide any overflow */
+  box-sizing: border-box; /* Include padding in width calculation */
+  gap: 4px; /* Space between icon and text */
+}
+
+.transcription-status .status-icon {
+  font-size: 16px;
+}
+
+/* Mobile-specific styling for status icon */
+@media (max-width: 1100px) {
+  .transcription-status .status-icon {
+    font-size: 18px; /* Slightly larger on mobile for better visibility */
+  }
+}
+
+.transcription-status .status-text {
+  flex: 1;
+}
+
+.transcription-status.connected {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.transcription-status.disconnected {
+  background-color: #3E4C71; /* Match button styling */
+  color: #fff; /* White text for consistency */
+}
+
+.transcription-status.recording {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* Enhanced styling for forward/backward buttons - let SVG handle the styling */
+#back-btn, #forward-btn {
+  position: relative;
+  /* Remove all borders and backgrounds - let the SVG handle the visual design */
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#back-btn:not(.active):not(:hover), 
+#forward-btn:not(.active):not(:hover) {
+  border: none !important; /* No border - SVG has its own stroke */
+  background-color: transparent !important; /* Transparent background */
+}
+
+#back-btn:hover:not(.active), 
+#forward-btn:hover:not(.active) {
+  border: none !important; /* No border on hover */
+  background-color: rgba(224, 109, 55, 0.1) !important; /* Light orange background on hover */
+}
+
+#back-btn.active, 
+#forward-btn.active {
+  border: none !important; /* No border when active */
+  background-color: rgba(62, 76, 113, 0.2) !important; /* Light blue background when active */
+} /* Added blue pinstripes to tabs Sat Jul 19 01:10:32 EDT 2025 */
+/* Made pinstripes thinner and extended down sides Sat Jul 19 01:12:20 EDT 2025 */
+/* Simplified active tabs - removed orange pinstripes Sat Jul 19 01:14:33 EDT 2025 */

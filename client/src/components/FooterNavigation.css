@@ -1,0 +1,285 @@
+.footer-bar {
+  display: flex;
+  justify-content: space-between; /* Restore space-between for proper distribution */
+  align-items: center;
+  padding: 0 25px; /* Increased right padding from 20px to 25px */
+  background-color: #e0e0e3;
+  height: 54px; /* Reduced from 57px by another 5% */
+  border-top: 1px solid #c0c0c6;
+  box-sizing: border-box;
+  /* Ensure content doesn't overflow */
+  overflow: hidden;
+  position: relative;
+}
+
+.footer-left,
+.footer-center,
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+  /* Ensure these containers don't overflow */
+  flex-shrink: 0;
+}
+
+.footer-left {
+  flex: 0 0 auto; /* Take only needed space */
+  justify-content: flex-start;
+  min-width: 0; /* Allow shrinking if needed */
+}
+
+.footer-center {
+  justify-content: center;
+  gap: 40px;
+  display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 300px;
+  overflow: visible;
+  white-space: normal;
+}
+
+/* Separate timer containers */
+.total-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+}
+
+.segment-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+}
+
+/* Ensure the right side has enough space */
+.footer-right {
+  justify-content: flex-end;
+  gap: 8px; /* Default gap for immediate children */
+  /* Remove padding-right to let it align naturally */
+  /* Ensure buttons don't overflow */
+  flex-wrap: nowrap;
+  flex: 0 0 auto; /* Take only needed space */
+  min-width: 0; /* Allow shrinking if needed */
+}
+
+.control-button {
+  background: #e0e0e3; /* Match footer background exactly */
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  /* Ensure button doesn't overflow its container */
+  flex-shrink: 0;
+  box-sizing: border-box;
+  /* Reset any default browser styles */
+  margin: 0;
+  box-shadow: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.control-button:focus,
+.control-button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important; /* Also remove any box-shadow focus effect */
+}
+
+.control-button:hover:not(:disabled) {
+  background: #e0e0e3; /* Keep same color on hover */
+  transform: scale(1.05);
+}
+
+.control-button.active {
+  background-color: #e0e0e3; /* Keep same color when active */
+}
+
+.control-button img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.control-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  background-color: #e0e0e3; /* Keep same color when disabled */
+  border: none;
+  outline: none;
+}
+
+.timer-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.timer-label {
+  font-size: 10px;
+  color: #666;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.timer-value {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Grouping for right-hand controls */
+.footer-right > .control-button:nth-of-type(2) {
+  margin-right: 16px; /* Add extra space after the second button (thumbs down) */
+}
+
+.footer-bar .control-button {
+  background: #e0e0e3 !important; /* Match footer background exactly with higher specificity */
+  border: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  /* Ensure button doesn't overflow its container */
+  flex-shrink: 0;
+  box-sizing: border-box;
+  /* Reset any default browser styles */
+  margin: 0;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.footer-bar .control-button:hover:not(:disabled) {
+  background: #e0e0e3 !important; /* Keep same color on hover */
+  transform: scale(1.05);
+}
+
+.footer-bar .control-button.active {
+  background-color: #e0e0e3 !important; /* Keep same color when active */
+}
+
+.footer-bar .control-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  background-color: #e0e0e3 !important; /* Keep same color when disabled */
+  border: none !important;
+  outline: none !important;
+}
+
+@media (max-width: 1100px) {
+  .footer-bar {
+    padding: 0 10px;
+    gap: 15px;
+  }
+  .footer-left, .footer-right {
+    gap: 8px;
+  }
+  .footer-center {
+    gap: 20px;
+  }
+  .footer-right > .control-button:nth-of-type(2) {
+    margin-right: 8px;
+  }
+}
+
+@media (max-width: 800px) {
+  .footer-bar {
+    gap: 0px; /* Containers touch each other */
+    padding: 0 10px;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .footer-center {
+    gap: 5px;
+    flex: 0 0 140px; /* Reduced timer width */
+    max-width: 140px;
+    min-width: 140px;
+    padding: 0 2px; /* Minimal side padding */
+  }
+  .footer-left {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    gap: 0px;
+    min-width: 0;
+  }
+  .footer-right {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    gap: 0px;
+    min-width: 0;
+  }
+  .footer-bar .control-button {
+    width: 38px; /* Reduced from 40px by another 5% */
+    height: 38px; /* Reduced from 40px by another 5% */
+    padding: 7px;
+    background: #e0e0e3 !important;
+    flex-shrink: 0;
+  }
+  .footer-bar .control-button img {
+    width: 34px;
+    height: 34px;
+  }
+  .timer-display {
+    min-width: 50px; /* Reduced timer display width */
+  }
+}
+
+@media (max-width: 600px) {
+  .segment-timer {
+    display: none;
+  }
+  .footer-center {
+    flex: 0 0 80px; /* Much smaller timer width */
+    max-width: 80px;
+    min-width: 80px;
+    padding: 0 1px; /* Minimal side padding */
+  }
+  .footer-bar {
+    padding: 0 5px;
+    gap: 0px; /* Containers touch each other */
+  }
+  .footer-left {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    gap: 0px;
+    min-width: 0;
+  }
+  .footer-right {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    gap: 0px;
+    min-width: 0;
+  }
+  .footer-bar .control-button {
+    width: 42px;
+    height: 42px;
+    padding: 7px;
+    background: #e0e0e3 !important;
+    flex-shrink: 0;
+  }
+  .footer-bar .control-button img {
+    width: 30px;
+    height: 30px;
+  }
+}

@@ -1,0 +1,12 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(0, 16.5)">
+<path d="M74.6667 23.625V5.25C74.6667 2.3625 72.2667 0 69.3333 0H5.33333C2.4 0 0 2.3625 0 5.25V57.75C0 60.6375 2.4 63 5.33333 63H69.3333C72.2667 63 74.6667 60.6375 74.6667 57.75V39.375L96 60.375V2.625L74.6667 23.625Z" fill="#3E4C71"/>
+</g>
+<!-- Strike-through line matching person and microphone icon angle exactly -->
+<line x1="22.4" y1="12.2" x2="73.6" y2="83.8" stroke="#e0e0e3" stroke-width="6" stroke-linecap="round"/>
+<!-- Bigger blue X at end of strike line -->
+<g stroke="#3E4C71" stroke-width="4" stroke-linecap="round">
+  <line x1="66.5" y1="90.5" x2="82.5" y2="74.5"/>
+  <line x1="82.5" y1="90.5" x2="66.5" y2="74.5"/>
+</g>
+</svg>

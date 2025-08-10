@@ -1,0 +1,455 @@
+/* Building Community Page - Following LandingPage pattern */
+.building-community-page {
+  height: 100vh; /* Use fixed height instead of min-height */
+  background: #f5f5f5; /* Light grey background like other pages */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally */
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+  overflow-y: auto; /* Allow scrolling if content is too tall */
+  box-sizing: border-box;
+  position: relative;
+}
+
+.building-community-container {
+  width: 100%;
+  max-width: 1200px; /* Center content in large browsers */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Center content vertically */
+  flex: 1;
+  padding: 10px 0 20px 0; /* Reduced bottom padding */
+  overflow-y: auto; /* Allow content to scroll if needed */
+  min-height: 0; /* Allow container to shrink */
+}
+
+/* Header section - similar to LandingPage */
+.building-community-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px !important; /* Increased spacing to separate from main title */
+  padding: 20px 0; /* Increased padding for better header spacing */
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the header content */
+  gap: 20px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.actual-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.main-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #E17B43; /* Orange color */
+  margin: 0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Main content area */
+.building-community-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Center content vertically */
+  flex: 1;
+  min-height: 0; /* Allow content to shrink */
+}
+
+/* Hero section with large title */
+.hero-section {
+  text-align: center;
+  margin-top: 40px !important; /* Add top margin to push title down */
+  margin-bottom: 14px !important; /* Reduced from 28px by 50% */
+}
+
+.building-title {
+  font-size: 1.875rem; /* Increased from 1.5rem by 25% */
+  font-weight: 700;
+  color: #E17B43; /* Orange color */
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: none; /* Remove drop shadow */
+}
+
+/* Diagram section */
+.diagram-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  min-height: 400px; /* Reduced to match diagram size */
+}
+
+.circular-diagram {
+  position: relative;
+  width: 480px;
+  height: 480px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Phase items positioned around the circle */
+.phase-item {
+  position: absolute;
+  width: 140px;
+  height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+  border: 2px solid #4A5A85;
+  z-index: 10;
+}
+
+.phase-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4A5A85;
+  text-align: center;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 8px;
+}
+
+/* Position each phase around the circle - trigonometric positioning at equal radius */
+.phase-1 {
+  /* 0 degrees (12 o'clock) */
+  top: 12%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.phase-2 {
+  /* 60 degrees (2 o'clock) */
+  top: 30%;
+  left: 78%;
+  transform: translate(-50%, -50%);
+}
+
+.phase-3 {
+  /* 120 degrees (4 o'clock) */
+  top: 70%;
+  left: 78%;
+  transform: translate(-50%, -50%);
+}
+
+.phase-4 {
+  /* 180 degrees (6 o'clock) */
+  top: 88%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 170px; /* Wider for longer text */
+}
+
+.phase-5 {
+  /* 240 degrees (8 o'clock) */
+  top: 70%;
+  left: 22%;
+  transform: translate(-50%, -50%);
+}
+
+.phase-6 {
+  /* 300 degrees (10 o'clock) */
+  top: 30%;
+  left: 22%;
+  transform: translate(-50%, -50%);
+}
+
+/* Center text */
+.center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 170px;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  border: 4px solid #E17B43;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.participation-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #E17B43;
+  text-align: center;
+  line-height: 1.4;
+  padding: 0 15px;
+}
+
+/* SVG connecting lines */
+.connecting-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Ensure phase items are above the lines */
+.phase-item {
+  z-index: 2;
+}
+
+.center-text {
+  z-index: 3;
+}
+
+/* Standardized footer using exact simple footer control-bar styling */
+.building-community-page .control-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 50px !important; /* Sufficient height to prevent clipping */
+  background-color: #e0e0e3; /* Light grey background for footer */
+  color: #3E4C71; /* Dark blue text color */
+  display: flex !important;
+  align-items: center !important; /* Perfect vertical centering */
+  justify-content: space-between !important; /* Position nav controls on the right */
+  padding: 5px 20px !important; /* Minimal 5px top/bottom - prevents clipping */
+  border-top: none; /* Remove border */
+  flex-shrink: 0; /* Prevent shrinking */
+  margin: 0; /* Remove any margin */
+  box-sizing: border-box; /* Include padding in height calculation */
+}
+
+.building-community-page .page-info {
+  display: flex;
+  align-items: center;
+}
+
+.building-community-page .page-indicator {
+  font-weight: 600;
+  color: #3E4C71;
+  font-size: 16px;
+  background: linear-gradient(90deg, #3E4C71, #E06D37);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.building-community-page .nav-controls {
+  display: flex;
+  gap: 0; /* No gap - buttons handle their own spacing */
+}
+
+.building-community-page .control-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important; /* Perfect internal centering */
+  background-color: rgba(62, 76, 113, 0.1); /* Light blue background */
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: 8px;
+  /* Reset all positioning to rely on flexbox centering */
+  position: static !important; /* Let flexbox handle positioning */
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0; /* Prevent shrinking */
+  overflow: hidden; /* Ensure no content extends beyond the border radius */
+  box-sizing: border-box; /* Include padding in size calculation */
+}
+
+.building-community-page .control-button:hover {
+  background-color: rgba(224, 109, 55, 0.15);
+}
+
+.building-community-page .control-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Ensure button images don't create white corners */
+.building-community-page .control-button img {
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: transparent;
+}
+
+/* Ensure footer is visible and properly positioned */
+.building-community-page .footer-navigation {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100vw;
+  background: #f8f8f8;
+  z-index: 1000;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Ensure footer content extends full width */
+.building-community-page .footer-navigation .control-bar {
+  width: 100vw;
+  max-width: none;
+  margin: 0;
+  padding: 5px 20px;
+}
+
+/* Target the FooterNavigation component directly */
+.building-community-page footer {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 1000 !important;
+}
+
+/* Target the control bar inside FooterNavigation */
+.building-community-page footer .control-bar {
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 5px 20px !important;
+  box-sizing: border-box !important;
+}
+
+/* Target the red test div */
+.building-community-page div[style*="background: red"] {
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+}
+
+/* Target the FooterNavigation component's footer-bar class */
+.building-community-page .footer-bar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 25px !important;
+  z-index: 1000 !important;
+  box-sizing: border-box !important;
+  height: 54px !important; /* Match FooterNavigation height */
+  background-color: #e0e0e3 !important; /* Match FooterNavigation background */
+}
+
+/* Ensure buttons use the correct FooterNavigation styling */
+.building-community-page .footer-bar .control-button {
+  width: 44px !important;
+  height: 44px !important;
+  background: #e0e0e3 !important;
+  border: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 8px !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Ensure button images use the correct size */
+.building-community-page .footer-bar .control-button img {
+  width: 34px !important;
+  height: 34px !important;
+  object-fit: contain !important;
+}
+
+/* Override any parent container constraints */
+.building-community-page > div:last-child {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 1000 !important;
+}
+
+/* Ensure the red test div is also full width */
+.building-community-page > div:nth-last-child(2) {
+  position: relative !important;
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+ 
+
+/* Mobile responsive - exact match to standardized footer */
+@media (max-width: 1100px) {
+  .building-community-page .control-bar {
+    padding: 5px 16px 13px 16px !important; /* Perfect bottom buffering for mobile */
+    height: 58px !important; /* Adjusted for optimal bottom padding */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering on mobile */
+    justify-content: space-between !important; /* Maintain layout structure */
+    box-sizing: border-box !important; /* Include padding in height calculation */
+  }
+
+  /* Reset all button positioning on mobile - let flexbox handle it */
+  .building-community-page .control-button {
+    position: static !important; /* Remove all custom positioning */
+    top: auto !important; /* Reset top positioning */
+    margin: 0 !important; /* Remove all margins */
+    display: flex !important;
+    align-items: center !important; /* Force vertical centering */
+    justify-content: center !important;
+    flex-shrink: 0 !important; /* Prevent shrinking */
+  }
+} 
