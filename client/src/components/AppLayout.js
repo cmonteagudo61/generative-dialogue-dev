@@ -74,7 +74,13 @@ const AppLayout = ({
   voteTallies,
   totalTime,
   segmentTime,
-  onNavigate
+  onNavigate,
+  isHost,
+  onHostNavigateStage,
+  onHostToggleVoting,
+  isVotingOpen,
+  participantName,
+  onSetParticipantName
 }) => {
   const isNarrow = useMediaQuery('(max-width: 1100px)');
   const isMobile = useMediaQuery('(max-width: 480px)');
@@ -145,7 +151,7 @@ const AppLayout = ({
           <div className="logo-container">
             <img src="/images/EarthLogoSmallTransparent.png" alt="Logo" className="app-logo" />
           </div>
-          <nav className="top-nav">
+          <nav className="top-nav" style={{ flexWrap: 'nowrap' }}>
             {STAGE_TABS.map(tab => (
               <div
                 key={tab.key}
@@ -156,6 +162,15 @@ const AppLayout = ({
               </div>
             ))}
           </nav>
+          {isHost && (localStorage.getItem('gd_show_dev_controls') === '1') && (
+            <div className="host-controls" style={{ marginRight: 8 }}>
+              <button className="control-button" onClick={() => onHostNavigateStage('connect')}>Go CONNECT</button>
+              <button className="control-button" onClick={() => onHostNavigateStage('explore')}>Go EXPLORE</button>
+              <button className="control-button" onClick={() => onHostNavigateStage('discover')}>Go DISCOVER</button>
+              <button className="control-button" onClick={() => onHostNavigateStage('harvest')}>Go HARVEST</button>
+              <button className="control-button" onClick={() => onHostToggleVoting(!isVotingOpen)}>{isVotingOpen ? 'Close Voting' : 'Open Voting'}</button>
+            </div>
+          )}
           {!isNarrow && headerInfo}
         </div>
       </header>
@@ -167,6 +182,19 @@ const AppLayout = ({
           <div className="viewing-area">
             <div className="view-content">
               {children}
+              {!isHost && (!participantName || participantName.trim().length === 0) && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+                  <div style={{ background: 'white', padding: 16, borderRadius: 8, width: 320 }}>
+                    <h4 style={{ marginTop: 0, marginBottom: 8, color: '#3E4C71' }}>Enter your name</h4>
+                    <input type="text" placeholder="Your display name" style={{ width: '100%', padding: 8, border: '1px solid #e0e0e0', borderRadius: 6 }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { const v = e.currentTarget.value.trim(); if (v) { onSetParticipantName(v); localStorage.setItem('gd_participant_name', v); } } }}
+                    />
+                    <div style={{ marginTop: 10, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                      <button className="control-button" onClick={() => { const inputEl = document.querySelector('input[placeholder="Your display name"]'); const v = inputEl ? inputEl.value.trim() : ''; if (v) { onSetParticipantName(v); localStorage.setItem('gd_participant_name', v); } }}>Continue</button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -187,6 +215,8 @@ const AppLayout = ({
             isDiscoverCollectiveWisdom={isDiscoverCollectiveWisdom}
             isHarvestClosing={isHarvestClosing}
             voteTallies={voteTallies}
+            isHost={isHost}
+            isVotingOpen={isVotingOpen}
           />
         )}
       </div>

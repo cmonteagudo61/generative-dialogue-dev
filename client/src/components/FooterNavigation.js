@@ -30,6 +30,7 @@ import {
 const FooterNavigation = ({
   vote,
   voteState,
+  isVotingOpen = true,
   canGoBack,
   canGoForward,
   onBack,
@@ -76,11 +77,13 @@ const FooterNavigation = ({
   };
 
   const handleVoteUp = () => {
+    if (!isVotingOpen) return;
     vote('up');
     setIsThumbsUpHover(false);
   };
   
   const handleVoteDown = () => {
+    if (!isVotingOpen) return;
     vote('down');
     setIsThumbsDownHover(false);
   };
@@ -117,10 +120,10 @@ const FooterNavigation = ({
 
       {/* Right-aligned navigation and voting controls */}
       <div className="footer-right">
-        <button className={`control-button ${voteState === 'up' ? 'active' : ''}`} onClick={handleVoteUp} onMouseEnter={() => setIsThumbsUpHover(true)} onMouseLeave={() => setIsThumbsUpHover(false)}>
+        <button className={`control-button ${voteState === 'up' ? 'active' : ''}`} onClick={handleVoteUp} disabled={!isVotingOpen} onMouseEnter={() => setIsThumbsUpHover(true)} onMouseLeave={() => setIsThumbsUpHover(false)}>
             <img src={voteState === 'up' ? thumbsUpOn : (isThumbsUpHover ? thumbsUpHover : thumbsUpOff)} alt="Thumbs Up" />
         </button>
-        <button className={`control-button ${voteState === 'down' ? 'active' : ''}`} onClick={handleVoteDown} onMouseEnter={() => setIsThumbsDownHover(true)} onMouseLeave={() => setIsThumbsDownHover(false)}>
+        <button className={`control-button ${voteState === 'down' ? 'active' : ''}`} onClick={handleVoteDown} disabled={!isVotingOpen} onMouseEnter={() => setIsThumbsDownHover(true)} onMouseLeave={() => setIsThumbsDownHover(false)}>
             <img src={voteState === 'down' ? thumbsDownOn : (isThumbsDownHover ? thumbsDownHover : thumbsDownOff)} alt="Thumbs Down" />
         </button>
         <button className={`control-button ${canGoBack ? 'active' : ''}`} onClick={onBack} disabled={!canGoBack} onMouseEnter={() => setIsBackHover(true)} onMouseLeave={() => setIsBackHover(false)}>

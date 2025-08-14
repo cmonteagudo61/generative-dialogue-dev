@@ -34,11 +34,11 @@ const ExploreTriadSummaryPageInner = ({
   totalPages,
   developmentMode,
   activeSize, // Add this prop for left navigation
-  onSizeChange // Add this prop for left navigation
+  onSizeChange, // Add this prop for left navigation
+  isLoopActive = false
 }) => {
   // Use activeSize from props instead of internal state
   const [selectedParticipants, setSelectedParticipants] = useState([]);
-  const [isLoopActive, setIsLoopActive] = useState(false);
   
     const { participants, realParticipants, error } = useVideo();
   const layout = getLayoutFromView(activeSize); // Use activeSize from props
@@ -53,11 +53,7 @@ const ExploreTriadSummaryPageInner = ({
     );
   };
 
-  const handleLoopToggle = (isActive) => {
-    console.log('🔄 Loop toggle called:', { isActive, currentState: isLoopActive });
-    setIsLoopActive(isActive);
-    console.log('✅ Loop state updated to:', isActive);
-  };
+  // Loop magnifier is controlled globally via props
 
   // Voting functionality is handled in BottomContentArea
   // This page just provides the layout and passes props

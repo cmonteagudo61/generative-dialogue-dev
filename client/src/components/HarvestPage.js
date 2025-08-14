@@ -34,11 +34,11 @@ const HarvestPageInner = ({
   totalPages,
   developmentMode,
   activeSize,
-  onSizeChange
+  onSizeChange,
+  isLoopActive = false
 }) => {
   // Start with community view for HARVEST stage - final gathering
   const [selectedParticipants, setSelectedParticipants] = useState([]);
-  const [isLoopActive, setIsLoopActive] = useState(false);
   
   const { participants, realParticipants, error } = useVideo();
   const layout = getLayoutFromView(activeSize || 'all'); // Use activeSize prop or default to community
@@ -59,9 +59,7 @@ const HarvestPageInner = ({
     );
   };
 
-  const handleLoopToggle = (isActive) => {
-    setIsLoopActive(isActive);
-  };
+  // Loop magnifier is controlled globally via props
 
   return (
     <>
@@ -72,7 +70,6 @@ const HarvestPageInner = ({
         selectedParticipants={selectedParticipants}
         onParticipantSelect={handleParticipantSelect}
         isLoopActive={isLoopActive}
-        onLoopToggle={handleLoopToggle}
         developmentMode={developmentMode}
       />
       {error && <div style={{ color: 'red', padding: 8 }}>{error}</div>}

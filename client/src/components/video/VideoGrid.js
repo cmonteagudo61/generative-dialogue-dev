@@ -368,6 +368,7 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
                 participants={participants} 
                 viewMode={layout}
                 showLabels={labelsVisible}
+                isMagnifierActive={isLoopActive}
                 onParticipantArrayReady={handleParticipantArrayReady}
               />
             ) : (

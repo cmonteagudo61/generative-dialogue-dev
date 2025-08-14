@@ -1,12 +1,12 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import './BottomContentArea.css';
 
-const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
+const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost = false, isVotingOpen = true }) => {
   const [activeTab, setActiveTab] = useState(null); // Start with no active tab
   const [isRecording, setIsRecording] = useState(false);
   const [transcriptionStatus, setTranscriptionStatus] = useState('Disconnected');
   const [finalTranscript, setFinalTranscript] = useState('');
-  const [aiProcessedTranscript, setAiProcessedTranscript] = useState('');
+  // Note: no separate processed transcript field; we render enhanced/summary/themes directly
   const [aiEnhancedText, setAiEnhancedText] = useState('');
   const [aiSummaryText, setAiSummaryText] = useState('');
   const [aiThemesText, setAiThemesText] = useState('');
@@ -20,6 +20,8 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
   const [voteTallies, setVoteTallies] = useState({ up: 0, down: 0, total: 0 });
   const [sessionId, setSessionId] = useState('');
   const [breakoutId, setBreakoutId] = useState('');
+  const [weMeta, setWeMeta] = useState(null);
+  const [submissionToast, setSubmissionToast] = useState(null);
 
   const [isConnecting, setIsConnecting] = useState(false);
   const [lastConnectionAttempt, setLastConnectionAttempt] = useState(0);
@@ -29,7 +31,55 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
   const streamRef = useRef(null);
   const connectionLockRef = useRef(false);
   const CONNECTION_DEBOUNCE_MS = 2000;
-  const API_BASE = 'http://localhost:5680';
+  // Same-origin API base; dev server proxies to backend (see setupProxy.js)
+  const WS_PROTO = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  const API_BASE = '';
+
+  // Dev helper: create a session/breakout if none present
+  const ensureIds = useCallback(async () => {
+    let sid = localStorage.getItem('gd_session_id');
+    let bid = localStorage.getItem('gd_breakout_id');
+    try {
+      if (!sid) {
+        const r = await fetch(`${API_BASE}/api/session`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: 'Dev Session' }) });
+        if (r.ok) { const j = await r.json(); sid = j.sessionId; localStorage.setItem('gd_session_id', sid); }
+      }
+      if (!bid && sid) {
+        const r2 = await fetch(`${API_BASE}/api/session/${encodeURIComponent(sid)}/breakout`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Dev Breakout', size: 6 }) });
+        if (r2.ok) { const j2 = await r2.json(); bid = j2.breakoutId; localStorage.setItem('gd_breakout_id', bid); }
+      }
+    } catch (_) { /* ignore */ }
+    if (sid) setSessionId(sid);
+    if (bid) setBreakoutId(bid);
+  }, [API_BASE]);
+
+  useEffect(() => { ensureIds(); }, [ensureIds]);
+
+  // Dev helper: always create a fresh session/breakout and set ids
+  const createNewSession = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Dev Session' }),
+      });
+      if (!res.ok) throw new Error('Failed to create session');
+      const { sessionId: newSessionId } = await res.json();
+      const res2 = await fetch(`${API_BASE}/api/session/${encodeURIComponent(newSessionId)}/breakout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Dev Breakout', size: 6 }),
+      });
+      if (!res2.ok) throw new Error('Failed to create breakout');
+      const { breakoutId: newBreakoutId } = await res2.json();
+      localStorage.setItem('gd_session_id', newSessionId);
+      localStorage.setItem('gd_breakout_id', newBreakoutId);
+      setSessionId(newSessionId);
+      setBreakoutId(newBreakoutId);
+    } catch (err) {
+      console.error('Create session error:', err);
+    }
+  }, [API_BASE]);
   
   const stopRealTimeTranscription = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -68,7 +118,7 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
         const newMediaRecorder = new MediaRecorder(stream);
         mediaRecorderRef.current = newMediaRecorder;
 
-        wsRef.current = new WebSocket('ws://localhost:5680/realtime');
+        wsRef.current = new WebSocket(`${WS_PROTO}://${window.location.host}/realtime`);
 
         wsRef.current.onopen = () => {
           console.log('🔌 WebSocket connection established.');
@@ -90,6 +140,15 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
           if (data.type === 'transcript' && data.isFinal) {
             console.log('📝 Final transcript received:', data.transcript);
             setFinalTranscript(prev => `${prev}\n${data.transcript}`);
+            // Also broadcast to participants via session bus when host
+            try {
+              if (isHost) {
+                const busEvt = { type: 'transcript', text: data.transcript, isFinal: true };
+                fetch(`${API_BASE}/health`).catch(() => {}); // keep awake
+                // Send over session-bus via window bus if available (handled in App.js)
+                window.dispatchEvent(new CustomEvent('gd-local-transcript', { detail: busEvt }));
+              }
+            } catch (e) { /* ignore */ }
           } else if (data.type === 'transcript' && !data.isFinal) {
             console.log('📝 Interim transcript received:', data.transcript);
           } else if (data.type === 'status') {
@@ -127,7 +186,7 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
         connectionLockRef.current = false;
         setIsConnecting(false);
       });
-  }, [isConnecting, lastConnectionAttempt, stopRealTimeTranscription]);
+  }, [isConnecting, lastConnectionAttempt, stopRealTimeTranscription, WS_PROTO]);
   
   const startRecording = () => {
     console.log('🎤 Start recording clicked');
@@ -141,7 +200,7 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
   const clearTranscription = useCallback(() => {
     stopRealTimeTranscription();
     setFinalTranscript('');
-    setAiProcessedTranscript('');
+    // reset derived fields
     setAiEnhancedText('');
     setAiSummaryText('');
     setAiThemesText('');
@@ -185,6 +244,22 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
     return blocks.join('');
   }, []);
 
+  // Simple fallback theme extractor when AI themes are unavailable/time out
+  const buildFallbackThemes = useCallback((text) => {
+    if (!text || typeof text !== 'string') return '';
+    const stop = new Set(['the','and','for','that','with','this','from','have','will','about','your','into','their','there','then','than','they','them','you','are','was','were','been','what','when','where','which','who','how','why','can','could','should','would','just','like','well','really','very','only','also','into','onto','onto','over','under','between','among','because','but','not','dont','didnt','cant','wont','its','its']);
+    const words = text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w && w.length > 3 && !stop.has(w));
+    const freq = new Map();
+    for (const w of words) freq.set(w, (freq.get(w) || 0) + 1);
+    const top = Array.from(freq.entries()).sort((a,b) => b[1]-a[1]).slice(0,5).map(([w]) => w);
+    if (top.length === 0) return '';
+    return top.map(w => `- ${w.charAt(0).toUpperCase()}${w.slice(1)}`).join('\n');
+  }, []);
+
   // Rich HTML renderers
   const enhancedHtml = useMemo(() => renderMarkdown(aiEnhancedText), [aiEnhancedText, renderMarkdown]);
   // Make sure lists and emphasis render properly
@@ -217,43 +292,98 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
 
       if (response.ok) {
         const result = await response.json();
-        setAiProcessedTranscript(result.formatted);
-        setAiEnhancedText(result.enhancedText || '');
-        setAiSummaryText(result.summaryText || '');
-        setAiThemesText(result.themesText || '');
+        const enhanced = result.enhancedText || '';
+        const summary = result.summaryText || '';
+        let themes = result.themesText || '';
+        if (!themes || themes.trim().length === 0) {
+          // Build a lightweight fallback so Themes always shows something
+          themes = buildFallbackThemes(enhanced || transcript) || '';
+        }
+        setAiEnhancedText(enhanced);
+        setAiSummaryText(summary);
+        setAiThemesText(themes);
         setAiServiceUsed(result.service || '');
-        if (!editedAiText) setEditedAiText(result.enhancedText || '');
+        if (!editedAiText) setEditedAiText(enhanced);
         console.log('AI processing successful:', result);
+        // Broadcast AI results to participants via session bus (App.js forwards these)
+        try {
+          if (isHost) {
+            window.dispatchEvent(new CustomEvent('gd-local-ai', { detail: {
+              enhancedText: enhanced,
+              summaryText: summary,
+              themesText: themes,
+              service: result.service || ''
+            }}));
+          }
+        } catch (_) { /* ignore */ }
       } else {
         console.error('AI processing failed:', response.status);
-        setAiProcessedTranscript('AI processing failed. Please try again.');
       }
     } catch (error) {
       console.error('Error processing transcript with AI:', error);
-      setAiProcessedTranscript('Error connecting to AI service.');
     } finally {
       setIsProcessingAI(false);
     }
   }, []);
 
-  // Auto-process transcript with AI when it changes
+  // Auto-process transcript with AI when it changes (host-only to reduce load)
   useEffect(() => {
+    if (!isHost) return; // only host triggers AI processing
     if (finalTranscript && finalTranscript.trim() !== '') {
       // Debounce AI processing to avoid too many requests
       const timeoutId = setTimeout(() => {
         processTranscriptWithAI(finalTranscript);
-      }, 2000); // Wait 2 seconds after transcript stops changing
+      }, 3500); // Wait 3.5s after transcript stops changing
 
       return () => clearTimeout(timeoutId);
     }
-  }, [finalTranscript, processTranscriptWithAI]);
+  }, [finalTranscript, processTranscriptWithAI, isHost]);
+
+  // Listen for host-broadcast transcript lines and append on participants
+  useEffect(() => {
+    const handler = (e) => {
+      const { text, isFinal } = e.detail || {};
+      if (!text) return;
+      setFinalTranscript(prev => `${prev}\n${text}`);
+    };
+    window.addEventListener('gd-remote-transcript', handler);
+    return () => window.removeEventListener('gd-remote-transcript', handler);
+  }, []);
+
+  // Listen for host-broadcast AI outputs so participants mirror enhanced/summary/themes
+  useEffect(() => {
+    const handler = (e) => {
+      const { enhancedText, summaryText, themesText, service } = e.detail || {};
+      setAiEnhancedText(enhancedText || '');
+      setAiSummaryText(summaryText || '');
+      setAiThemesText(themesText || '');
+      setAiServiceUsed(service || '');
+      if (!editedAiText) setEditedAiText(enhancedText || '');
+    };
+    window.addEventListener('gd-remote-ai', handler);
+    return () => window.removeEventListener('gd-remote-ai', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Aggregate WE helper, memoized
+  const generateWE = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/session/${encodeURIComponent(sessionId)}/aggregate`);
+      if (res.ok) {
+        const data = await res.json();
+        setWeMeta(data.meta || null);
+      }
+    } catch (err) {
+      console.error('WE aggregate error:', err);
+    }
+  }, [sessionId]);
 
   // Auto-generate WE when switching to WE tab or after submission
   useEffect(() => {
     if (activeTab === 'we') {
       generateWE();
     }
-  }, [activeTab]);
+  }, [activeTab, generateWE]);
 
   const switchTab = (tabName) => {
     // Don't allow tab switching on orientation page
@@ -336,10 +466,19 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
     setBreakoutId(bid);
   }, []);
 
-  // Reflect external vote tallies from footer when provided
+  // Reflect external vote tallies from footer and show a brief toast when vote registers
+  const prevTalliesRef = useRef({ up: 0, down: 0, total: 0 });
+  const talliesInitializedRef = useRef(false);
   useEffect(() => {
     if (externalTallies && typeof externalTallies.total === 'number') {
+      const prev = prevTalliesRef.current;
+      const changed = prev.up !== externalTallies.up || prev.down !== externalTallies.down || prev.total !== externalTallies.total;
       setVoteTallies(externalTallies);
+      if (talliesInitializedRef.current && changed) {
+        setSubmissionToast({ type: 'success', message: 'Vote recorded.' });
+      }
+      prevTalliesRef.current = externalTallies;
+      if (!talliesInitializedRef.current) talliesInitializedRef.current = true;
     }
   }, [externalTallies]);
 
@@ -362,30 +501,24 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
       if (res.ok) {
         const data = await res.json();
         console.log('Submitted to group:', data);
+        // notify user success
+        setSubmissionToast({ type: 'success', message: 'Submitted to group.' });
+        // auto-open WE and refresh aggregate
+        setActiveTab('we');
+        setTimeout(() => generateWE(), 50);
       } else {
         console.error('Submit failed with status', res.status);
+        setSubmissionToast({ type: 'error', message: `Submit failed (${res.status}).` });
       }
     } catch (err) {
       console.error('Submit error:', err);
+      setSubmissionToast({ type: 'error', message: 'Network error submitting.' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   // Voting handled in footer; tally still shown when available
-
-  const [weMeta, setWeMeta] = useState(null);
-  const generateWE = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/session/${encodeURIComponent(sessionId)}/aggregate`);
-      if (res.ok) {
-        const data = await res.json();
-        setWeMeta(data.meta || null);
-      }
-    } catch (err) {
-      console.error('WE aggregate error:', err);
-    }
-  };
 
   return (
     <div className="bottom-content-area">
@@ -426,6 +559,11 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
         </div>
         
         <div className="tab-content">
+          {submissionToast && (
+            <div style={{ position: 'absolute', top: 8, right: 12, background: submissionToast.type === 'success' ? '#2e7d32' : '#b00020', color: 'white', padding: '8px 12px', borderRadius: 6, boxShadow: '0 2px 6px rgba(0,0,0,0.15)', zIndex: 20, pointerEvents: 'none' }}>
+              {submissionToast.message}
+            </div>
+          )}
           {activeTab === 'catalyst' && (
             <div style={{ padding: '1rem', color: 'black' }}>
               <h3 className="tab-section-title">Catalyst</h3>
@@ -437,14 +575,34 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
               <div className="dialogue-section">
                 <h4 className="tab-section-title">
                   Live Stream {isConnected ? <span className="status-dot on" /> : <span className="status-dot off" />}<span style={{fontWeight:500,color:'#3E4C71'}}>{isConnected ? 'LIVE' : 'OFF'}</span>
-                  <span className="inline-controls">
-                    <button className="inline-btn" onClick={isConnected ? stopRecording : startRecording} title={isConnected ? 'Stop' : 'Start'}>
-                      {isConnected ? 'Stop' : 'Start'}
-                    </button>
-                    <button className="inline-btn" onClick={clearTranscription} title="Clear (dev only)">Clear</button>
-                  </span>
+                  {isHost && (
+                    <span className="inline-controls">
+                      <button className="inline-btn" onClick={isConnected ? stopRecording : startRecording} title={isConnected ? 'Stop' : 'Start'}>
+                        {isConnected ? 'Stop' : 'Start'}
+                      </button>
+                      <button className="inline-btn" onClick={clearTranscription} title="Clear (dev only)">Clear</button>
+                      <button className="inline-btn" onClick={createNewSession} title="Create new Session & Breakout (dev only)">New Session</button>
+                      <button
+                        className="inline-btn"
+                        title="Copy invite link"
+                        onClick={() => {
+                          if (!sessionId || !breakoutId) return;
+                          // If running on localhost, replace host with LAN IP/hostname so phones can reach it
+                          const url = `${window.location.origin}/?sessionId=${encodeURIComponent(sessionId)}&breakoutId=${encodeURIComponent(breakoutId)}&role=participant`;
+                          navigator.clipboard.writeText(url).then(() => {
+                            setSubmissionToast({ type: 'success', message: 'Invite link copied.' });
+                          }).catch(() => {
+                            setSubmissionToast({ type: 'error', message: 'Could not copy link.' });
+                          });
+                        }}
+                      >Copy Invite</button>
+                    </span>
+                  )}
                 </h4>
                 <div className="ai-hint">Transcribed by Deepgram</div>
+                {(sessionId || breakoutId) && (
+                  <div className="ai-hint">Session: {sessionId ? `${sessionId.substring(0, 8)}…` : '—'} • Breakout: {breakoutId ? `${breakoutId.substring(0, 8)}…` : '—'}</div>
+                )}
                 <div className="live-transcript">
                   {lastThreeLines || 'No live transcription yet. Click "Start" to begin.'}
                 </div>
@@ -453,9 +611,11 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies }) => {
               <div className="dialogue-section">
                 <h4 className="tab-section-title">
                   AI Processed Transcript
-                  <span className="inline-controls">
-                    <button className="inline-btn" onClick={() => { setEditedAiText(aiEnhancedText); setIsEditingAI(true); }}>Optional Edit</button>
-                  </span>
+                  {isHost && (
+                    <span className="inline-controls">
+                      <button className="inline-btn" onClick={() => { setEditedAiText(aiEnhancedText); setIsEditingAI(true); }}>Optional Edit</button>
+                    </span>
+                  )}
                 </h4>
                 <div className="ai-hint">Enhanced by {aiServiceUsed ? aiServiceUsed.charAt(0).toUpperCase() + aiServiceUsed.slice(1) : 'AI Service'}</div>
                 <div className="ai-transcript">

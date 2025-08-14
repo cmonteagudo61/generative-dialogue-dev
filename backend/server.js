@@ -19,11 +19,14 @@ const anthropicAPI = require('../api/aiAPI');
 const openaiAPI = require('../api/openaiAPI');
 
 const app = express();
+const { connectMongo, isDbReady, mongoose } = require('./db');
+const { Submission, Vote } = require('./models');
 const expressWs = require('express-ws')(app);
 const PORT = process.env.PORT || 8080;
 const API_KEY = process.env.DEEPGRAM_API_KEY;
 
 console.log(`🚀 Advanced AI Speech Processing Server starting...`);
+(async () => { await connectMongo(); })();
 console.log(`📍 Port: ${PORT}`);
 console.log(`🔑 Deepgram API: ${API_KEY ? '✅ Configured' : '❌ Missing'}`);
 console.log(`🤖 Grok API: ${process.env.X_API_KEY ? '✅ Configured' : '❌ Missing'}`);
@@ -69,8 +72,125 @@ app.get('/health', (req, res) => {
     deepgram: API_KEY ? 'configured' : 'missing',
     grok: process.env.X_API_KEY ? 'configured' : 'missing',
     claude: process.env.ANTHROPIC_API_KEY ? 'configured' : 'missing',
-    openai: process.env.OPENAI_API_KEY ? 'configured' : 'missing'
+    openai: process.env.OPENAI_API_KEY ? 'configured' : 'missing',
+    mongo: isDbReady() ? 'connected' : (process.env.MONGODB_URI ? 'connecting/failed' : 'not-configured')
   });
+});
+
+// --- Minimal session bus websocket (host broadcasts stage/page to participants) ---
+const wss = expressWs.getWss('/session-bus');
+const busClients = new Map(); // ws -> { sessionId, role }
+
+app.ws('/session-bus', (ws, req) => {
+  busClients.set(ws, { sessionId: null, role: 'participant' });
+  // Avoid process crash on malformed close frames or other ws errors
+  ws.on('error', (err) => {
+    try {
+      console.warn('⚠️ session-bus websocket error:', err && (err.code || err.message) || err);
+    } catch (_) {}
+  });
+  ws.on('message', (msg) => {
+    try {
+      const data = JSON.parse(msg);
+      if (data.type === 'join') {
+        busClients.set(ws, { sessionId: data.sessionId || null, role: data.role || 'participant' });
+      } else if (data.type === 'stage') {
+        // host broadcast to all in same session
+        const info = busClients.get(ws) || {};
+        if (info.role === 'host' && info.sessionId) {
+          wss.clients.forEach((client) => {
+            if (client !== ws && client.readyState === 1) {
+              const ci = busClients.get(client);
+              if (ci && ci.sessionId === info.sessionId) {
+                try { client.send(JSON.stringify({ type: 'stage', page: data.page })); } catch (_) {}
+              }
+            }
+          });
+        }
+      } else if (data.type === 'transcript') {
+        // host broadcasts final transcript lines to participants in same session
+        const info = busClients.get(ws) || {};
+        if (info.role === 'host' && info.sessionId && typeof data.text === 'string') {
+          wss.clients.forEach((client) => {
+            if (client !== ws && client.readyState === 1) {
+              const ci = busClients.get(client);
+              if (ci && ci.sessionId === info.sessionId) {
+                try { client.send(JSON.stringify({ type: 'transcript', text: data.text, isFinal: !!data.isFinal })); } catch (_) {}
+              }
+            }
+          });
+        }
+      } else if (data.type === 'ai') {
+        // host broadcasts AI-processed payload so participants mirror enhanced/summary/themes
+        const info = busClients.get(ws) || {};
+        if (info.role === 'host' && info.sessionId) {
+          wss.clients.forEach((client) => {
+            if (client !== ws && client.readyState === 1) {
+              const ci = busClients.get(client);
+              if (ci && ci.sessionId === info.sessionId) {
+                try { client.send(JSON.stringify({ type: 'ai', enhancedText: data.enhancedText || '', summaryText: data.summaryText || '', themesText: data.themesText || '', service: data.service || '' })); } catch (_) {}
+              }
+            }
+          });
+        }
+      } else if (data.type === 'voting') {
+        // host toggles voting open/close for session
+        const info = busClients.get(ws) || {};
+        if (info.role === 'host' && info.sessionId) {
+          wss.clients.forEach((client) => {
+            if (client !== ws && client.readyState === 1) {
+              const ci = busClients.get(client);
+              if (ci && ci.sessionId === info.sessionId) {
+                try { client.send(JSON.stringify({ type: 'voting', open: !!data.open })); } catch (_) {}
+              }
+            }
+          });
+        }
+      }
+      } catch (e) { /* ignore malformed messages */ }
+  });
+  ws.on('close', () => { busClients.delete(ws); });
+});
+
+// ----- Minimal session and breakout creation (DB-first, fallback to memory) -----
+app.post('/api/session', async (req, res) => {
+  try {
+    const { title, prompt } = req.body || {};
+    if (isDbReady()) {
+      // Lazy import to avoid model load before connection
+      const { Session } = require('./models');
+      const s = await Session.create({ title: title || 'Dialogue Session', prompt: prompt || '' });
+      return res.json({ ok: true, sessionId: String(s._id) });
+    } else {
+      // Create a memory session bucket
+      const sessionId = `mem-${Date.now()}`;
+      if (!sessionStore[sessionId]) sessionStore[sessionId] = { breakouts: {}, meta: { title, prompt } };
+      return res.json({ ok: true, sessionId });
+    }
+  } catch (err) {
+    console.error('❌ Create session error:', err);
+    res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+app.post('/api/session/:sessionId/breakout', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const { name, size } = req.body || {};
+    if (isDbReady()) {
+      const { Breakout } = require('./models');
+      const b = await Breakout.create({ sessionId, name: name || 'Breakout', size: size || 0, isOpen: false });
+      return res.json({ ok: true, breakoutId: String(b._id) });
+    } else {
+      const breakoutId = `mem-b-${Date.now()}`;
+      const bucket = getBreakoutBucket(sessionId, breakoutId); // ensures exists
+      sessionStore[sessionId].breakouts[breakoutId].info = { name: name || 'Breakout', size: size || 0, isOpen: false };
+      return res.json({ ok: true, breakoutId });
+    }
+  } catch (err) {
+    console.error('❌ Create breakout error:', err);
+    res.status(500).json({ error: 'Internal error' });
+  }
 });
 
 // AI Processing Endpoints
@@ -178,23 +298,36 @@ function getBreakoutBucket(sessionId, breakoutId) {
 }
 
 // Submit edited/approved content for a breakout
-app.post('/api/session/:sessionId/breakout/:breakoutId/submit', (req, res) => {
+app.post('/api/session/:sessionId/breakout/:breakoutId/submit', async (req, res) => {
   try {
     const { sessionId, breakoutId } = req.params;
     const { text, enhancedText, summaryText, themesText, quotes } = req.body || {};
     if (!text && !enhancedText && !summaryText && !themesText) {
       return res.status(400).json({ error: 'At least one of text/enhancedText/summaryText/themesText is required' });
     }
-    const bucket = getBreakoutBucket(sessionId, breakoutId);
-    bucket.submissions.push({
-      text: text || null,
-      enhancedText: enhancedText || null,
-      summaryText: summaryText || null,
-      themesText: themesText || null,
-      quotes: Array.isArray(quotes) ? quotes : [],
-      timestamp: Date.now()
-    });
-    return res.json({ ok: true, submissions: bucket.submissions.length });
+    if (isDbReady()) {
+      const doc = await Submission.create({
+        sessionId,
+        breakoutId,
+        text: text || null,
+        enhancedText: enhancedText || null,
+        summaryText: summaryText || null,
+        themesText: themesText || null,
+        quotes: Array.isArray(quotes) ? quotes : [],
+      });
+      return res.json({ ok: true, id: doc._id });
+    } else {
+      const bucket = getBreakoutBucket(sessionId, breakoutId);
+      bucket.submissions.push({
+        text: text || null,
+        enhancedText: enhancedText || null,
+        summaryText: summaryText || null,
+        themesText: themesText || null,
+        quotes: Array.isArray(quotes) ? quotes : [],
+        timestamp: Date.now()
+      });
+      return res.json({ ok: true, submissions: bucket.submissions.length });
+    }
   } catch (err) {
     console.error('❌ Submit error:', err);
     res.status(500).json({ error: 'Internal error' });
@@ -202,18 +335,53 @@ app.post('/api/session/:sessionId/breakout/:breakoutId/submit', (req, res) => {
 });
 
 // Record a vote on a breakout summary (up/down)
-app.post('/api/session/:sessionId/breakout/:breakoutId/vote', (req, res) => {
+app.post('/api/session/:sessionId/breakout/:breakoutId/vote', async (req, res) => {
   try {
     const { sessionId, breakoutId } = req.params;
     const { participantId, vote } = req.body || {};
     if (!vote || !['up', 'down'].includes(vote)) {
       return res.status(400).json({ error: 'Vote must be "up" or "down"' });
     }
-    const bucket = getBreakoutBucket(sessionId, breakoutId);
-    bucket.votes.push({ participantId: participantId || null, vote, timestamp: Date.now() });
-    const up = bucket.votes.filter(v => v.vote === 'up').length;
-    const down = bucket.votes.filter(v => v.vote === 'down').length;
-    return res.json({ ok: true, tallies: { up, down, total: up + down } });
+    if (isDbReady()) {
+      const sid = mongoose.Types.ObjectId.isValid(sessionId) ? new mongoose.Types.ObjectId(sessionId) : sessionId;
+      const bid = mongoose.Types.ObjectId.isValid(breakoutId) ? new mongoose.Types.ObjectId(breakoutId) : breakoutId;
+      await Vote.create({ sessionId: sid, breakoutId: bid, participantId: participantId || null, vote });
+      const tallies = await Vote.aggregate([
+        { $match: { sessionId: sid, breakoutId: bid } },
+        { $group: { _id: '$vote', count: { $sum: 1 } } }
+      ]);
+      const up = tallies.find(t => t._id === 'up')?.count || 0;
+      const down = tallies.find(t => t._id === 'down')?.count || 0;
+      // Broadcast new tallies to all clients in session so UIs refresh immediately
+      try {
+        const infoSession = sid;
+        wss.clients.forEach((client) => {
+          if (client.readyState === 1) {
+            const ci = busClients.get(client);
+            if (ci && String(ci.sessionId) === String(infoSession)) {
+              try { client.send(JSON.stringify({ type: 'voteTallies', tallies: { up, down, total: up + down } })); } catch (_) {}
+            }
+          }
+        });
+      } catch (_) {}
+      return res.json({ ok: true, tallies: { up, down, total: up + down } });
+    } else {
+      const bucket = getBreakoutBucket(sessionId, breakoutId);
+      bucket.votes.push({ participantId: participantId || null, vote, timestamp: Date.now() });
+      const up = bucket.votes.filter(v => v.vote === 'up').length;
+      const down = bucket.votes.filter(v => v.vote === 'down').length;
+      try {
+        wss.clients.forEach((client) => {
+          if (client.readyState === 1) {
+            const ci = busClients.get(client);
+            if (ci && ci.sessionId === sessionId) {
+              try { client.send(JSON.stringify({ type: 'voteTallies', tallies: { up, down, total: up + down } })); } catch (_) {}
+            }
+          }
+        });
+      } catch (_) {}
+      return res.json({ ok: true, tallies: { up, down, total: up + down } });
+    }
   } catch (err) {
     console.error('❌ Vote error:', err);
     res.status(500).json({ error: 'Internal error' });
@@ -224,26 +392,39 @@ app.post('/api/session/:sessionId/breakout/:breakoutId/vote', (req, res) => {
 app.get('/api/session/:sessionId/aggregate', async (req, res) => {
   try {
     const { sessionId } = req.params;
-    const session = sessionStore[sessionId];
-    if (!session) {
-      return res.json({
-        sessionId,
-        meta: { narrative: '', themesText: '', quotes: [], votes: { up: 0, down: 0, total: 0 } }
-      });
-    }
-    const allBreakouts = Object.values(session.breakouts || {});
-    const allTexts = [];
-    const allVotes = { up: 0, down: 0 };
-    const allQuotes = [];
-    for (const b of allBreakouts) {
-      for (const s of b.submissions) {
+    let allTexts = [];
+    let allQuotes = [];
+    let up = 0, down = 0;
+    if (isDbReady()) {
+      const sid = mongoose.Types.ObjectId.isValid(sessionId) ? new mongoose.Types.ObjectId(sessionId) : sessionId;
+      const subs = await Submission.find({ sessionId: sid }).select('enhancedText text quotes').lean();
+      subs.forEach(s => {
         if (s.enhancedText) allTexts.push(s.enhancedText);
         else if (s.text) allTexts.push(s.text);
         if (Array.isArray(s.quotes)) allQuotes.push(...s.quotes);
+      });
+      const tallies = await Vote.aggregate([
+        { $match: { sessionId: sid } },
+        { $group: { _id: '$vote', count: { $sum: 1 } } }
+      ]);
+      up = tallies.find(t => t._id === 'up')?.count || 0;
+      down = tallies.find(t => t._id === 'down')?.count || 0;
+    } else {
+      const session = sessionStore[sessionId];
+      if (!session) {
+        return res.json({ sessionId, meta: { narrative: '', themesText: '', quotes: [], votes: { up: 0, down: 0, total: 0 } } });
       }
-      for (const v of b.votes) {
-        if (v.vote === 'up') allVotes.up += 1; else if (v.vote === 'down') allVotes.down += 1;
+      const allBreakouts = Object.values(session.breakouts || {});
+      const voteAgg = { up: 0, down: 0 };
+      for (const b of allBreakouts) {
+        for (const s of b.submissions) {
+          if (s.enhancedText) allTexts.push(s.enhancedText);
+          else if (s.text) allTexts.push(s.text);
+          if (Array.isArray(s.quotes)) allQuotes.push(...s.quotes);
+        }
+        for (const v of b.votes) { if (v.vote === 'up') voteAgg.up++; else if (v.vote === 'down') voteAgg.down++; }
       }
+      up = voteAgg.up; down = voteAgg.down;
     }
     const combinedText = allTexts.join('\n\n');
     let metaNarrative = '';
@@ -265,8 +446,7 @@ app.get('/api/session/:sessionId/aggregate', async (req, res) => {
         console.warn('⚠️ Meta aggregation format failed:', err?.message);
       }
     }
-    const total = allVotes.up + allVotes.down;
-    // Limit quotes to top 10 most recent for now
+    const total = up + down;
     const quotes = allQuotes.slice(-10);
     return res.json({
       sessionId,
@@ -274,7 +454,7 @@ app.get('/api/session/:sessionId/aggregate', async (req, res) => {
         narrative: metaNarrative,
         themesText: metaThemesText,
         quotes,
-        votes: { up: allVotes.up, down: allVotes.down, total }
+        votes: { up, down, total }
       }
     });
   } catch (err) {
@@ -542,6 +722,12 @@ function processSpeakerDiarization(utterances, words) {
 // WebSocket endpoint for real-time transcription
 app.ws('/realtime', (ws, req) => {
   console.log('🔌 WebSocket connection established for real-time transcription');
+  // Prevent process crash on ws protocol errors (e.g., invalid close codes)
+  ws.on('error', (err) => {
+    try {
+      console.warn('⚠️ realtime websocket error:', err && (err.code || err.message) || err);
+    } catch (_) {}
+  });
   
   let deepgramWs = null;
   let isConnected = false;

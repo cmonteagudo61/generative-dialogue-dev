@@ -814,6 +814,32 @@
   }
 }
 
+/* iPhone 12 width and similar: ensure all four tabs fit without clipping */
+@media (max-width: 400px) {
+  .tab-navigation {
+    padding: 0 4px 0 4px;
+  }
+  .tab-controls-left {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    width: 100%;
+  }
+  .tab-btn {
+    margin-right: 0;
+    padding: 2px 6px !important;
+    font-size: 18px !important;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+}
+
 /* Transcription control buttons in tab navigation - match tab height */
 .transcription-control-btn {
   padding: 3px 16px; /* Match tab padding for consistent height */

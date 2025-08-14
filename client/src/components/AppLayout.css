@@ -109,6 +109,7 @@
   display: flex;
   height: 100%;
   flex: 1 1 auto;
+  align-items: stretch;
 }
 
 .header-info {
@@ -143,6 +144,15 @@
   border-right: none; /* Remove the green/orange border */
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
+}
+
+/* Host controls row below nav; keep buttons from overlapping tabs */
+.host-controls {
+  display: flex;
+  gap: 8px;
+  margin-left: 12px;
+  align-items: center;
 }
 .stage-tab:last-child {
   border-right: none;

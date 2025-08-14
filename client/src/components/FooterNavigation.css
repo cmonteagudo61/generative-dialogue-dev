@@ -283,3 +283,43 @@
     height: 30px;
   }
 }
+
+/* iPhone 12 viewport width (390px) and similar */
+@media (max-width: 400px) {
+  .footer-bar {
+    height: 52px;
+    padding: 0 4px;
+  }
+  .footer-left,
+  .footer-right {
+    gap: 2px;
+  }
+  .footer-center {
+    flex: 0 0 56px;
+    max-width: 56px;
+    min-width: 56px;
+    gap: 0;
+    padding: 0;
+  }
+  /* Hide the label to save width; keep the numeric counter */
+  .footer-center .timer-label {
+    display: none;
+  }
+  .footer-center .timer-value {
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .footer-bar .control-button {
+    width: 40px;
+    height: 40px;
+    padding: 6px;
+  }
+  .footer-bar .control-button img {
+    width: 28px;
+    height: 28px;
+  }
+  /* Reduce extra spacer after thumbs-down on very small viewports */
+  .footer-right > .control-button:nth-of-type(2) {
+    margin-right: 4px;
+  }
+}
