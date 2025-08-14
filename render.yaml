@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: generative-dialogue-backend
+    env: node
+    plan: free
+    buildCommand: |
+      cd backend && npm install
+      cd ../client && npm install && npm run build
+    startCommand: |
+      cd backend && PORT=$PORT NODE_ENV=production node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: MONGODB_URI
+        sync: false
+      - key: DEEPGRAM_API_KEY
+        sync: false
+      - key: X_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+

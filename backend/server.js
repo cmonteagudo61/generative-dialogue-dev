@@ -6,9 +6,15 @@
 require('dotenv').config({ path: '../.env' });
 const express = require('express');
 const https = require('https');
+const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const WebSocket = require('ws');
+const helmet = require('helmet');
+const compression = require('compression');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const morgan = require('morgan');
 
 // Import AI Enhancement Service
 const { enhancer, AI_SERVICES } = require('./enhanced-transcript-service');
@@ -33,19 +39,29 @@ console.log(`🤖 Grok API: ${process.env.X_API_KEY ? '✅ Configured' : '❌ Mi
 console.log(`🤖 Claude API: ${process.env.ANTHROPIC_API_KEY ? '✅ Configured' : '❌ Missing'}`);
 console.log(`🤖 OpenAI API: ${process.env.OPENAI_API_KEY ? '✅ Configured' : '❌ Missing'}`);
 
-// Enable CORS and JSON parsing
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+// Trust proxy (required for some platforms/load balancers)
+app.set('trust proxy', 1);
 
-app.use(express.json());
+// Security, compression, logging
+app.use(helmet({
+  contentSecurityPolicy: false // keep simple for dev; can be tightened later
+}));
+app.use(compression());
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+
+// CORS: permissive in dev; restricted by ALLOWED_ORIGINS in prod
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+const corsOptions = process.env.NODE_ENV === 'production'
+  ? { origin: allowedOrigins.length ? allowedOrigins : false, credentials: true }
+  : { origin: true, credentials: true };
+app.use(cors(corsOptions));
+
+// JSON body size limit
+app.use(express.json({ limit: '1mb' }));
+// Serve backend static (test pages)
 app.use(express.static(__dirname));
 
 // Configure multer for file uploads
@@ -54,12 +70,12 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
-// Serve the main HTML page
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Serve the test format page explicitly
+// In production, serve the client build (single-origin app)
+const clientBuildPath = path.join(__dirname, '../client/build');
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath, { maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0 }));
+}
+// Serve backend test pages explicitly when present
 app.get('/test-format.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'test-format.html'));
 });
@@ -77,23 +93,67 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Basic API rate limiting
+const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 120 }); // 120 req/min
+app.use('/api', apiLimiter);
+
 // --- Minimal session bus websocket (host broadcasts stage/page to participants) ---
 const wss = expressWs.getWss('/session-bus');
-const busClients = new Map(); // ws -> { sessionId, role }
+const busClients = new Map(); // ws -> { sessionId, breakoutId, role }
 
 app.ws('/session-bus', (ws, req) => {
-  busClients.set(ws, { sessionId: null, role: 'participant' });
+  busClients.set(ws, { sessionId: null, breakoutId: null, role: 'participant' });
   // Avoid process crash on malformed close frames or other ws errors
   ws.on('error', (err) => {
     try {
       console.warn('⚠️ session-bus websocket error:', err && (err.code || err.message) || err);
     } catch (_) {}
   });
+  // Lightweight heartbeat to keep connections fresh and prune dead sockets
+  try {
+    ws.isAlive = true;
+    ws.on('pong', () => { ws.isAlive = true; });
+  } catch (_) {}
+  const pingInterval = setInterval(() => {
+    try {
+      if (ws.isAlive === false) {
+        try { ws.terminate(); } catch (_) {}
+        return;
+      }
+      ws.isAlive = false;
+      try { ws.ping(); } catch (_) {}
+    } catch (_) {}
+  }, 30000);
   ws.on('message', (msg) => {
     try {
       const data = JSON.parse(msg);
       if (data.type === 'join') {
-        busClients.set(ws, { sessionId: data.sessionId || null, role: data.role || 'participant' });
+        busClients.set(ws, { sessionId: data.sessionId || null, breakoutId: data.breakoutId || null, role: data.role || 'participant' });
+        // Send current vote tallies immediately so UI is in sync on join
+        (async () => {
+          try {
+            const sid = data.sessionId;
+            const bid = data.breakoutId;
+            if (!sid || !bid) return;
+            let up = 0, down = 0;
+            if (isDbReady()) {
+              const sidQ = mongoose.Types.ObjectId.isValid(sid) ? new mongoose.Types.ObjectId(sid) : sid;
+              const bidQ = mongoose.Types.ObjectId.isValid(bid) ? new mongoose.Types.ObjectId(bid) : bid;
+              const tallies = await Vote.aggregate([
+                { $match: { sessionId: sidQ, breakoutId: bidQ } },
+                { $group: { _id: '$vote', count: { $sum: 1 } } }
+              ]);
+              up = tallies.find(t => t._id === 'up')?.count || 0;
+              down = tallies.find(t => t._id === 'down')?.count || 0;
+            } else {
+              const bucket = getBreakoutBucket(sid, bid);
+              up = bucket.votes.filter(v => v.vote === 'up').length;
+              down = bucket.votes.filter(v => v.vote === 'down').length;
+            }
+            const payload = { type: 'voteTallies', tallies: { up, down, total: up + down } };
+            try { ws.send(JSON.stringify(payload)); } catch (_) {}
+          } catch (_) {}
+        })();
       } else if (data.type === 'stage') {
         // host broadcast to all in same session
         const info = busClients.get(ws) || {};
@@ -149,7 +209,7 @@ app.ws('/session-bus', (ws, req) => {
       }
       } catch (e) { /* ignore malformed messages */ }
   });
-  ws.on('close', () => { busClients.delete(ws); });
+  ws.on('close', () => { busClients.delete(ws); try { clearInterval(pingInterval); } catch (_) {} });
 });
 
 // ----- Minimal session and breakout creation (DB-first, fallback to memory) -----
@@ -1172,3 +1232,24 @@ const server = app.listen(PORT, () => {
 });
 
 module.exports = { app, server }; 
+
+// SPA fallback: route unknown paths to client index.html in production
+if (fs.existsSync(clientBuildPath)) {
+  app.get('*', (req, res) => {
+    // Allow API and WS paths to 404 as usual
+    if (req.path.startsWith('/api') || req.path.startsWith('/realtime') || req.path.startsWith('/session-bus')) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  });
+}
+
+// Graceful shutdown
+const shutdown = (signal) => () => {
+  console.log(`\n${signal} received. Shutting down gracefully...`);
+  try { server.close(() => { console.log('HTTP server closed.'); process.exit(0); }); } catch (_) { process.exit(0); }
+  // Force exit after timeout
+  setTimeout(() => process.exit(0), 5000).unref();
+};
+process.on('SIGTERM', shutdown('SIGTERM'));
+process.on('SIGINT', shutdown('SIGINT'));
