@@ -8,6 +8,16 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
     description: '',
     facilitator: 'AI Facilitator',
     
+    // Input Page Configuration Fields
+    host: '',
+    gatheringSize: '',
+    availableTime: '',
+    diversity: '',
+    familiarity: '',
+    experience: '',
+    theme: '',
+    context: '',
+    
     // Participant Settings
     maxParticipants: 30,
     minParticipants: 2,
@@ -62,18 +72,7 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
         ]
       }
     },
-    
-    // View Configurations
-    viewModes: {
-      self: { enabled: true, maxDuration: 15, description: 'Individual reflection' },
-      dyad: { enabled: true, maxDuration: 30, autoMatch: true, description: 'Paired dialogue' },
-      triad: { enabled: true, maxDuration: 45, autoMatch: true, description: 'Three-person groups' },
-      quad: { enabled: true, maxDuration: 45, autoMatch: true, description: 'Four-person groups' },
-      fishbowl: { enabled: true, maxParticipants: 6, observerMode: true, description: 'Inner circle dialogue with observers' },
-      kiva: { enabled: true, maxParticipants: 6, description: 'Structured community circle' },
-      community: { enabled: true, unlimitedParticipants: true, description: 'Full group interaction' },
-      'breakout-processing': { enabled: true, description: 'Transcript review and AI summarization' }
-    },
+
     
     // Catalyst Library
     catalystLibrary: {
@@ -184,10 +183,12 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
     
     // AI & Processing
     aiSettings: {
-      transcription: { enabled: true, provider: 'deepgram', language: 'en' },
+      transcription: { enabled: true, provider: 'deepgram', language: 'en', diarization: true },
       enhancement: { enabled: true, provider: 'claude', realTime: false },
       synthesis: { enabled: true, provider: 'grok', frequency: 'per-stage' },
-      insights: { enabled: true, provider: 'openai', growthTracking: true }
+      insights: { enabled: true, provider: 'openai', growthTracking: true, collectiveAnalysis: true },
+      facilitation: { enabled: true, provider: 'claude' },
+      analysis: { enabled: true, provider: 'openai' }
     },
     
     // Technical Settings
@@ -221,6 +222,60 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
 
   const [activeSection, setActiveSection] = useState('basic');
   const [previewMode, setPreviewMode] = useState(false);
+
+  // Catalyst Library for different types of catalysts
+  const catalystLibrary = {
+    poetry: [
+      { id: 'rumi-field', title: 'Out Beyond Ideas - Rumi', content: 'Out beyond ideas of wrongdoing and rightdoing, there is a field. I\'ll meet you there.' },
+      { id: 'oliver-attention', title: 'Attention - Mary Oliver', content: 'Attention is the beginning of devotion.' },
+      { id: 'whyte-conversation', title: 'The Conversation - David Whyte', content: 'All conversations are with yourself, and sometimes they are with other people.' }
+    ],
+    meditation: [
+      { id: 'centering-breath', title: 'Centering Breath', content: 'Take three deep breaths. With each exhale, let go of what brought you here. With each inhale, arrive fully in this moment.' },
+      { id: 'gratitude-moment', title: 'Gratitude Moment', content: 'Place your hand on your heart. Feel three things you\'re grateful for in this moment.' },
+      { id: 'intention-setting', title: 'Intention Setting', content: 'What intention do you bring to this conversation? What do you hope will emerge?' }
+    ],
+    reading: [
+      { id: 'brown-vulnerability', title: 'Vulnerability - Brené Brown', content: 'Vulnerability is not winning or losing; it\'s having the courage to show up when you can\'t control the outcome.' },
+      { id: 'palmer-hidden', title: 'A Hidden Wholeness - Parker Palmer', content: 'We are all more than we know, and more than we let on, even to ourselves.' }
+    ]
+  };
+
+  // Common Prompts for different substages
+  const commonPrompts = {
+    catalyst: [
+      'What resonated most deeply with you in this catalyst?',
+      'What feelings or sensations arose as you experienced this?',
+      'What questions or curiosities emerged for you?',
+      'How does this connect to what brought you here today?',
+      'What wants to be explored further from what we just shared?',
+      'What did you notice in your body or heart during this experience?'
+    ],
+    dialogue: [
+      'What is most alive for you right now in relation to our topic?',
+      'What questions are you holding that you\'d love to explore together?',
+      'What perspective or experience do you bring that might serve our conversation?',
+      'What would you like to understand more deeply through dialogue?',
+      'What assumptions or beliefs are you curious to examine?',
+      'What story or experience wants to be shared in service of our collective inquiry?'
+    ],
+    summary: [
+      'What were the key insights or discoveries from your dialogue?',
+      'What themes or patterns emerged in your conversation?',
+      'What questions arose that want further exploration?',
+      'What surprised you in your exchange?',
+      'What would you want the larger group to know from your dialogue?',
+      'What felt most significant or meaningful from your time together?'
+    ],
+    we: [
+      'What themes are emerging from our collective sharing?',
+      'What patterns do you notice across our different conversations?',
+      'What questions are arising for our community from what we\'ve heard?',
+      'What wisdom is wanting to emerge from our time together?',
+      'What do you sense about our collective journey or learning?',
+      'What wants to be acknowledged or celebrated from our sharing?'
+    ]
+  };
 
   // Populate config when editing an existing dialogue
   useEffect(() => {
@@ -424,24 +479,106 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
       
       <div className="form-row">
         <div className="form-group">
-          <label>Facilitator</label>
+          <label>Host</label>
           <input
             type="text"
-            value={config.facilitator}
-            onChange={(e) => setConfig(prev => ({ ...prev, facilitator: e.target.value }))}
+            value={config.host || ''}
+            onChange={(e) => setConfig(prev => ({ ...prev, host: e.target.value }))}
+            placeholder="Host name"
           />
         </div>
         
         <div className="form-group">
-          <label>Max Participants</label>
+          <label>Gathering Size</label>
           <input
             type="number"
-            value={config.maxParticipants}
-            onChange={(e) => setConfig(prev => ({ ...prev, maxParticipants: parseInt(e.target.value) }))}
+            value={config.gatheringSize || ''}
+            onChange={(e) => setConfig(prev => ({ ...prev, gatheringSize: parseInt(e.target.value) || '' }))}
             min="2"
             max="500"
+            placeholder="Number of participants"
           />
         </div>
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label>Available Time (in minutes)</label>
+          <input
+            type="number"
+            value={config.availableTime || ''}
+            onChange={(e) => setConfig(prev => ({ ...prev, availableTime: parseInt(e.target.value) || '' }))}
+            min="15"
+            max="480"
+            placeholder="Total time available"
+          />
+        </div>
+        
+        <div className="form-group">
+          <label>Diversity of the Group</label>
+          <select
+            value={config.diversity || ''}
+            onChange={(e) => setConfig(prev => ({ ...prev, diversity: e.target.value }))}
+          >
+            <option value="">Select diversity level</option>
+            <option value="homogeneous">Homogeneous - Similar backgrounds</option>
+            <option value="mixed">Mixed - Some diversity</option>
+            <option value="diverse">Diverse - Wide range of backgrounds</option>
+            <option value="highly-diverse">Highly Diverse - Very different backgrounds</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label>Familiarity</label>
+          <select
+            value={config.familiarity || ''}
+            onChange={(e) => setConfig(prev => ({ ...prev, familiarity: e.target.value }))}
+          >
+            <option value="">Select familiarity level</option>
+            <option value="strangers">Strangers - Don't know each other</option>
+            <option value="acquaintances">Acquaintances - Some know each other</option>
+            <option value="colleagues">Colleagues - Work together</option>
+            <option value="friends">Friends - Close relationships</option>
+            <option value="mixed">Mixed - Various levels of familiarity</option>
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label>Experience With Generative Dialogue</label>
+          <select
+            value={config.experience || ''}
+            onChange={(e) => setConfig(prev => ({ ...prev, experience: e.target.value }))}
+          >
+            <option value="">Select experience level</option>
+            <option value="none">None - First time</option>
+            <option value="minimal">Minimal - 1-2 sessions</option>
+            <option value="some">Some - Several sessions</option>
+            <option value="experienced">Experienced - Many sessions</option>
+            <option value="expert">Expert - Regular practitioner</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label>Theme/Issue Being Explored</label>
+        <textarea
+          value={config.theme || ''}
+          onChange={(e) => setConfig(prev => ({ ...prev, theme: e.target.value }))}
+          placeholder="What topic or issue will the dialogue explore?"
+          rows={3}
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Context/Field</label>
+        <textarea
+          value={config.context || ''}
+          onChange={(e) => setConfig(prev => ({ ...prev, context: e.target.value }))}
+          placeholder="What context or field does this dialogue relate to? (e.g., organization, community, academic, etc.)"
+          rows={3}
+        />
       </div>
       
       <div className="checkbox-group">
@@ -596,6 +733,8 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
         Configure each stage with its four substages: Catalyst → Dialogue → Summary → WE. 
         Total duration: <strong>{formatDuration(calculateTotalDuration())}</strong>
       </p>
+      
+
       
       {/* Opening Stage */}
       {config.stages.opening?.enabled && (
@@ -936,134 +1075,195 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
     </div>
   );
 
-  const renderViewModeSettings = () => (
-    <div className="config-section">
-      <h3>View Modes</h3>
-      <p className="section-description">
-        Configure which conversation formats are available during the dialogue
-      </p>
-      
-      {Object.entries(config.viewModes).map(([mode, settings]) => (
-        <div key={mode} className="view-mode-config">
-          <div className="mode-header">
-            <label className="mode-toggle">
-              <input
-                type="checkbox"
-                checked={settings.enabled}
-                onChange={(e) => updateNestedConfig('viewModes', mode, 'enabled', e.target.checked)}
-              />
-              <span className="mode-name">{mode.charAt(0).toUpperCase() + mode.slice(1)}</span>
-            </label>
-          </div>
-          
-          {settings.enabled && (
-            <div className="mode-settings">
-              {mode !== 'community' && (
-                <div className="form-group">
-                  <label>Max Duration (minutes)</label>
-                  <input
-                    type="number"
-                    value={settings.maxDuration || settings.maxParticipants || 30}
-                    onChange={(e) => updateNestedConfig('viewModes', mode, 
-                      mode === 'fishbowl' || mode === 'kiva' ? 'maxParticipants' : 'maxDuration', 
-                      parseInt(e.target.value)
-                    )}
-                    min="5"
-                    max="120"
-                  />
-                </div>
-              )}
-              
-              {(mode === 'dyad' || mode === 'triad' || mode === 'quad') && (
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={settings.autoMatch}
-                    onChange={(e) => updateNestedConfig('viewModes', mode, 'autoMatch', e.target.checked)}
-                  />
-                  Auto-match participants
-                </label>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
 
-  const renderAISettings = () => (
-    <div className="config-section">
-      <h3>AI & Processing</h3>
-      
-      {Object.entries(config.aiSettings).map(([service, settings]) => (
-        <div key={service} className="ai-service-config">
-          <div className="service-header">
-            <label className="service-toggle">
-              <input
-                type="checkbox"
-                checked={settings.enabled}
-                onChange={(e) => updateNestedConfig('aiSettings', service, 'enabled', e.target.checked)}
-              />
-              <span className="service-name">{service.charAt(0).toUpperCase() + service.slice(1)}</span>
-            </label>
-          </div>
-          
-          {settings.enabled && (
-            <div className="service-settings">
-              <div className="form-group">
-                <label>Provider</label>
-                <select
-                  value={settings.provider}
-                  onChange={(e) => updateNestedConfig('aiSettings', service, 'provider', e.target.value)}
-                >
-                  {getProviderOptions(service).map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-              
-              {service === 'transcription' && (
-                <div className="form-group">
-                  <label>Language</label>
-                  <select
-                    value={settings.language}
-                    onChange={(e) => updateNestedConfig('aiSettings', service, 'language', e.target.value)}
-                  >
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                  </select>
+
+  const renderAISettings = () => {
+    // Available AI providers (in a real system, this would come from API)
+    const availableProviders = [
+      { id: 'openai', name: 'OpenAI GPT-4', status: 'connected', strengths: ['reasoning', 'analysis', 'synthesis'] },
+      { id: 'claude', name: 'Anthropic Claude', status: 'connected', strengths: ['enhancement', 'safety', 'nuance'] },
+      { id: 'grok', name: 'xAI Grok', status: 'connected', strengths: ['synthesis', 'creativity', 'real-time'] },
+      { id: 'deepgram', name: 'Deepgram Nova', status: 'connected', strengths: ['transcription', 'diarization'] },
+      { id: 'gemini', name: 'Google Gemini', status: 'available', strengths: ['multimodal', 'analysis'] }
+    ];
+
+    const aiTasks = [
+      { 
+        id: 'transcription', 
+        name: '🎤 Real-time Transcription', 
+        description: 'Convert speech to text with speaker identification',
+        currentProvider: config.aiSettings.transcription?.provider || 'deepgram'
+      },
+      { 
+        id: 'enhancement', 
+        name: '✨ Content Enhancement', 
+        description: 'Clean up and improve transcript quality',
+        currentProvider: config.aiSettings.enhancement?.provider || 'claude'
+      },
+      { 
+        id: 'synthesis', 
+        name: '🧠 Dialogue Synthesis', 
+        description: 'Generate summaries and extract key insights',
+        currentProvider: config.aiSettings.synthesis?.provider || 'grok'
+      },
+      { 
+        id: 'insights', 
+        name: '💡 Pattern Recognition', 
+        description: 'Identify themes, growth moments, and collective wisdom',
+        currentProvider: config.aiSettings.insights?.provider || 'openai'
+      },
+      { 
+        id: 'facilitation', 
+        name: '🎭 AI Facilitation', 
+        description: 'Suggest prompts, timing, and interventions',
+        currentProvider: config.aiSettings.facilitation?.provider || 'claude'
+      },
+      { 
+        id: 'analysis', 
+        name: '📊 Journey Analysis', 
+        description: 'Track individual and collective growth over time',
+        currentProvider: config.aiSettings.analysis?.provider || 'openai'
+      }
+    ];
+
+    return (
+      <div className="config-section">
+        <h3>AI & Processing</h3>
+        <p className="section-description">
+          Configure which AI providers handle different tasks. Mix and match based on each AI's strengths.
+        </p>
+        
+        {/* Connected Providers Status */}
+        <div className="ai-providers-status">
+          <h4>🔗 Connected AI Providers</h4>
+          <div className="providers-grid">
+            {availableProviders.map(provider => (
+              <div key={provider.id} className={`provider-card ${provider.status}`}>
+                <div className="provider-header">
+                  <span className="provider-name">{provider.name}</span>
+                  <span className={`status-badge ${provider.status}`}>
+                    {provider.status === 'connected' ? '🟢 Connected' : '🟡 Available'}
+                  </span>
                 </div>
-              )}
-              
-              {service === 'enhancement' && (
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={settings.realTime}
-                    onChange={(e) => updateNestedConfig('aiSettings', service, 'realTime', e.target.checked)}
-                  />
-                  Real-time enhancement
-                </label>
-              )}
-              
-              {service === 'insights' && (
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={settings.growthTracking}
-                    onChange={(e) => updateNestedConfig('aiSettings', service, 'growthTracking', e.target.checked)}
-                  />
-                  Enable growth tracking
-                </label>
-              )}
-            </div>
-          )}
+                <div className="provider-strengths">
+                  <strong>Best for:</strong> {provider.strengths.join(', ')}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
-    </div>
-  );
+
+        {/* Task Assignments */}
+        <div className="ai-task-assignments">
+          <h4>🎯 Task Assignments</h4>
+          <div className="tasks-grid">
+            {aiTasks.map(task => (
+              <div key={task.id} className="task-assignment">
+                <div className="task-info">
+                  <h5>{task.name}</h5>
+                  <p>{task.description}</p>
+                </div>
+                <div className="task-controls">
+                  <div className="form-group">
+                    <label>Assigned AI Provider</label>
+                    <select
+                      value={task.currentProvider}
+                      onChange={(e) => updateNestedConfig('aiSettings', task.id, 'provider', e.target.value)}
+                    >
+                      {availableProviders
+                        .filter(p => p.status === 'connected')
+                        .map(provider => (
+                          <option key={provider.id} value={provider.id}>
+                            {provider.name}
+                          </option>
+                        ))
+                      }
+                    </select>
+                  </div>
+                  <div className="task-toggle">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={config.aiSettings[task.id]?.enabled !== false}
+                        onChange={(e) => updateNestedConfig('aiSettings', task.id, 'enabled', e.target.checked)}
+                      />
+                      Enable
+                    </label>
+                  </div>
+                </div>
+                
+                {/* Task-specific settings */}
+                {task.id === 'transcription' && config.aiSettings[task.id]?.enabled !== false && (
+                  <div className="task-specific-settings">
+                    <div className="form-group">
+                      <label>Language</label>
+                      <select
+                        value={config.aiSettings.transcription?.language || 'en'}
+                        onChange={(e) => updateNestedConfig('aiSettings', 'transcription', 'language', e.target.value)}
+                      >
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="it">Italian</option>
+                      </select>
+                    </div>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={config.aiSettings.transcription?.diarization !== false}
+                        onChange={(e) => updateNestedConfig('aiSettings', 'transcription', 'diarization', e.target.checked)}
+                      />
+                      Speaker identification
+                    </label>
+                  </div>
+                )}
+                
+                {task.id === 'synthesis' && config.aiSettings[task.id]?.enabled !== false && (
+                  <div className="task-specific-settings">
+                    <div className="form-group">
+                      <label>Processing Frequency</label>
+                      <select
+                        value={config.aiSettings.synthesis?.frequency || 'per-stage'}
+                        onChange={(e) => updateNestedConfig('aiSettings', 'synthesis', 'frequency', e.target.value)}
+                      >
+                        <option value="real-time">Real-time (continuous)</option>
+                        <option value="per-substage">After each substage</option>
+                        <option value="per-stage">After each stage</option>
+                        <option value="end-session">End of session only</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+                
+                {task.id === 'insights' && config.aiSettings[task.id]?.enabled !== false && (
+                  <div className="task-specific-settings">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={config.aiSettings.insights?.growthTracking !== false}
+                        onChange={(e) => updateNestedConfig('aiSettings', 'insights', 'growthTracking', e.target.checked)}
+                      />
+                      Enable individual growth tracking
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={config.aiSettings.insights?.collectiveAnalysis !== false}
+                        onChange={(e) => updateNestedConfig('aiSettings', 'insights', 'collectiveAnalysis', e.target.checked)}
+                      />
+                      Enable collective wisdom analysis
+                    </label>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderPromptSettings = () => (
     <div className="config-section">
@@ -1163,7 +1363,6 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
             {[
               { key: 'basic', label: 'Basic Info', icon: '📋' },
               { key: 'stages', label: 'Stages', icon: '🎭' },
-              { key: 'views', label: 'View Modes', icon: '👥' },
               { key: 'ai', label: 'AI Settings', icon: '🤖' },
               { key: 'prompts', label: 'Prompts', icon: '💭' },
               { key: 'timing', label: 'Timing', icon: '⏱️' }
@@ -1183,7 +1382,6 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
         <div className="setup-main">
           {activeSection === 'basic' && renderBasicSettings()}
           {activeSection === 'stages' && renderStageSettings()}
-          {activeSection === 'views' && renderViewModeSettings()}
           {activeSection === 'ai' && renderAISettings()}
           {activeSection === 'prompts' && renderPromptSettings()}
           
@@ -1343,25 +1541,7 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
               </div>
             </div>
 
-            <div className="preview-section">
-              <h5>👥 View Modes</h5>
-              <div className="view-modes-grid">
-                {Object.entries(config.viewModes)
-                  .filter(([_, settings]) => settings.enabled)
-                  .map(([mode, settings]) => (
-                    <div key={mode} className="view-mode-chip">
-                      <span className="mode-name">{mode.charAt(0).toUpperCase() + mode.slice(1)}</span>
-                      {settings.maxDuration && (
-                        <span className="mode-detail">max {settings.maxDuration}m</span>
-                      )}
-                      {settings.maxParticipants && (
-                        <span className="mode-detail">max {settings.maxParticipants} people</span>
-                      )}
-                    </div>
-                  ))
-                }
-              </div>
-            </div>
+
 
             <div className="preview-section">
               <h5>🤖 AI Services</h5>

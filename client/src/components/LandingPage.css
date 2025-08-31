@@ -114,22 +114,18 @@
 .hero-subtitle {
   font-size: 2.8rem; /* Restore original size for larger banner */
   font-weight: 700;
-  color: #B8860B;
   text-align: center;
   margin: 0;
   font-family: 'Arial Black', 'Arial', sans-serif;
   
-  /* Copper/Bronze styling similar to main title but lighter */
-  text-shadow: 
-    1px 1px 0px #DAA520,
-    2px 2px 0px #B8860B,
-    3px 3px 0px #A0522D,
-    4px 4px 6px rgba(0, 0, 0, 0.7);
-  
-  background: linear-gradient(45deg, #FFD700 0%, #DAA520 50%, #B8860B 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  /* Force gold color and reset any conflicting properties */
+  color: #FFD700 !important;
+  background: none !important;
+  background-clip: initial !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: initial !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: none !important;
 }
 
 /* Scrollable Content Area */

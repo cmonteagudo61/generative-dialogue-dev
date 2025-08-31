@@ -109,15 +109,18 @@
 .hero-subtitle {
   font-size: 2.8rem; /* Match LandingPage size */
   font-weight: 700;
-  color: #B8860B;
   text-align: center;
   margin: 0;
   font-family: 'Arial Black', 'Arial', sans-serif;
-  text-shadow: 
-    1px 1px 0px #DAA520,
-    2px 2px 0px #B8860B,
-    3px 3px 0px #A0522D,
-    4px 4px 6px rgba(0, 0, 0, 0.7);
+  
+  /* Force gold color and reset any conflicting properties */
+  color: #FFD700 !important;
+  background: none !important;
+  background-clip: initial !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: initial !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: none !important;
   animation: pulseGlow 3s ease-in-out infinite;
 }
 
@@ -342,19 +345,10 @@
 
 @keyframes pulseGlow {
   0%, 100% {
-    text-shadow: 
-      1px 1px 0px #DAA520,
-      2px 2px 0px #B8860B,
-      3px 3px 0px #A0522D,
-      4px 4px 6px rgba(0, 0, 0, 0.7);
+    opacity: 1;
   }
   50% {
-    text-shadow: 
-      1px 1px 0px #DAA520,
-      2px 2px 0px #B8860B,
-      3px 3px 0px #A0522D,
-      4px 4px 8px rgba(0, 0, 0, 0.8),
-      0px 0px 20px rgba(218, 165, 32, 0.3);
+    opacity: 0.8;
   }
 }
 
