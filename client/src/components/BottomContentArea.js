@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import './BottomContentArea.css';
+import JourneyInsights from './JourneyInsights';
 
 const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost = false, isVotingOpen = true }) => {
   const [activeTab, setActiveTab] = useState(null); // Start with no active tab
@@ -22,6 +23,37 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost =
   const [breakoutId, setBreakoutId] = useState('');
   const [weMeta, setWeMeta] = useState(null);
   const [submissionToast, setSubmissionToast] = useState(null);
+  const [isReceivingRemoteTranscript, setIsReceivingRemoteTranscript] = useState(false);
+
+  // Auto-dismiss toast after 3 seconds
+  useEffect(() => {
+    if (submissionToast) {
+      const timer = setTimeout(() => {
+        setSubmissionToast(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [submissionToast]);
+
+  // Auto-record contributions for growth tracking
+  const recordContributionForGrowth = useCallback(async (content, type = 'transcript') => {
+    const participantId = localStorage.getItem('gd_participant_id');
+    if (!participantId || !sessionId || !content || content.length < 10) return;
+    
+    try {
+      await fetch(`/api/participants/${participantId}/contribution`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          content: content.trim(),
+          type
+        })
+      });
+    } catch (error) {
+      console.error('Error recording contribution:', error);
+    }
+  }, [sessionId]);
 
   const [isConnecting, setIsConnecting] = useState(false);
   const [lastConnectionAttempt, setLastConnectionAttempt] = useState(0);
@@ -140,6 +172,10 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost =
           if (data.type === 'transcript' && data.isFinal) {
             console.log('📝 Final transcript received:', data.transcript);
             setFinalTranscript(prev => `${prev}\n${data.transcript}`);
+            
+            // Record contribution for growth tracking
+            recordContributionForGrowth(data.transcript, 'transcript');
+            
             // Also broadcast to participants via session bus when host
             try {
               if (isHost) {
@@ -345,9 +381,21 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost =
       const { text, isFinal } = e.detail || {};
       if (!text) return;
       setFinalTranscript(prev => `${prev}\n${text}`);
+      
+      // Track that we're receiving remote transcript (for Live Stream indicator)
+      setIsReceivingRemoteTranscript(true);
+      
+      // Reset the receiving state after 5 seconds of no activity
+      clearTimeout(window.remoteTranscriptTimeout);
+      window.remoteTranscriptTimeout = setTimeout(() => {
+        setIsReceivingRemoteTranscript(false);
+      }, 5000);
     };
     window.addEventListener('gd-remote-transcript', handler);
-    return () => window.removeEventListener('gd-remote-transcript', handler);
+    return () => {
+      window.removeEventListener('gd-remote-transcript', handler);
+      clearTimeout(window.remoteTranscriptTimeout);
+    };
   }, []);
 
   // Listen for host-broadcast AI outputs so participants mirror enhanced/summary/themes
@@ -555,6 +603,17 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost =
             </div>
           </div>
           
+          {/* Journey tab separated as it has different functionality */}
+          <div className="tab-controls-center">
+            <div 
+              className={`tab-btn journey-tab ${activeTab === 'journey' ? 'active' : ''}`}
+              onClick={() => switchTab('journey')}
+              title="Journey - Your personal growth and insights"
+            >
+              Journey
+            </div>
+          </div>
+          
           <div className="tab-controls-right" />
         </div>
         
@@ -574,7 +633,7 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost =
             <div className="dialogue-content">
               <div className="dialogue-section">
                 <h4 className="tab-section-title">
-                  Live Stream {isConnected ? <span className="status-dot on" /> : <span className="status-dot off" />}<span style={{fontWeight:500,color:'#3E4C71'}}>{isConnected ? 'LIVE' : 'OFF'}</span>
+                  Live Stream {(isConnected || (!isHost && isReceivingRemoteTranscript)) ? <span className="status-dot on" /> : <span className="status-dot off" />}<span style={{fontWeight:500,color:'#3E4C71'}}>{(isConnected || (!isHost && isReceivingRemoteTranscript)) ? 'LIVE' : 'OFF'}</span>
                   {isHost && (
                     <span className="inline-controls">
                       <button className="inline-btn" onClick={isConnected ? stopRecording : startRecording} title={isConnected ? 'Stop' : 'Start'}>
@@ -611,11 +670,9 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost =
               <div className="dialogue-section">
                 <h4 className="tab-section-title">
                   AI Processed Transcript
-                  {isHost && (
-                    <span className="inline-controls">
-                      <button className="inline-btn" onClick={() => { setEditedAiText(aiEnhancedText); setIsEditingAI(true); }}>Optional Edit</button>
-                    </span>
-                  )}
+                  <span className="inline-controls">
+                    <button className="inline-btn" onClick={() => { setEditedAiText(aiEnhancedText); setIsEditingAI(true); }}>Optional Edit</button>
+                  </span>
                 </h4>
                 <div className="ai-hint">Enhanced by {aiServiceUsed ? aiServiceUsed.charAt(0).toUpperCase() + aiServiceUsed.slice(1) : 'AI Service'}</div>
                 <div className="ai-transcript">
@@ -657,7 +714,7 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost =
                         <button className="inline-btn" onClick={() => setIsEditingSummary(false)}>Done</button>
                       </>
                     ) : (
-                      <button className="inline-btn" onClick={() => setIsEditingSummary(true)}>Edit</button>
+                      <button className="inline-btn" onClick={() => setIsEditingSummary(true)}>Optional Edit</button>
                     )}
                   </span>
                 </h4>
@@ -681,7 +738,7 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost =
                     {isEditingThemes ? (
                       <button className="inline-btn" onClick={() => setIsEditingThemes(false)}>Done</button>
                     ) : (
-                      <button className="inline-btn" onClick={() => setIsEditingThemes(true)}>Edit</button>
+                      <button className="inline-btn" onClick={() => setIsEditingThemes(true)}>Optional Edit</button>
                     )}
                   </span>
                 </h4>
@@ -705,6 +762,14 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost =
                   {`Votes: +${voteTallies.up} / -${voteTallies.down} (Total: ${voteTallies.total})`}
                 </span>
               </div>
+            </div>
+          )}
+          {activeTab === 'journey' && (
+            <div style={{ padding: '1rem', color: 'black' }}>
+              <JourneyInsights 
+                participantId={localStorage.getItem('gd_participant_id')}
+                sessionId={sessionId}
+              />
             </div>
           )}
           {activeTab === 'we' && (

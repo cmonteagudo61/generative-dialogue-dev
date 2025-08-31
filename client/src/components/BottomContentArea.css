@@ -95,6 +95,14 @@
   gap: 1px; /* Minimal 1px space between tabs */
 }
 
+.tab-controls-center {
+  display: flex;
+  gap: 1px;
+  margin-left: 20px; /* Add space to separate Journey tab from main cluster */
+  padding-left: 20px; /* Additional visual separation */
+  border-left: 1px solid #ccc; /* Subtle divider line */
+}
+
 .tab-controls-right {
   display: flex;
   gap: clamp(2px, 2vw, 16px); /* Responsive gap: 2px minimum, 16px maximum */
@@ -124,6 +132,23 @@
   color: #555; /* Dark grey text */
   transition: background-color 0.15s ease, color 0.15s ease; /* Only transition colors */
   line-height: 0.9; /* Tighter line height for more compact tabs */
+}
+
+/* Journey tab specific styling - visually distinct from main cluster */
+.journey-tab {
+  background-color: #f0f4f8 !important; /* Slightly different background */
+  border-color: #4A90E2 !important; /* Different blue tone */
+  color: #2C5282 !important; /* Darker blue text */
+}
+
+.journey-tab:hover:not(.active) {
+  background-color: #e2e8f0 !important;
+  color: #2A4A6B !important;
+}
+
+.journey-tab.active {
+  background-color: #4A90E2 !important;
+  color: white !important;
 }
 
 .tab-btn:hover:not(.active) {

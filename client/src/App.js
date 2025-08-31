@@ -32,6 +32,8 @@ import CanTalkPage from './components/CanTalkPage';
 import EmergingStoryPage from './components/EmergingStoryPage';
 import OurStoryPage from './components/OurStoryPage';
 import BuildingCommunityPage from './components/BuildingCommunityPage';
+import ParticipantSignIn from './components/ParticipantSignIn';
+import SimpleDashboard from './components/SimpleDashboard';
 import { VideoProvider, useVideo } from './components/VideoProvider';
 import AppLayout from './components/AppLayout';
 
@@ -52,6 +54,8 @@ function AppContent() {
   const [breakoutId, setBreakoutId] = useState(null);
   const [bus, setBus] = useState(null);
   const [participantName, setParticipantName] = useState('');
+  const [participantData, setParticipantData] = useState(null);
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [isInCall, setIsInCall] = useState(true);
@@ -60,7 +64,7 @@ function AppContent() {
   const [segmentTime, setSegmentTime] = useState(300); // 5-minute segment countdown
   const [activeSize, setActiveSize] = useState('all'); // Add state for left navigation
 
-  // Parse URL parameters to set the current page
+  // Parse URL parameters and path to set the current page
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const pageParam = urlParams.get('page');
@@ -68,7 +72,14 @@ function AppContent() {
     const sidParam = urlParams.get('sessionId');
     const bidParam = urlParams.get('breakoutId');
     const nameParam = urlParams.get('name');
-    if (pageParam) {
+    
+    // Check URL path for direct routing (e.g., /dashboard, /signin)
+    const path = window.location.pathname;
+    if (path === '/dashboard') {
+      setCurrentPage('dashboard');
+    } else if (path === '/signin') {
+      setCurrentPage('signin');
+    } else if (pageParam) {
       setCurrentPage(pageParam);
     }
     setIsHost(roleParam === 'host');
@@ -83,7 +94,20 @@ function AppContent() {
       setBreakoutId(bidParam);
     }
     const storedName = nameParam || localStorage.getItem('gd_participant_name') || '';
-    if (storedName) setParticipantName(storedName);
+    if (storedName) {
+      setParticipantName(storedName);
+      // Check if we have full participant data
+      const storedParticipantId = localStorage.getItem('gd_participant_id');
+      if (storedParticipantId) {
+        setParticipantData({
+          id: storedParticipantId,
+          name: storedName,
+          email: localStorage.getItem('gd_participant_email') || '',
+          organization: localStorage.getItem('gd_participant_org') || ''
+        });
+        setIsSignedIn(true);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -104,8 +128,54 @@ function AppContent() {
   const handleToggleLoop = useCallback(() => setIsLoopActive(prev => !prev), []);
   const handleSizeChange = useCallback((newSize) => setActiveSize(newSize), []); // Add handler for left navigation
 
+  const handleParticipantSignIn = async (participantData) => {
+    try {
+      // Register participant with backend
+      const API_BASE = '';
+      const response = await fetch(`${API_BASE}/api/participants/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(participantData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to register participant');
+      }
+      
+      const result = await response.json();
+      console.log('👤 Participant registered successfully:', result);
+      
+      // Store participant ID for future use
+      localStorage.setItem('gd_participant_id', participantData.id);
+      
+      // Update state
+      setParticipantData(participantData);
+      setParticipantName(participantData.name);
+      setIsSignedIn(true);
+      
+      // Continue to input page
+      setCurrentPage('input');
+      
+    } catch (error) {
+      console.error('❌ Participant sign-in error:', error);
+      // Could show error toast here
+      throw error;
+    }
+  };
+
   const handleContinueToInput = () => {
-    setCurrentPage('input');
+    if (isSignedIn) {
+      setCurrentPage('input');
+    } else {
+      // Show sign-in form
+      setCurrentPage('signin');
+    }
+  };
+
+  // Helper function to navigate to dashboard
+  const navigateToDashboard = () => {
+    window.history.pushState({}, '', '/dashboard');
+    setCurrentPage('dashboard');
   };
 
   const handleInputComplete = () => {
@@ -149,11 +219,14 @@ function AppContent() {
   // Session bus: real-time host → participants updates
   useEffect(() => {
     if (!sessionId) return;
+    
     try {
       const API_PROTO = window.location.protocol === 'https:' ? 'https' : 'http';
       const WS_PROTO = API_PROTO === 'https' ? 'wss' : 'ws';
       const ws = new WebSocket(`${WS_PROTO}://${window.location.host}/session-bus`);
+      
       ws.onopen = () => {
+        console.log('🔄 Session-bus connected, joining session:', sessionId);
         ws.send(JSON.stringify({ type: 'join', sessionId, breakoutId: breakoutId || null, role: isHost ? 'host' : 'participant' }));
       };
       ws.onmessage = (evt) => {
@@ -164,9 +237,11 @@ function AppContent() {
           } else if (msg.type === 'voting' && typeof msg.open === 'boolean') {
             setIsVotingOpen(msg.open);
           } else if (msg.type === 'transcript' && typeof msg.text === 'string') {
+            console.log('📥 Received remote transcript:', msg.text);
             // Bubble up to a simple custom event so BottomContentArea can append
             window.dispatchEvent(new CustomEvent('gd-remote-transcript', { detail: { text: msg.text, isFinal: !!msg.isFinal } }));
           } else if (msg.type === 'ai' && (msg.enhancedText || msg.summaryText || msg.themesText)) {
+            console.log('📥 Received remote AI data');
             window.dispatchEvent(new CustomEvent('gd-remote-ai', { detail: {
               enhancedText: msg.enhancedText || '',
               summaryText: msg.summaryText || '',
@@ -176,12 +251,25 @@ function AppContent() {
           } else if (msg.type === 'voteTallies' && msg.tallies) {
             setVoteTallies(msg.tallies);
           }
-        } catch (_) { /* ignore */ }
+        } catch (e) { 
+          console.warn('Session-bus message parse error:', e);
+        }
       };
-      ws.onclose = () => {};
+      ws.onclose = () => {
+        console.log('🔌 Session-bus disconnected');
+      };
+      ws.onerror = (error) => {
+        console.warn('Session-bus error (non-fatal):', error);
+      };
       setBus(ws);
-      return () => { try { ws.close(); } catch (_) {} };
-    } catch (_) { /* ignore */ }
+      return () => { 
+        try { 
+          ws.close(); 
+        } catch (_) {} 
+      };
+    } catch (e) { 
+      console.warn('Session-bus connection failed (non-fatal):', e);
+    }
   }, [sessionId, isHost]);
 
   const navigateToStage = useCallback((stage) => {
@@ -475,6 +563,18 @@ function AppContent() {
     case 'landing':
       pageElement = <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
       break;
+    case 'signin':
+      pageElement = (
+        <AppLayout showBottomContent={false}>
+          <ParticipantSignIn 
+            onSignIn={handleParticipantSignIn}
+            initialName={participantName}
+            sessionId={sessionId}
+            isHost={isHost}
+          />
+        </AppLayout>
+      );
+      break;
     case 'input':
       pageElement = <InputPage onContinue={handleInputComplete} {...navigationProps} />;
       break;
@@ -577,11 +677,14 @@ function AppContent() {
     case 'buildingcommunity':
       pageElement = <BuildingCommunityPage {...navigationProps} />;
       break;
+    case 'dashboard':
+      pageElement = <SimpleDashboard />;
+      break;
     default:
       pageElement = <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
   }
 
-  const useAppLayout = !['landing', 'input', 'permissions', 'harvest-outro', 'buildingcommunity'].includes(currentPage);
+  const useAppLayout = !['landing', 'input', 'permissions', 'harvest-outro', 'buildingcommunity', 'dashboard', 'signin'].includes(currentPage);
 
   return (
     <Router>

@@ -208,9 +208,10 @@ const AIVideoControls = ({
    */
   useEffect(() => {
     if (isMuteDetectionActive && isConnected) {
-      audioAnalysisRef.current = setInterval(() => {
-        detectMutedParticipants();
-      }, 1000); // Check every second
+      // DISABLED: Potential cause of dashboard flashing
+      // audioAnalysisRef.current = setInterval(() => {
+      //   detectMutedParticipants();
+      // }, 1000); // Check every second
     } else {
       if (audioAnalysisRef.current) {
         clearInterval(audioAnalysisRef.current);
@@ -230,9 +231,10 @@ const AIVideoControls = ({
    */
   useEffect(() => {
     if (isAutoFocusActive) {
-      speakerTimerRef.current = setInterval(() => {
-        focusOnActiveSpeaker();
-      }, 500); // Check every 500ms for responsiveness
+      // DISABLED: Potential cause of dashboard flashing
+      // speakerTimerRef.current = setInterval(() => {
+      //   focusOnActiveSpeaker();
+      // }, 500); // Check every 500ms for responsiveness
     } else {
       if (speakerTimerRef.current) {
         clearInterval(speakerTimerRef.current);
@@ -251,8 +253,9 @@ const AIVideoControls = ({
    * Analyze conversation flow periodically
    */
   useEffect(() => {
-    const interval = setInterval(analyzeConversationFlow, 5000); // Every 5 seconds
-    return () => clearInterval(interval);
+    // DISABLED: Potential cause of dashboard flashing
+    // const interval = setInterval(analyzeConversationFlow, 5000); // Every 5 seconds
+    // return () => clearInterval(interval);
   }, [analyzeConversationFlow]);
   
   if (!showAdvancedControls) {

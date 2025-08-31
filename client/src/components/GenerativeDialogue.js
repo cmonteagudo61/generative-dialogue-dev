@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useVideo } from './VideoProvider';
 import VideoGrid from './video/VideoGrid';
-import AudioStreamer from './AudioStreamer';
+// import AudioStreamer from './AudioStreamer'; // TEMPORARILY DISABLED TO FIX WEBSOCKET STORM
 import LiveAIInsights from './LiveAIInsights';
 import AIVideoControls from './AIVideoControls';
 import '../App.css';
@@ -47,14 +47,19 @@ const GenerativeDialogueInner = ({
   
   // AI Transcription state
   const [transcripts, setTranscripts] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [speakerMappings, setSpeakerMappings] = useState({});
+  // eslint-disable-next-line no-unused-vars
   const [showTranscription, setShowTranscription] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [showAIInsights, setShowAIInsights] = useState(false);
   const [insightsMinimized, setInsightsMinimized] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [showAIControls, setShowAIControls] = useState(false);
   
   const { participants, realParticipants, error } = useVideo();
   const layout = getLayoutFromView(activeSize); // Use activeSize from props
+  // eslint-disable-next-line no-unused-vars
   const participantCount = useMemo(() => realParticipants.length, [realParticipants]);
 
   const handleParticipantSelect = useCallback((participant) => {
@@ -67,6 +72,7 @@ const GenerativeDialogueInner = ({
   }, []);
   
   // AI Transcription event handlers
+  // eslint-disable-next-line no-unused-vars
   const handleTranscriptUpdate = useCallback((transcriptData) => {
     console.log('📝 New transcript received:', transcriptData);
     
@@ -85,6 +91,7 @@ const GenerativeDialogueInner = ({
     // Legacy aiInsights removed - now handled by LiveAIInsights component
   }, []);
   
+  // eslint-disable-next-line no-unused-vars
   const handleSpeakerIdentified = useCallback((speakerData) => {
     console.log('👤 Speaker identified:', speakerData);
     setSpeakerMappings(prev => ({
@@ -130,12 +137,12 @@ const GenerativeDialogueInner = ({
         isLoopActive={isLoopActive}
       />
       
-      <AudioStreamer
+      {/* <AudioStreamer
         isRecording={showTranscription}
         onTranscriptionUpdate={handleTranscriptUpdate}
         onSpeakerIdentified={handleSpeakerIdentified}
         onAIInsight={handleProcessTranscript}
-      />
+      /> */}
       
       {/* AI Video Controls */}
       {showAIControls && (

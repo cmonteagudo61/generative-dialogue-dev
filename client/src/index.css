@@ -14,6 +14,27 @@ body {
   background-color: #f0f8ff !important;
 }
 
+/* Nuclear option: Hide ALL iframes in body to prevent webpack overlay flashing */
+body > iframe {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  width: 0 !important;
+  height: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Specifically target webpack overlays */
+iframe[id*="webpack"],
+iframe[src*="webpack"],
+iframe[id*="overlay"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
 /* Ensure html element also respects viewport */
 html {
   width: 100%;

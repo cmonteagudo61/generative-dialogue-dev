@@ -25,8 +25,24 @@ const anthropicAPI = require('../api/aiAPI');
 const openaiAPI = require('../api/openaiAPI');
 
 const app = express();
+
+// Global error handlers to prevent WebSocket crashes
+process.on('uncaughtException', (err) => {
+  if (err.code === 'WS_ERR_INVALID_CLOSE_CODE' || err.message.includes('Invalid WebSocket frame')) {
+    console.warn('⚠️ WebSocket frame error handled:', err.message);
+    return; // Don't crash the server
+  }
+  console.error('💥 Uncaught Exception:', err);
+  // For other errors, still exit
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.warn('⚠️ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 const { connectMongo, isDbReady, mongoose } = require('./db');
-const { Submission, Vote } = require('./models');
+const { Submission, Vote, Participant, Session, Breakout, Contribution } = require('./models');
 const expressWs = require('express-ws')(app);
 const PORT = process.env.PORT || 8080;
 const API_KEY = process.env.DEEPGRAM_API_KEY;
@@ -61,8 +77,6 @@ app.use(cors(corsOptions));
 
 // JSON body size limit
 app.use(express.json({ limit: '1mb' }));
-// Serve backend static (test pages)
-app.use(express.static(__dirname));
 
 // Configure multer for file uploads
 const upload = multer({ 
@@ -70,11 +84,14 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
-// In production, serve the client build (single-origin app)
+// PRIORITY: In production, serve the client build (single-origin app) FIRST
 const clientBuildPath = path.join(__dirname, '../client/build');
 if (fs.existsSync(clientBuildPath)) {
   app.use(express.static(clientBuildPath, { maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0 }));
 }
+
+// Serve backend static (test pages) ONLY for specific paths to avoid conflicts
+app.use('/backend-tests', express.static(__dirname));
 // Serve backend test pages explicitly when present
 app.get('/test-format.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'test-format.html'));
@@ -405,7 +422,10 @@ app.post('/api/session/:sessionId/breakout/:breakoutId/vote', async (req, res) =
     if (isDbReady()) {
       const sid = mongoose.Types.ObjectId.isValid(sessionId) ? new mongoose.Types.ObjectId(sessionId) : sessionId;
       const bid = mongoose.Types.ObjectId.isValid(breakoutId) ? new mongoose.Types.ObjectId(breakoutId) : breakoutId;
-      await Vote.create({ sessionId: sid, breakoutId: bid, participantId: participantId || null, vote });
+      
+      // Implement one vote per person: upsert (update existing or create new)
+      const filter = { sessionId: sid, breakoutId: bid, participantId: participantId || null };
+      await Vote.findOneAndUpdate(filter, { vote }, { upsert: true, new: true });
       const tallies = await Vote.aggregate([
         { $match: { sessionId: sid, breakoutId: bid } },
         { $group: { _id: '$vote', count: { $sum: 1 } } }
@@ -427,6 +447,12 @@ app.post('/api/session/:sessionId/breakout/:breakoutId/vote', async (req, res) =
       return res.json({ ok: true, tallies: { up, down, total: up + down } });
     } else {
       const bucket = getBreakoutBucket(sessionId, breakoutId);
+      
+      // Implement one vote per person: remove existing vote from same participant, then add new vote
+      const existingIndex = bucket.votes.findIndex(v => v.participantId === (participantId || null));
+      if (existingIndex !== -1) {
+        bucket.votes.splice(existingIndex, 1); // Remove existing vote
+      }
       bucket.votes.push({ participantId: participantId || null, vote, timestamp: Date.now() });
       const up = bucket.votes.filter(v => v.vote === 'up').length;
       const down = bucket.votes.filter(v => v.vote === 'down').length;
@@ -552,6 +578,211 @@ app.post('/api/ai/themes', async (req, res) => {
   } catch (error) {
     console.error('❌ Theme extraction error:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== PARTICIPANT MANAGEMENT ENDPOINTS ====================
+
+// Register a new participant
+app.post('/api/participants/register', async (req, res) => {
+  try {
+    const { participantId, sessionId, name, email, organization, deviceType, role } = req.body;
+    
+    if (!participantId || !name) {
+      return res.status(400).json({ error: 'participantId and name are required' });
+    }
+
+    const participantData = {
+      participantId,
+      sessionId: sessionId ? (mongoose.Types.ObjectId.isValid(sessionId) ? new mongoose.Types.ObjectId(sessionId) : sessionId) : null,
+      name: name.trim(),
+      email: email?.trim() || '',
+      organization: organization?.trim() || '',
+      deviceType: deviceType || 'desktop',
+      role: role || 'participant',
+      isActive: true,
+      lastSeen: new Date(),
+      participationStats: {
+        joinedAt: new Date()
+      }
+    };
+
+    if (isDbReady()) {
+      // Try to update existing participant or create new one
+      const participant = await Participant.findOneAndUpdate(
+        { participantId },
+        participantData,
+        { upsert: true, new: true }
+      );
+      console.log(`👤 Participant registered: ${name} (${participantId})`);
+      
+      // Broadcast to dashboard
+      if (global.broadcastToDashboard) {
+        global.broadcastToDashboard({
+          type: 'participant-joined',
+          participant: {
+            name: participant.name,
+            deviceType: participant.deviceType,
+            role: participant.role
+          }
+        }, sessionId);
+      }
+      
+      res.json({ success: true, participant });
+    } else {
+      // In-memory fallback
+      console.log(`👤 Participant registered (in-memory): ${name} (${participantId})`);
+      res.json({ success: true, participant: participantData });
+    }
+  } catch (error) {
+    console.error('❌ Participant registration error:', error);
+    res.status(500).json({ error: 'Failed to register participant' });
+  }
+});
+
+// Get all participants for a session
+app.get('/api/session/:sessionId/participants', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    if (isDbReady()) {
+      const sid = mongoose.Types.ObjectId.isValid(sessionId) ? new mongoose.Types.ObjectId(sessionId) : sessionId;
+      const participants = await Participant.find({ sessionId: sid, isActive: true })
+        .select('-__v')
+        .sort({ 'participationStats.joinedAt': 1 });
+      
+      res.json({ participants });
+    } else {
+      // In-memory fallback - would need to implement session storage
+      res.json({ participants: [] });
+    }
+  } catch (error) {
+    console.error('❌ Get participants error:', error);
+    res.status(500).json({ error: 'Failed to get participants' });
+  }
+});
+
+// Update participant status (heartbeat/activity)
+app.post('/api/participants/:participantId/heartbeat', async (req, res) => {
+  try {
+    const { participantId } = req.params;
+    const { connectionQuality, isActive = true } = req.body;
+    
+    const updateData = {
+      lastSeen: new Date(),
+      isActive
+    };
+    
+    if (connectionQuality) {
+      updateData.connectionQuality = connectionQuality;
+    }
+
+    if (isDbReady()) {
+      const participant = await Participant.findOneAndUpdate(
+        { participantId },
+        updateData,
+        { new: true }
+      );
+      
+      if (!participant) {
+        return res.status(404).json({ error: 'Participant not found' });
+      }
+      
+      res.json({ success: true, participant });
+    } else {
+      // In-memory fallback
+      res.json({ success: true });
+    }
+  } catch (error) {
+    console.error('❌ Participant heartbeat error:', error);
+    res.status(500).json({ error: 'Failed to update participant status' });
+  }
+});
+
+// Update participant stats (speaking time, contributions, etc.)
+app.post('/api/participants/:participantId/stats', async (req, res) => {
+  try {
+    const { participantId } = req.params;
+    const { speakingTime, contributions, votes } = req.body;
+    
+    if (isDbReady()) {
+      const updateData = {};
+      if (typeof speakingTime === 'number') updateData['participationStats.speakingTime'] = speakingTime;
+      if (typeof contributions === 'number') updateData['participationStats.contributions'] = contributions;
+      if (typeof votes === 'number') updateData['participationStats.votes'] = votes;
+      
+      const participant = await Participant.findOneAndUpdate(
+        { participantId },
+        { $inc: updateData },
+        { new: true }
+      );
+      
+      if (!participant) {
+        return res.status(404).json({ error: 'Participant not found' });
+      }
+      
+      res.json({ success: true, participant });
+    } else {
+      // In-memory fallback
+      res.json({ success: true });
+    }
+  } catch (error) {
+    console.error('❌ Participant stats error:', error);
+    res.status(500).json({ error: 'Failed to update participant stats' });
+  }
+});
+
+// Get participant analytics for a session
+app.get('/api/session/:sessionId/analytics', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    if (isDbReady()) {
+      const sid = mongoose.Types.ObjectId.isValid(sessionId) ? new mongoose.Types.ObjectId(sessionId) : sessionId;
+      
+      // Get participant stats
+      const participants = await Participant.find({ sessionId: sid, isActive: true });
+      
+      // Calculate analytics
+      const analytics = {
+        totalParticipants: participants.length,
+        activeParticipants: participants.filter(p => {
+          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+          return p.lastSeen > fiveMinutesAgo;
+        }).length,
+        deviceBreakdown: {
+          mobile: participants.filter(p => p.deviceType === 'mobile').length,
+          tablet: participants.filter(p => p.deviceType === 'tablet').length,
+          desktop: participants.filter(p => p.deviceType === 'desktop').length
+        },
+        participationStats: {
+          totalSpeakingTime: participants.reduce((sum, p) => sum + (p.participationStats?.speakingTime || 0), 0),
+          totalContributions: participants.reduce((sum, p) => sum + (p.participationStats?.contributions || 0), 0),
+          totalVotes: participants.reduce((sum, p) => sum + (p.participationStats?.votes || 0), 0)
+        },
+        connectionQuality: {
+          good: participants.filter(p => p.connectionQuality?.network === 'good').length,
+          fair: participants.filter(p => p.connectionQuality?.network === 'fair').length,
+          poor: participants.filter(p => p.connectionQuality?.network === 'poor').length
+        }
+      };
+      
+      res.json({ analytics });
+    } else {
+      // In-memory fallback
+      res.json({ 
+        analytics: {
+          totalParticipants: 0,
+          activeParticipants: 0,
+          deviceBreakdown: { mobile: 0, tablet: 0, desktop: 0 },
+          participationStats: { totalSpeakingTime: 0, totalContributions: 0, totalVotes: 0 },
+          connectionQuality: { good: 0, fair: 0, poor: 0 }
+        }
+      });
+    }
+  } catch (error) {
+    console.error('❌ Session analytics error:', error);
+    res.status(500).json({ error: 'Failed to get session analytics' });
   }
 });
 
@@ -1230,6 +1461,287 @@ const server = app.listen(PORT, () => {
   console.log(`🤖 AI Agents: ✅ Processing endpoints ready`);
   console.log(`🎯 Ready for testing!`);
 });
+
+// ==================== GROWTH TRACKING ENDPOINTS ====================
+
+// Basic AI Analysis for Contribution Quality
+const analyzeContribution = async (text) => {
+  try {
+    // Simple heuristic analysis (will be enhanced with proper AI later)
+    const wordCount = text.split(' ').length;
+    const questionCount = (text.match(/\?/g) || []).length;
+    const exclamationCount = (text.match(/!/g) || []).length;
+    const sentiment = text.toLowerCase().includes('thank') || text.toLowerCase().includes('great') || 
+                     text.toLowerCase().includes('love') || text.toLowerCase().includes('appreciate') ? 0.3 : 0;
+    
+    // Basic sophistication based on length and complexity
+    const sophistication = Math.min(5, Math.max(1, 1 + (wordCount / 20)));
+    
+    // Detect building on others (simple keyword detection)
+    const buildingOnOthers = text.toLowerCase().includes('building on') || 
+                            text.toLowerCase().includes('agree with') ||
+                            text.toLowerCase().includes('adding to') ||
+                            text.toLowerCase().includes('yes, and');
+    
+    // Detect questions and synthesis
+    const askingQuestions = questionCount > 0;
+    const synthesizing = text.toLowerCase().includes('summary') || 
+                        text.toLowerCase().includes('overall') ||
+                        text.toLowerCase().includes('in conclusion');
+    
+    return {
+      sentiment: Math.max(-1, Math.min(1, sentiment)),
+      sophistication: sophistication,
+      empathy: buildingOnOthers ? 3 : 2,
+      creativity: text.toLowerCase().includes('what if') || text.toLowerCase().includes('imagine') ? 4 : 2,
+      clarity: wordCount > 5 && wordCount < 100 ? 4 : 2,
+      buildingOnOthers,
+      introducingNewIdeas: text.toLowerCase().includes('new idea') || text.toLowerCase().includes('different approach'),
+      askingQuestions,
+      synthesizing
+    };
+  } catch (error) {
+    console.error('AI Analysis error:', error);
+    return {
+      sentiment: 0,
+      sophistication: 1,
+      empathy: 1,
+      creativity: 1,
+      clarity: 1,
+      buildingOnOthers: false,
+      introducingNewIdeas: false,
+      askingQuestions: false,
+      synthesizing: false
+    };
+  }
+};
+
+// Record a contribution with AI analysis
+app.post('/api/participants/:participantId/contribution', async (req, res) => {
+  try {
+    const { participantId } = req.params;
+    const { sessionId, content, type = 'transcript' } = req.body;
+    
+    if (!content || !sessionId) {
+      return res.status(400).json({ error: 'Content and sessionId required' });
+    }
+    
+    // Perform AI analysis
+    const aiAnalysis = await analyzeContribution(content);
+    
+    // Determine growth indicators
+    const growthIndicators = {
+      isBreakthrough: aiAnalysis.creativity > 3 && aiAnalysis.sophistication > 3,
+      isInsightful: aiAnalysis.sophistication > 3 || aiAnalysis.synthesizing,
+      showsGrowth: aiAnalysis.buildingOnOthers || aiAnalysis.askingQuestions,
+      helpedOthers: aiAnalysis.empathy > 2 && aiAnalysis.buildingOnOthers
+    };
+    
+    const contributionData = {
+      participantId,
+      sessionId: mongoose.Types.ObjectId.isValid(sessionId) ? new mongoose.Types.ObjectId(sessionId) : sessionId,
+      content,
+      type,
+      aiAnalysis,
+      growthIndicators
+    };
+    
+    if (isDbReady()) {
+      const contribution = new Contribution(contributionData);
+      await contribution.save();
+      
+      // Update participant's journey data
+      await updateParticipantJourney(participantId, sessionId, aiAnalysis, growthIndicators);
+      
+      console.log(`📈 Contribution analyzed for ${participantId}: sophistication=${aiAnalysis.sophistication.toFixed(1)}`);
+      res.json({ success: true, analysis: aiAnalysis, growth: growthIndicators });
+    } else {
+      // In-memory fallback
+      console.log(`📈 Contribution analyzed (in-memory) for ${participantId}`);
+      res.json({ success: true, analysis: aiAnalysis, growth: growthIndicators });
+    }
+  } catch (error) {
+    console.error('❌ Contribution analysis error:', error);
+    res.status(500).json({ error: 'Failed to analyze contribution' });
+  }
+});
+
+// Update participant journey data
+const updateParticipantJourney = async (participantId, sessionId, aiAnalysis, growthIndicators) => {
+  try {
+    if (!isDbReady()) return;
+    
+    const participant = await Participant.findOne({ participantId });
+    if (!participant) return;
+    
+    // Update contribution quality (running average)
+    const newQuality = (aiAnalysis.sophistication + aiAnalysis.empathy + aiAnalysis.clarity) / 3;
+    const currentQuality = participant.journeyData?.contributionQuality || 1;
+    const updatedQuality = (currentQuality + newQuality) / 2;
+    
+    // Detect growth moments
+    const growthMoment = {
+      sessionId: new mongoose.Types.ObjectId(sessionId),
+      timestamp: new Date(),
+      type: growthIndicators.isBreakthrough ? 'breakthrough' : 
+            growthIndicators.isInsightful ? 'insight' :
+            growthIndicators.helpedOthers ? 'connection' : null,
+      description: `Contribution quality: ${newQuality.toFixed(1)}/5`,
+      aiConfidence: 0.7
+    };
+    
+    const updateData = {
+      'journeyData.lastSessionDate': new Date(),
+      'journeyData.contributionQuality': updatedQuality
+    };
+    
+    // Add growth moment if significant
+    if (growthMoment.type) {
+      updateData.$push = { 'journeyData.growthMoments': growthMoment };
+    }
+    
+    await Participant.findOneAndUpdate({ participantId }, updateData);
+    
+  } catch (error) {
+    console.error('Error updating participant journey:', error);
+  }
+};
+
+// Get participant journey summary
+app.get('/api/participants/:participantId/journey', async (req, res) => {
+  try {
+    const { participantId } = req.params;
+    
+    if (isDbReady()) {
+      const participant = await Participant.findOne({ participantId });
+      if (!participant) {
+        return res.status(404).json({ error: 'Participant not found' });
+      }
+      
+      // Get recent contributions for trend analysis
+      const contributions = await Contribution.find({ participantId })
+        .sort({ timestamp: -1 })
+        .limit(10);
+      
+      // Calculate basic growth metrics
+      const avgSophistication = contributions.length > 0 ? 
+        contributions.reduce((sum, c) => sum + c.aiAnalysis.sophistication, 0) / contributions.length : 1;
+      
+      const growthMoments = participant.journeyData?.growthMoments || [];
+      const recentGrowth = growthMoments.filter(m => 
+        new Date(m.timestamp) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+      );
+      
+      const journeySummary = {
+        participantName: participant.name,
+        totalSessions: participant.journeyData?.totalSessions || 1,
+        firstSession: participant.journeyData?.firstSessionDate || participant.createdAt,
+        lastSession: participant.journeyData?.lastSessionDate || new Date(),
+        contributionQuality: participant.journeyData?.contributionQuality || 1,
+        collaborationStyle: participant.journeyData?.collaborationStyle || 'emerging',
+        recentContributions: contributions.length,
+        avgSophistication: avgSophistication.toFixed(1),
+        growthMoments: growthMoments.length,
+        recentGrowthMoments: recentGrowth.length,
+        engagementTrend: participant.journeyData?.engagementTrend || 'stable'
+      };
+      
+      res.json({ journey: journeySummary });
+    } else {
+      // In-memory fallback
+      res.json({ 
+        journey: {
+          participantName: 'Demo User',
+          totalSessions: 1,
+          contributionQuality: 2.5,
+          collaborationStyle: 'emerging',
+          growthMoments: 0,
+          engagementTrend: 'stable'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('❌ Journey summary error:', error);
+    res.status(500).json({ error: 'Failed to get journey summary' });
+  }
+});
+
+// ==================== DASHBOARD WEBSOCKET ENDPOINT ====================
+
+// Dashboard WebSocket for real-time monitoring
+const dashboardClients = new Set();
+
+app.ws('/dashboard-ws', (ws, req) => {
+  console.log('📊 Dashboard client connected');
+  dashboardClients.add(ws);
+  
+  // Send initial system health
+  ws.send(JSON.stringify({
+    type: 'system-health',
+    health: {
+      backend: 'good',
+      database: isDbReady() ? 'good' : 'poor',
+      websocket: 'good'
+    }
+  }));
+  
+  ws.on('message', (message) => {
+    try {
+      const data = JSON.parse(message);
+      
+      switch (data.type) {
+        case 'subscribe':
+          // Subscribe to session updates
+          ws.sessionId = data.sessionId;
+          console.log(`📊 Dashboard subscribed to session: ${data.sessionId}`);
+          break;
+          
+        case 'ping':
+          ws.send(JSON.stringify({ type: 'pong' }));
+          break;
+          
+        default:
+          console.log('Unknown dashboard message:', data);
+      }
+    } catch (error) {
+      console.error('Dashboard WS message error:', error);
+    }
+  });
+  
+  ws.on('close', () => {
+    console.log('📊 Dashboard client disconnected');
+    dashboardClients.delete(ws);
+  });
+  
+  ws.on('error', (error) => {
+    console.error('📊 Dashboard WebSocket error:', error);
+    dashboardClients.delete(ws);
+  });
+});
+
+// Broadcast function for dashboard updates
+const broadcastToDashboard = (message, sessionId = null) => {
+  const messageStr = JSON.stringify(message);
+  
+  dashboardClients.forEach(client => {
+    if (client.readyState === 1) { // WebSocket.OPEN
+      // If sessionId is specified, only send to clients subscribed to that session
+      if (!sessionId || client.sessionId === sessionId) {
+        try {
+          client.send(messageStr);
+        } catch (error) {
+          console.error('Error broadcasting to dashboard:', error);
+          dashboardClients.delete(client);
+        }
+      }
+    } else {
+      dashboardClients.delete(client);
+    }
+  });
+};
+
+// Export broadcast function for use in other parts of the application
+global.broadcastToDashboard = broadcastToDashboard;
 
 module.exports = { app, server }; 
 

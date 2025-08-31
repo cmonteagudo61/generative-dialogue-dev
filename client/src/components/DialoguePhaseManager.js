@@ -215,8 +215,9 @@ const DialoguePhaseManager = ({
    * Analyze optimization opportunities
    */
   useEffect(() => {
-    const interval = setInterval(analyzePhaseOptimization, 10000); // Every 10 seconds
-    return () => clearInterval(interval);
+    // DISABLED: Potential cause of dashboard flashing
+    // const interval = setInterval(analyzePhaseOptimization, 10000); // Every 10 seconds
+    // return () => clearInterval(interval);
   }, [analyzePhaseOptimization]);
   
   /**
