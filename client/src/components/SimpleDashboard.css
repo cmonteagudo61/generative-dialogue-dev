@@ -156,6 +156,10 @@
   padding: 0 2rem;
 }
 
+.dashboard-first-section {
+  margin-top: 3rem !important; /* Add breathing room after header */
+}
+
 .dashboard-section h2 {
   font-size: 1.5rem;
   font-weight: 600;
@@ -817,6 +821,265 @@
 }
 
 /* Developer Mode Styles */
+/* Meta-Prompts Grid */
+.meta-prompts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.meta-prompt-card {
+  background: rgba(226, 232, 240, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.meta-prompt-card:hover {
+  background: rgba(226, 232, 240, 0.12);
+  border-color: rgba(99, 179, 237, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.meta-prompt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.meta-prompt-header h4 {
+  margin: 0;
+  color: #63b3ed;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.prompt-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+  background: linear-gradient(45deg, #48bb78, #38a169);
+  color: white;
+}
+
+.status-badge.testing {
+  background: linear-gradient(45deg, #f6ad55, #ed8936);
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.status-badge.draft {
+  background: rgba(159, 122, 234, 0.2);
+  color: #9f7aea;
+  border: 1px solid rgba(159, 122, 234, 0.3);
+}
+
+.version-info {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+.meta-prompt-description {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+.meta-prompt-preview {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 3px solid #63b3ed;
+}
+
+.meta-prompt-preview p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.meta-prompt-preview p:last-child {
+  margin-bottom: 0;
+}
+
+.meta-prompt-preview strong {
+  color: #63b3ed;
+}
+
+.meta-prompt-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* AI Learning Flywheel Styles */
+.learning-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0 2.5rem 0;
+}
+
+.learning-sections {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.learning-section h4 {
+  color: #63b3ed;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+}
+
+.suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.suggestion-card {
+  background: rgba(226, 232, 240, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.suggestion-card:hover {
+  background: rgba(226, 232, 240, 0.12);
+  border-color: rgba(99, 179, 237, 0.3);
+}
+
+.suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.suggestion-header h5 {
+  margin: 0;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.suggestion-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.confidence {
+  background: linear-gradient(45deg, #48bb78, #38a169);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.based-on {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.suggestion-content {
+  margin-bottom: 1.5rem;
+}
+
+.suggestion-content p {
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.suggestion-reasoning {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 1rem;
+  border-left: 3px solid #f6ad55;
+}
+
+.suggestion-reasoning p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.suggestion-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.patterns-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pattern-card {
+  background: rgba(226, 232, 240, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.pattern-card h5 {
+  margin: 0 0 1rem 0;
+  color: #63b3ed;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.pattern-card ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.pattern-card li {
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.pattern-card li:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .learning-sections {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
 .developer-btn {
   border: 1px solid rgba(245, 101, 101, 0.3) !important;
   background: rgba(245, 101, 101, 0.1) !important;

@@ -53,7 +53,7 @@ const SimpleDashboard = () => {
     database: 'checking...',
     services: 'checking...'
   });
-  const [mockData, setMockData] = useState({
+  const [mockData] = useState({
     totalParticipants: 0,
     activeParticipants: 0,
     deviceBreakdown: { mobile: 2, tablet: 1, desktop: 3 },
@@ -119,6 +119,7 @@ const SimpleDashboard = () => {
     if (developerAccess) {
       // Already have access, switch to developer mode
       setDashboardMode('developer');
+      setCurrentView('overview');
     } else {
       // Need password, show prompt
       setShowPasswordPrompt(true);
@@ -131,20 +132,13 @@ const SimpleDashboard = () => {
     if (password === correctPassword) {
       setDeveloperAccess(true);
       setDashboardMode('developer');
+      setCurrentView('overview');
       setShowPasswordPrompt(false);
     } else {
       alert('Incorrect password. Access denied.');
       setShowPasswordPrompt(false);
     }
   };
-
-  if (currentView === 'dialogues') {
-    return (
-      <ErrorBoundary onError={handleReactError}>
-        <DialogueManager onDialogueSelect={handleDialogueSelect} />
-      </ErrorBoundary>
-    );
-  }
 
   return (
     <div className="dashboard-page">
@@ -172,21 +166,30 @@ const SimpleDashboard = () => {
             <div className="mode-switcher">
               <button 
                 className={`mode-btn ${dashboardMode === 'configuration' ? 'active' : ''}`}
-                onClick={() => setDashboardMode('configuration')}
+                onClick={() => {
+                  setDashboardMode('configuration');
+                  setCurrentView('overview');
+                }}
                 title="Configuration Mode - Design dialogues"
               >
                 🔧 Config
               </button>
               <button 
                 className={`mode-btn ${dashboardMode === 'live' ? 'active' : ''}`}
-                onClick={() => setDashboardMode('live')}
+                onClick={() => {
+                  setDashboardMode('live');
+                  setCurrentView('overview');
+                }}
                 title="Live Mode - Monitor active sessions"
               >
                 📡 Live
               </button>
               <button 
                 className={`mode-btn ${dashboardMode === 'analysis' ? 'active' : ''}`}
-                onClick={() => setDashboardMode('analysis')}
+                onClick={() => {
+                  setDashboardMode('analysis');
+                  setCurrentView('overview');
+                }}
                 title="Analysis Mode - Research and insights"
               >
                 📊 Analysis
@@ -203,12 +206,14 @@ const SimpleDashboard = () => {
               <button 
                 className={`nav-btn ${currentView === 'overview' ? 'active' : ''}`}
                 onClick={() => setCurrentView('overview')}
+                title="System overview - Health, statistics, and monitoring"
               >
                 📊 Overview
               </button>
               <button 
                 className={`nav-btn ${currentView === 'dialogues' ? 'active' : ''}`}
                 onClick={() => setCurrentView('dialogues')}
+                title="Manage dialogues - Create, edit, and launch sessions"
               >
                 🎭 Dialogues
               </button>
@@ -244,11 +249,20 @@ const SimpleDashboard = () => {
         </div>
       )}
 
-      {/* Mode-specific content */}
-      {dashboardMode === 'configuration' && renderConfigurationMode()}
-      {dashboardMode === 'live' && renderLiveMode()}
-      {dashboardMode === 'analysis' && renderAnalysisMode()}
-      {dashboardMode === 'developer' && renderDeveloperMode()}
+      {/* Content based on current view and mode */}
+      {currentView === 'dialogues' ? (
+        <ErrorBoundary onError={handleReactError}>
+          <DialogueManager onDialogueSelect={handleDialogueSelect} />
+        </ErrorBoundary>
+      ) : (
+        <>
+          {/* Mode-specific content for Overview */}
+          {dashboardMode === 'configuration' && renderConfigurationMode()}
+          {dashboardMode === 'live' && renderLiveMode()}
+          {dashboardMode === 'analysis' && renderAnalysisMode()}
+          {dashboardMode === 'developer' && renderDeveloperMode()}
+        </>
+      )}
     </div>
   );
 
@@ -257,7 +271,7 @@ const SimpleDashboard = () => {
     return (
       <>
         {/* System Health */}
-        <div className="dashboard-section">
+        <div className="dashboard-section dashboard-first-section">
           <h2>🔧 System Health</h2>
         <div className="health-grid">
           <div className="health-item">
@@ -388,7 +402,7 @@ const SimpleDashboard = () => {
     return (
       <>
         {/* Active Session Status */}
-        <div className="dashboard-section live-session">
+        <div className="dashboard-section dashboard-first-section live-session">
           <h2>📡 Active Session: "Community Climate Dialogue"</h2>
           <div className="session-status">
             <div className="status-item">
@@ -465,12 +479,35 @@ const SimpleDashboard = () => {
     );
   }
 
+  // Feedback handling for AI suggestions
+  const handleFeedback = (action, suggestionId) => {
+    // In production, this would send feedback to backend for AI learning
+    console.log(`Feedback: ${action} for suggestion ${suggestionId}`);
+    
+    // Show user feedback
+    const messages = {
+      approve: '✅ Suggestion approved! Added to library and queued for A/B testing.',
+      edit: '✏️ Opening editor to modify this suggestion.',
+      reject: '👎 Suggestion rejected. This helps improve future recommendations.'
+    };
+    
+    // Simple feedback notification (in production, use proper toast/notification system)
+    alert(messages[action]);
+    
+    // Here you would typically:
+    // - Send feedback to AI learning system
+    // - Update suggestion status
+    // - Track feedback for improving future suggestions
+    // - If approved, add to prompt library
+    // - If editing, open prompt editor modal
+  };
+
   // Analysis Mode - Retrospective insights
   function renderAnalysisMode() {
     return (
       <>
         {/* Session Archive */}
-        <div className="dashboard-section">
+        <div className="dashboard-section dashboard-first-section">
           <h2>📊 Session Archive</h2>
           <div className="sessions-list">
             {[
@@ -588,7 +625,7 @@ const SimpleDashboard = () => {
     return (
       <>
         {/* Developer Mode Header */}
-        <div className="dashboard-section developer-header">
+        <div className="dashboard-section dashboard-first-section developer-header">
           <h2>🔐 Developer Mode - AI Testing & Evaluation</h2>
           <div className="developer-status">
             <span className="access-granted">✅ Access Granted</span>
@@ -604,9 +641,262 @@ const SimpleDashboard = () => {
           </div>
         </div>
 
+        {/* AI Processing Meta-Prompts */}
+        <div className="dashboard-section">
+          <h2>🤖 AI Processing Meta-Prompts</h2>
+          <p className="section-description">Configure how AI analyzes transcripts, extracts insights, and generates summaries. Test different prompt engineering approaches.</p>
+          
+          <div className="meta-prompts-grid">
+            <div className="meta-prompt-card">
+              <div className="meta-prompt-header">
+                <h4>📝 Transcript Analysis</h4>
+                <div className="prompt-status">
+                  <span className="status-badge active">Active</span>
+                  <span className="version-info">v2.1</span>
+                </div>
+              </div>
+              <p className="meta-prompt-description">How AI should identify key themes, patterns, and significant moments in raw transcripts.</p>
+              <div className="meta-prompt-preview">
+                <p><strong>Current Prompt:</strong> "Analyze this dialogue transcript and identify: 1) Recurring themes and patterns, 2) Moments of high engagement or insight, 3) Emotional dynamics and shifts, 4) Collective wisdom emergence points..."</p>
+              </div>
+              <div className="meta-prompt-actions">
+                <button className="btn-secondary small">Edit Prompt</button>
+                <button className="btn-primary small">A/B Test</button>
+              </div>
+            </div>
+
+            <div className="meta-prompt-card">
+              <div className="meta-prompt-header">
+                <h4>💡 Insight Extraction</h4>
+                <div className="prompt-status">
+                  <span className="status-badge testing">Testing</span>
+                  <span className="version-info">v1.3 vs v1.4</span>
+                </div>
+              </div>
+              <p className="meta-prompt-description">Instructions for prioritizing and categorizing insights from participant contributions.</p>
+              <div className="meta-prompt-preview">
+                <p><strong>Version A:</strong> "Extract actionable insights focusing on practical applications..."</p>
+                <p><strong>Version B:</strong> "Identify transformational insights that challenge existing paradigms..."</p>
+              </div>
+              <div className="meta-prompt-actions">
+                <button className="btn-secondary small">View Test Results</button>
+                <button className="btn-primary small">Deploy Winner</button>
+              </div>
+            </div>
+
+            <div className="meta-prompt-card">
+              <div className="meta-prompt-header">
+                <h4>📊 Summary Generation</h4>
+                <div className="prompt-status">
+                  <span className="status-badge draft">Draft</span>
+                  <span className="version-info">v3.0-beta</span>
+                </div>
+              </div>
+              <p className="meta-prompt-description">Framework for structuring dialogue summaries and key takeaways.</p>
+              <div className="meta-prompt-preview">
+                <p><strong>Draft Prompt:</strong> "Create a structured summary with: Executive Overview, Key Insights, Participant Highlights, Emerging Questions, Next Steps..."</p>
+              </div>
+              <div className="meta-prompt-actions">
+                <button className="btn-secondary small">Edit Draft</button>
+                <button className="btn-primary small">Start Testing</button>
+              </div>
+            </div>
+
+            <div className="meta-prompt-card">
+              <div className="meta-prompt-header">
+                <h4>🧠 Collective Wisdom Compilation</h4>
+                <div className="prompt-status">
+                  <span className="status-badge active">Active</span>
+                  <span className="version-info">v1.8</span>
+                </div>
+              </div>
+              <p className="meta-prompt-description">How AI should synthesize individual contributions into collective intelligence.</p>
+              <div className="meta-prompt-preview">
+                <p><strong>Current Prompt:</strong> "Synthesize individual perspectives into collective wisdom by identifying: shared values, complementary viewpoints, emergent possibilities..."</p>
+              </div>
+              <div className="meta-prompt-actions">
+                <button className="btn-secondary small">Performance Metrics</button>
+                <button className="btn-primary small">Create Variant</button>
+              </div>
+            </div>
+
+            <div className="meta-prompt-card">
+              <div className="meta-prompt-header">
+                <h4>📈 Growth Tracking</h4>
+                <div className="prompt-status">
+                  <span className="status-badge active">Active</span>
+                  <span className="version-info">v2.0</span>
+                </div>
+              </div>
+              <p className="meta-prompt-description">Indicators AI should track for participant development and engagement evolution.</p>
+              <div className="meta-prompt-preview">
+                <p><strong>Current Prompt:</strong> "Track participant growth indicators: engagement depth, perspective expansion, collaborative skills, insight generation..."</p>
+              </div>
+              <div className="meta-prompt-actions">
+                <button className="btn-secondary small">Growth Analytics</button>
+                <button className="btn-primary small">Refine Prompt</button>
+              </div>
+            </div>
+
+            <div className="meta-prompt-card">
+              <div className="meta-prompt-header">
+                <h4>🎭 Sentiment & Dynamics</h4>
+                <div className="prompt-status">
+                  <span className="status-badge testing">Testing</span>
+                  <span className="version-info">v1.1 vs v1.2</span>
+                </div>
+              </div>
+              <p className="meta-prompt-description">How AI should assess emotional dynamics, energy shifts, and group cohesion.</p>
+              <div className="meta-prompt-preview">
+                <p><strong>Testing:</strong> Different approaches to measuring emotional intelligence and group dynamics in dialogue flow.</p>
+              </div>
+              <div className="meta-prompt-actions">
+                <button className="btn-secondary small">View Sentiment Data</button>
+                <button className="btn-primary small">Compare Results</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Learning Flywheel */}
+        <div className="dashboard-section">
+          <h2>🔄 AI Learning Flywheel</h2>
+          <p className="section-description">AI analyzes successful dialogues to suggest new prompts and improvements based on real-world patterns.</p>
+          
+          <div className="learning-stats">
+            <div className="stat-card">
+              <h4>📊 Dialogues Analyzed</h4>
+              <div className="stat-number">247</div>
+              <div className="stat-label">Since last month</div>
+            </div>
+            <div className="stat-card">
+              <h4>🎯 Success Patterns</h4>
+              <div className="stat-number">18</div>
+              <div className="stat-label">Identified patterns</div>
+            </div>
+            <div className="stat-card">
+              <h4>💡 AI Suggestions</h4>
+              <div className="stat-number">12</div>
+              <div className="stat-label">Pending review</div>
+            </div>
+            <div className="stat-card">
+              <h4>⭐ Adopted Prompts</h4>
+              <div className="stat-number">8</div>
+              <div className="stat-label">Human-approved</div>
+            </div>
+          </div>
+
+          <div className="learning-sections">
+            <div className="learning-section">
+              <h4>🧠 AI-Generated Prompt Suggestions</h4>
+              <div className="suggestions-list">
+                <div className="suggestion-card">
+                  <div className="suggestion-header">
+                    <h5>Opening: Intention Setting</h5>
+                    <div className="suggestion-meta">
+                      <span className="confidence">95% confidence</span>
+                      <span className="based-on">Based on 34 successful dialogues</span>
+                    </div>
+                  </div>
+                  <div className="suggestion-content">
+                    <p><strong>Suggested Prompt:</strong> "What intention are you bringing to this space, and how do you hope it might serve both your growth and our collective wisdom?"</p>
+                    <div className="suggestion-reasoning">
+                      <p><strong>AI Analysis:</strong> Prompts combining personal intention with collective purpose showed 23% higher engagement rates and 31% more meaningful connections in opening stages.</p>
+                    </div>
+                  </div>
+                  <div className="suggestion-actions">
+                    <button 
+                      className="btn-secondary small"
+                      onClick={() => handleFeedback('reject', 1)}
+                      title="This suggestion doesn't work for my context"
+                    >
+                      👎 Reject
+                    </button>
+                    <button 
+                      className="btn-secondary small"
+                      onClick={() => handleFeedback('edit', 1)}
+                      title="Good idea but needs modification"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button 
+                      className="btn-primary small"
+                      onClick={() => handleFeedback('approve', 1)}
+                      title="Add to library and start testing"
+                    >
+                      ✅ Approve & Test
+                    </button>
+                  </div>
+                </div>
+
+                <div className="suggestion-card">
+                  <div className="suggestion-header">
+                    <h5>Connect: Vulnerability Bridge</h5>
+                    <div className="suggestion-meta">
+                      <span className="confidence">87% confidence</span>
+                      <span className="based-on">Based on 28 successful dialogues</span>
+                    </div>
+                  </div>
+                  <div className="suggestion-content">
+                    <p><strong>Suggested Prompt:</strong> "Share something that's been challenging you lately, and what you're learning from that challenge."</p>
+                    <div className="suggestion-reasoning">
+                      <p><strong>AI Analysis:</strong> Prompts that invite controlled vulnerability while focusing on growth showed deeper connection formation and 40% more authentic sharing.</p>
+                    </div>
+                  </div>
+                  <div className="suggestion-actions">
+                    <button 
+                      className="btn-secondary small"
+                      onClick={() => handleFeedback('reject', 2)}
+                      title="This suggestion doesn't work for my context"
+                    >
+                      👎 Reject
+                    </button>
+                    <button 
+                      className="btn-secondary small"
+                      onClick={() => handleFeedback('edit', 2)}
+                      title="Good idea but needs modification"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button 
+                      className="btn-primary small"
+                      onClick={() => handleFeedback('approve', 2)}
+                      title="Add to library and start testing"
+                    >
+                      ✅ Approve & Test
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="learning-section">
+              <h4>📈 Success Pattern Analysis</h4>
+              <div className="patterns-list">
+                <div className="pattern-card">
+                  <h5>🎯 High-Engagement Patterns</h5>
+                  <ul>
+                    <li>Questions that combine personal + collective elements (↑31% engagement)</li>
+                    <li>Prompts with specific time references ("lately", "recently") (↑18% relevance)</li>
+                    <li>Invitations to share challenges + learnings (↑24% depth)</li>
+                  </ul>
+                </div>
+                <div className="pattern-card">
+                  <h5>💡 Insight Generation Triggers</h5>
+                  <ul>
+                    <li>Questions about "what wants to emerge" (↑45% collective insights)</li>
+                    <li>Pattern recognition prompts (↑28% synthesis quality)</li>
+                    <li>Future-focused possibility questions (↑33% actionable outcomes)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* AI A/B Testing */}
         <div className="dashboard-section">
-          <h2>🧪 AI A/B Testing</h2>
+          <h2>🧪 AI Model & Prompt Testing</h2>
           <div className="testing-grid">
             <div className="test-card">
               <h4>📝 Summary Generation Test</h4>
@@ -830,5 +1120,8 @@ const SimpleDashboard = () => {
 };
 
 export default SimpleDashboard;
+
+
+
 
 

@@ -64,14 +64,20 @@
 
 .btn-primary,
 .btn-secondary,
-.btn-danger {
-  padding: 0.75rem 1.5rem;
+.btn-danger,
+.btn-enterprise {
+  padding: 0.75rem 1rem;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  min-width: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .btn-primary {
@@ -102,6 +108,16 @@
 .btn-danger:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);
+}
+
+.btn-enterprise {
+  background: linear-gradient(45deg, #f6ad55, #ed8936);
+  color: white;
+}
+
+.btn-enterprise:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(246, 173, 85, 0.3);
 }
 
 .btn-primary.small,
@@ -285,6 +301,33 @@
   gap: 0.75rem;
 }
 
+.draft-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.draft-controls .btn-secondary,
+.draft-controls .btn-primary,
+.draft-controls .btn-enterprise {
+  flex: 1;
+  min-width: 120px;
+}
+
+@media (max-width: 400px) {
+  .draft-controls {
+    flex-direction: column;
+  }
+  
+  .draft-controls .btn-secondary,
+  .draft-controls .btn-primary,
+  .draft-controls .btn-enterprise {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
 .active-controls {
   display: flex;
   gap: 0.75rem;
@@ -453,6 +496,39 @@
   gap: 0.5rem;
 }
 
+/* Stages Groups */
+.stages-group {
+  margin-bottom: 1.5rem;
+}
+
+.stages-group.async {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stages-group-header {
+  margin-bottom: 0.75rem;
+  text-align: left;
+}
+
+.group-title {
+  display: block;
+  font-weight: 600;
+  color: #90cdf4;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.group-subtitle {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  margin-top: 0.25rem;
+  text-align: left;
+}
+
 .stage-item,
 .service-item {
   display: flex;
@@ -474,6 +550,44 @@
 .service-provider {
   opacity: 0.8;
   font-size: 0.8rem;
+  font-weight: 600;
+  color: #90cdf4;
+}
+
+/* Subtotals */
+.stages-subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(144, 205, 244, 0.3);
+  font-weight: 600;
+}
+
+.stages-subtotal.async {
+  border-top-color: rgba(237, 137, 54, 0.3);
+}
+
+.subtotal-label {
+  color: #90cdf4;
+  font-size: 0.9rem;
+}
+
+.stages-subtotal.async .subtotal-label {
+  color: #ed8936;
+}
+
+.subtotal-value {
+  color: white;
+  font-size: 1rem;
+  background: rgba(144, 205, 244, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.stages-subtotal.async .subtotal-value {
+  background: rgba(237, 137, 54, 0.1);
 }
 
 .modal-footer {
@@ -542,6 +656,199 @@
   .modal-footer {
     flex-direction: column;
   }
+}
+
+/* Preview Modal Styles */
+.preview-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 1rem;
+}
+
+.preview-modal {
+  background: white;
+  border-radius: 16px;
+  width: 95%;
+  max-width: 1200px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+.preview-modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.preview-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.preview-modal-header .close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.preview-modal-header .close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.preview-modal-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Responsive Preview Modal */
+@media (max-width: 768px) {
+  .preview-modal-overlay {
+    padding: 0.5rem;
+  }
+  
+  .preview-modal {
+    width: 100%;
+    height: 95vh;
+  }
+  
+  .preview-modal-header {
+    padding: 1rem;
+  }
+  
+  .preview-modal-header h3 {
+    font-size: 1.1rem;
+  }
+}
+
+/* Live Session Overlay */
+.live-session-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1200;
+  background: #000;
+}
+
+/* Live Session Button Styling */
+.live-session-btn {
+  background: linear-gradient(45deg, #667eea, #764ba2) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.live-session-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.live-session-btn:hover::before {
+  left: 100%;
+}
+
+.live-session-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Draft Controls Styling */
+.draft-controls .btn-secondary {
+  flex: 1;
+}
+
+.draft-controls .live-session-btn {
+  flex: 1.2;
+}
+
+.draft-controls .scale-test-btn {
+  flex: 1.3;
+}
+
+/* Scale Test Button Styling */
+.scale-test-btn {
+  background: linear-gradient(45deg, #ed8936, #dd6b20) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.scale-test-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.scale-test-btn:hover::before {
+  left: 100%;
+}
+
+.scale-test-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(237, 137, 54, 0.4);
+}
+
+/* Enterprise Button Class */
+.btn-enterprise {
+  background: linear-gradient(45deg, #ed8936, #dd6b20);
+  color: white;
+  border: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-enterprise:hover {
+  background: linear-gradient(45deg, #dd6b20, #c05621);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(237, 137, 54, 0.3);
+}
+
+/* Scalable Session Overlay */
+.scalable-session-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1300;
+  background: #000;
 }
 
 

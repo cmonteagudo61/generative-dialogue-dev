@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import CatalystLibrary from './CatalystLibrary';
+import TimeGuidance from './TimeGuidance';
+import StageConfigurationPanel from './StageConfigurationPanel';
 import './DialogueSetup.css';
 
 const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
+  // Prompt Library state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [viewMode, setViewMode] = useState('browse'); // 'browse' or 'create'
+  
   const [config, setConfig] = useState({
     // Basic Info
     title: 'New Generative Dialogue',
@@ -24,7 +32,7 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
     allowLateJoin: true,
     requireSignIn: true,
     
-    // Standardized Dialogue Structure: Connect → Explore → Discover → Harvest
+    // Standardized Dialogue Structure: Connect → Explore → Discover → Closing → Harvest
     stages: {
       opening: { 
         enabled: true, 
@@ -222,8 +230,11 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
 
   const [activeSection, setActiveSection] = useState('basic');
   const [previewMode, setPreviewMode] = useState(false);
+  const [showCatalystLibrary, setShowCatalystLibrary] = useState(false);
+  const [catalystSelectionContext, setCatalystSelectionContext] = useState(null);
 
-  // Catalyst Library for different types of catalysts
+  // Legacy catalyst library - kept for reference but replaced by CatalystLibrary component
+  // eslint-disable-next-line no-unused-vars
   const catalystLibrary = {
     poetry: [
       { id: 'rumi-field', title: 'Out Beyond Ideas - Rumi', content: 'Out beyond ideas of wrongdoing and rightdoing, there is a field. I\'ll meet you there.' },
@@ -280,7 +291,117 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
   // Populate config when editing an existing dialogue
   useEffect(() => {
     if (editingDialogue) {
-      setConfig(editingDialogue);
+      // Create default config structure for merging
+      const defaultConfig = {
+        // Basic Info
+        title: 'New Generative Dialogue',
+        description: '',
+        facilitator: 'AI Facilitator',
+        
+        // Input Page Configuration Fields
+        host: '',
+        gatheringSize: '',
+        availableTime: '',
+        diversity: '',
+        familiarity: '',
+        experience: '',
+        theme: '',
+        context: '',
+        
+        // Participant Settings
+        maxParticipants: 30,
+        minParticipants: 2,
+        allowLateJoin: true,
+        requireSignIn: true,
+        
+        // Standardized Dialogue Structure: Connect → Explore → Discover → Harvest
+        stages: {
+          opening: { 
+            enabled: true, 
+            substages: [
+              { id: 'opening-1', name: 'Technical Setup & Welcome', viewMode: 'community', duration: 15, prompt: 'Welcome everyone! Let\'s ensure everyone can see and hear clearly, then we\'ll begin with introductions.' }
+            ]
+          },
+          connect: { 
+            enabled: true,
+            substages: [
+              { id: 'connect-catalyst', name: 'Catalyst', viewMode: 'community', duration: 10, prompt: 'Let\'s begin with a moment to center ourselves and connect to what brought us here today.', catalystType: 'meditation', catalystContent: 'Brief centering meditation or reading' },
+              { id: 'connect-dialogue', name: 'Dialogue', viewMode: 'dyad', duration: 20, prompt: 'Share with your partner: What is alive in you right now? What brought you to this conversation?', breakoutInstructions: 'Form pairs and explore what\'s present for each of you today.' },
+              { id: 'connect-summary', name: 'Summary', viewMode: 'breakout-processing', duration: 5, prompt: 'Review your transcript, make any edits, then create a summary of your key insights.', aiProcessing: true },
+              { id: 'connect-we', name: 'WE', viewMode: 'community', duration: 15, prompt: 'What themes are emerging from our connections? What do we notice about our collective presence?', weCompilation: true }
+            ]
+          },
+          explore: { 
+            enabled: true,
+            substages: [
+              { id: 'explore-catalyst', name: 'Catalyst', viewMode: 'community', duration: 10, prompt: 'Let\'s deepen our inquiry with a catalyst to open new perspectives.', catalystType: 'reading', catalystContent: 'Poem, story, or provocative question' },
+              { id: 'explore-dialogue', name: 'Dialogue', viewMode: 'triad', duration: 25, prompt: 'Building on what emerged in Connect, what wants to be explored more deeply? What questions are calling to you?', breakoutInstructions: 'Form triads and explore the emerging themes and questions.' },
+              { id: 'explore-summary', name: 'Summary', viewMode: 'breakout-processing', duration: 5, prompt: 'Capture the essence of your exploration. What insights emerged? What questions deepened?', aiProcessing: true },
+              { id: 'explore-we', name: 'WE', viewMode: 'community', duration: 15, prompt: 'What patterns are emerging across our explorations? What collective insights are surfacing?', weCompilation: true }
+            ]
+          },
+          discover: { 
+            enabled: true,
+            substages: [
+              { id: 'discover-catalyst', name: 'Catalyst', viewMode: 'community', duration: 10, prompt: 'Let\'s open to what wants to emerge that we haven\'t yet touched.', catalystType: 'fishbowl', catalystContent: 'Fishbowl dialogue or artistic stimulus' },
+              { id: 'discover-dialogue', name: 'Dialogue', viewMode: 'quad', duration: 30, prompt: 'What is trying to emerge through our conversation? What wants to be discovered or created together?', breakoutInstructions: 'Form groups of four and explore what wants to emerge.' },
+              { id: 'discover-summary', name: 'Summary', viewMode: 'breakout-processing', duration: 5, prompt: 'Distill the essence of what emerged. What discoveries surfaced? What wants to be born?', aiProcessing: true },
+              { id: 'discover-we', name: 'WE', viewMode: 'community', duration: 20, prompt: 'What is the collective wisdom that has emerged? What are we discovering together?', weCompilation: true }
+            ]
+          },
+          closing: { 
+            enabled: true,
+            substages: [
+              { id: 'closing-gratitude', name: 'Gratitude & Closing', viewMode: 'community', duration: 15, prompt: 'Share appreciations and close our formal dialogue time together.', closingRitual: true }
+            ]
+          },
+          harvest: { 
+            enabled: true,
+            substages: [
+              { id: 'harvest-individual', name: 'Individual Reflection', viewMode: 'individual', duration: 15, prompt: 'Take time for personal reflection on your journey through this dialogue. What insights, learnings, or commitments are you taking from this experience?', individualReflection: true }
+            ]
+          }
+        }
+      };
+      
+      // Merge editing dialogue with default config to ensure all required fields exist
+      const mergedConfig = {
+        ...defaultConfig, // Start with default config
+        ...editingDialogue, // Override with editing dialogue data
+        stages: {
+          ...defaultConfig.stages, // Start with default stages
+          ...editingDialogue.stages // Override with editing dialogue stages
+        }
+      };
+      
+      // Fix harvest stage to remove old "Harvest Sharing" substage if it exists
+      if (mergedConfig.stages.harvest && mergedConfig.stages.harvest.substages) {
+        const harvestSubstages = mergedConfig.stages.harvest.substages;
+        const hasHarvestSharing = harvestSubstages.some(sub => sub.id === 'harvest-sharing');
+        
+        if (hasHarvestSharing) {
+          // Remove harvest sharing and ensure only individual reflection remains
+          mergedConfig.stages.harvest.substages = [
+            {
+              id: 'harvest-individual',
+              name: 'Individual Reflection',
+              viewMode: 'individual',
+              duration: harvestSubstages.reduce((total, sub) => total + (parseInt(sub.duration) || 0), 0),
+              prompt: 'Take time for personal reflection on your journey through this dialogue. What insights, learnings, or commitments are you taking from this experience?',
+              individualReflection: true
+            }
+          ];
+        }
+      }
+      
+      // Ensure at least one stage is enabled
+      const enabledStages = Object.values(mergedConfig.stages).filter(s => s.enabled);
+      if (enabledStages.length === 0) {
+        // Enable the connect stage by default if no stages are enabled
+        mergedConfig.stages.connect.enabled = true;
+      }
+      
+      setConfig(mergedConfig);
     }
   }, [editingDialogue]);
 
@@ -370,12 +491,15 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
     let total = 0;
     Object.entries(config.stages).forEach(([stage, settings]) => {
       if (settings.enabled && settings.substages) {
+        // Exclude harvest from committed dialogue time - it's post-dialogue
+        if (stage === 'harvest') return;
+        
         // Sum all substage durations
         const stageDuration = settings.substages.reduce((sum, substage) => sum + substage.duration, 0);
         total += stageDuration;
         
         // Add break time between stages (not between substages)
-        if (config.timing.breaksBetweenStages && stage !== 'harvest') {
+        if (config.timing.breaksBetweenStages && stage !== 'closing') {
           total += config.timing.breakDuration;
         }
       }
@@ -408,6 +532,53 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
     return errors;
   };
 
+  // Catalyst Library Handlers
+  const handleOpenCatalystLibrary = (stage, substageIndex) => {
+    setCatalystSelectionContext({ stage, substageIndex });
+    setShowCatalystLibrary(true);
+  };
+
+  const handleSelectCatalyst = (catalyst) => {
+    if (catalystSelectionContext) {
+      const { stage, substageIndex } = catalystSelectionContext;
+      
+      // Update the catalyst content in the substage
+      updateSubstage(stage, substageIndex, 'catalystContent', catalyst.id);
+      updateSubstage(stage, substageIndex, 'catalystType', catalyst.type || 'text');
+      
+      // Store the full catalyst data for reference
+      updateSubstage(stage, substageIndex, 'selectedCatalyst', catalyst);
+    }
+    
+    setShowCatalystLibrary(false);
+    setCatalystSelectionContext(null);
+  };
+
+  const getSelectedCatalystInfo = (stage, substageIndex) => {
+    const substage = config.stages[stage]?.substages?.[substageIndex];
+    return substage?.selectedCatalyst || null;
+  };
+
+  // Time Guidance Handlers
+  const handleApplyTimeRecommendation = (recommendedConfig) => {
+    console.log('🎯 DialogueSetup: Received recommendation:', recommendedConfig);
+    
+    // Merge the recommended configuration with current config
+    const updatedConfig = {
+      ...config,
+      stages: {
+        ...config.stages,
+        ...recommendedConfig.stages
+      }
+    };
+    
+    console.log('🎯 DialogueSetup: Updated config:', updatedConfig);
+    setConfig(updatedConfig);
+    
+    // Show success message
+    alert('✅ Configuration applied successfully! Check the stages below.');
+  };
+
   const handleCreate = () => {
     const errors = validateConfig();
     if (errors.length > 0) {
@@ -415,13 +586,17 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
       return;
     }
     
+    const calculatedDuration = calculateTotalDuration();
+    console.log('💾 Saving dialogue with duration:', calculatedDuration, 'minutes');
+    
     const dialogueConfig = {
       ...config,
       id: editingDialogue ? editingDialogue.id : `dialogue_${Date.now()}`,
       createdAt: editingDialogue ? editingDialogue.createdAt : new Date().toISOString(),
-      totalDuration: calculateTotalDuration()
+      totalDuration: calculatedDuration
     };
     
+    console.log('💾 Full dialogue config being saved:', dialogueConfig);
     onDialogueCreate(dialogueConfig);
   };
 
@@ -600,9 +775,31 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
           Require participant sign-in
         </label>
       </div>
+
+      {/* Time Guidance System */}
+      {config.availableTime && config.gatheringSize && (
+        <TimeGuidance
+          availableTime={config.availableTime}
+          participantCount={config.gatheringSize}
+          currentConfig={config}
+          onRecommendationApply={handleApplyTimeRecommendation}
+          onConfigUpdate={setConfig}
+        />
+      )}
+
+      {/* Stage-by-Stage Configuration Panel */}
+      {config.availableTime && config.gatheringSize && (
+        <StageConfigurationPanel
+          config={config}
+          onConfigUpdate={setConfig}
+          availableTime={config.availableTime}
+          participantCount={config.gatheringSize}
+        />
+      )}
     </div>
   );
 
+  // eslint-disable-next-line no-unused-vars
   const addSubstage = (stage) => {
     console.log('🔧 addSubstage called for stage:', stage);
     console.log('🔧 Current config.stages:', config.stages);
@@ -704,6 +901,7 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
     return updatedSubstages.length - 1;
   };
 
+  // eslint-disable-next-line no-unused-vars
   const removeSubstage = (stage, substageIndex) => {
     try {
       const currentStage = config.stages[stage] || {};
@@ -849,24 +1047,54 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
                       <div className="catalyst-content">
                         <div className="form-group">
                           <label>Choose Catalyst Content</label>
-                          <select
-                            value={substage?.catalystContent || ''}
-                            onChange={(e) => {
+                          <div className="catalyst-selection">
+                            {(() => {
                               const catalystIndex = ensureSubstageExists(stage, 'catalyst');
-                              updateSubstage(stage, catalystIndex, 'catalystContent', e.target.value);
-                            }}
-                          >
-                            <option value="">Select from library...</option>
-                            {catalystLibrary.poetry?.map(item => (
-                              <option key={item.id} value={item.id}>📜 {item.title}</option>
-                            ))}
-                            {catalystLibrary.meditation?.map(item => (
-                              <option key={item.id} value={item.id}>🧘 {item.title}</option>
-                            ))}
-                            {catalystLibrary.reading?.map(item => (
-                              <option key={item.id} value={item.id}>📖 {item.title}</option>
-                            ))}
-                          </select>
+                              const selectedCatalyst = getSelectedCatalystInfo(stage, catalystIndex);
+                              
+                              return selectedCatalyst ? (
+                                <div className="selected-catalyst-preview">
+                                  <div className="catalyst-info">
+                                    <h4>{selectedCatalyst.title}</h4>
+                                    <p>by {selectedCatalyst.author} • {selectedCatalyst.duration} min{selectedCatalyst.duration !== 1 ? 's' : ''}</p>
+                                    <div className="catalyst-preview-text">
+                                      {selectedCatalyst.content.length > 100 
+                                        ? `${selectedCatalyst.content.substring(0, 100)}...`
+                                        : selectedCatalyst.content
+                                      }
+                                    </div>
+                                    {selectedCatalyst.tags && selectedCatalyst.tags.length > 0 && (
+                                      <div className="catalyst-tags-preview">
+                                        {selectedCatalyst.tags.map(tag => (
+                                          <span key={tag} className="tag-preview">{tag}</span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="catalyst-actions">
+                                    <button
+                                      type="button"
+                                      className="change-catalyst-btn"
+                                      onClick={() => handleOpenCatalystLibrary(stage, catalystIndex)}
+                                    >
+                                      ✨ Change Catalyst
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="no-catalyst-selected">
+                                  <p>No catalyst selected for this stage</p>
+                                  <button
+                                    type="button"
+                                    className="select-catalyst-btn"
+                                    onClick={() => handleOpenCatalystLibrary(stage, catalystIndex)}
+                                  >
+                                    ✨ Choose from Library
+                                  </button>
+                                </div>
+                              );
+                            })()}
+                          </div>
                         </div>
                         
                         <div className="form-group">
@@ -1265,26 +1493,232 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
     );
   };
 
-  const renderPromptSettings = () => (
-    <div className="config-section">
-      <h3>Prompts & Catalysts</h3>
-      <p className="section-description">
-        Customize the guiding questions for each stage of the dialogue
-      </p>
-      
-      {Object.entries(config.prompts).map(([stage, prompt]) => (
-        <div key={stage} className="prompt-config">
-          <label>{stage.charAt(0).toUpperCase() + stage.slice(1)} Prompt</label>
-          <textarea
-            value={prompt}
-            onChange={(e) => updateConfig('prompts', stage, e.target.value)}
-            rows={2}
-            placeholder={`Enter the guiding question for the ${stage} stage`}
-          />
+  const renderPromptLibrary = () => {
+    // Sample prompt library data (in production, this would come from API/database)
+    const promptLibrary = [
+      {
+        id: 1,
+        title: "Opening Circle - What brought you here?",
+        text: "What brought you here today, and what are you hoping to discover or contribute?",
+        category: "opening",
+        tags: ["connection", "intention", "presence"],
+        rating: 4.8,
+        usageCount: 127,
+        createdBy: "System",
+        isTopRated: true
+      },
+      {
+        id: 2,
+        title: "Connection - Story Sharing",
+        text: "Share a story or experience that feels alive and meaningful to you right now.",
+        category: "connect",
+        tags: ["storytelling", "vulnerability", "authenticity"],
+        rating: 4.9,
+        usageCount: 203,
+        createdBy: "System",
+        isTopRated: true
+      },
+      {
+        id: 3,
+        title: "Exploration - Pattern Recognition",
+        text: "What patterns or themes are emerging from our shared stories and experiences?",
+        category: "explore",
+        tags: ["patterns", "synthesis", "collective"],
+        rating: 4.7,
+        usageCount: 156,
+        createdBy: "System",
+        isTopRated: true
+      },
+      {
+        id: 4,
+        title: "Discovery - Collective Wisdom",
+        text: "What wants to emerge that we haven't yet named or acknowledged together?",
+        category: "discover",
+        tags: ["emergence", "wisdom", "collective"],
+        rating: 4.6,
+        usageCount: 98,
+        createdBy: "System",
+        isTopRated: false
+      },
+      {
+        id: 5,
+        title: "Harvest - Personal Integration",
+        text: "What are you taking away from this dialogue that feels most significant for your journey?",
+        category: "harvest",
+        tags: ["reflection", "integration", "personal"],
+        rating: 4.5,
+        usageCount: 89,
+        createdBy: "System",
+        isTopRated: false
+      }
+    ];
+
+    const categories = [
+      { value: 'all', label: 'All Categories' },
+      { value: 'opening', label: 'Opening' },
+      { value: 'connect', label: 'Connect' },
+      { value: 'explore', label: 'Explore' },
+      { value: 'discover', label: 'Discover' },
+      { value: 'harvest', label: 'Harvest' }
+    ];
+
+    const filteredPrompts = promptLibrary.filter(prompt => {
+      const matchesSearch = prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           prompt.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           prompt.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesCategory = selectedCategory === 'all' || prompt.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+
+    const topRatedPrompts = promptLibrary.filter(p => p.isTopRated);
+
+    return (
+      <div className="config-section">
+        <div className="library-header">
+          <h3>📚 Prompt Library</h3>
+          <p className="section-description">
+            Browse, search, and manage your collection of dialogue prompts. Top-rated prompts automatically appear in your dialogue configuration dropdowns.
+          </p>
+          
+          <div className="library-controls">
+            <div className="view-toggle">
+              <button 
+                className={`toggle-btn ${viewMode === 'browse' ? 'active' : ''}`}
+                onClick={() => setViewMode('browse')}
+              >
+                📖 Browse
+              </button>
+              <button 
+                className={`toggle-btn ${viewMode === 'create' ? 'active' : ''}`}
+                onClick={() => setViewMode('create')}
+              >
+                ➕ Create New
+              </button>
+            </div>
+          </div>
         </div>
-      ))}
-    </div>
-  );
+
+        {viewMode === 'browse' ? (
+          <div className="library-browse">
+            <div className="library-filters">
+              <div className="search-bar">
+                <input
+                  type="text"
+                  placeholder="Search prompts, tags, or categories..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="category-filter"
+              >
+                {categories.map(cat => (
+                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="top-rated-section">
+              <h4>⭐ Top Rated Prompts</h4>
+              <p className="top-rated-note">These prompts automatically populate your dialogue configuration dropdowns</p>
+              <div className="top-rated-grid">
+                {topRatedPrompts.map(prompt => (
+                  <div key={prompt.id} className="prompt-card top-rated">
+                    <div className="prompt-header">
+                      <h5>{prompt.title}</h5>
+                      <div className="prompt-rating">
+                        <span className="rating-stars">⭐ {prompt.rating}</span>
+                        <span className="usage-count">({prompt.usageCount} uses)</span>
+                      </div>
+                    </div>
+                    <p className="prompt-text">{prompt.text}</p>
+                    <div className="prompt-tags">
+                      {prompt.tags.map(tag => (
+                        <span key={tag} className="tag">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="all-prompts-section">
+              <h4>All Prompts ({filteredPrompts.length})</h4>
+              <div className="prompts-grid">
+                {filteredPrompts.map(prompt => (
+                  <div key={prompt.id} className="prompt-card">
+                    <div className="prompt-header">
+                      <h5>{prompt.title}</h5>
+                      <div className="prompt-rating">
+                        <span className="rating-stars">⭐ {prompt.rating}</span>
+                        <span className="usage-count">({prompt.usageCount} uses)</span>
+                      </div>
+                    </div>
+                    <p className="prompt-text">{prompt.text}</p>
+                    <div className="prompt-meta">
+                      <div className="prompt-tags">
+                        {prompt.tags.map(tag => (
+                          <span key={tag} className="tag">{tag}</span>
+                        ))}
+                      </div>
+                      <div className="prompt-actions">
+                        <button className="action-btn" title="Use in dialogue">📋</button>
+                        <button className="action-btn" title="Edit prompt">✏️</button>
+                        <button className="action-btn" title="Favorite">❤️</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="library-create">
+            <h4>Create New Prompt</h4>
+            <div className="create-form">
+              <div className="form-group">
+                <label>Prompt Title</label>
+                <input
+                  type="text"
+                  placeholder="Give your prompt a descriptive title..."
+                />
+              </div>
+              <div className="form-group">
+                <label>Category</label>
+                <select>
+                  <option value="">Select category...</option>
+                  {categories.slice(1).map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Prompt Text</label>
+                <textarea
+                  placeholder="Enter the prompt question or instruction..."
+                  rows={4}
+                />
+              </div>
+              <div className="form-group">
+                <label>Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  placeholder="connection, storytelling, reflection..."
+                />
+              </div>
+              <div className="form-actions">
+                <button className="btn-secondary">Save Draft</button>
+                <button className="btn-primary">Add to Library</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const getStageDescription = (stage) => {
     const descriptions = {
@@ -1298,6 +1732,7 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
     return descriptions[stage] || '';
   };
 
+  // eslint-disable-next-line no-unused-vars
   const getProviderOptions = (service) => {
     const providers = {
       transcription: [
@@ -1383,7 +1818,7 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
           {activeSection === 'basic' && renderBasicSettings()}
           {activeSection === 'stages' && renderStageSettings()}
           {activeSection === 'ai' && renderAISettings()}
-          {activeSection === 'prompts' && renderPromptSettings()}
+          {activeSection === 'prompts' && renderPromptLibrary()}
           
           {activeSection === 'timing' && (
             <div className="config-section">
@@ -1595,6 +2030,21 @@ const DialogueSetup = ({ onDialogueCreate, onClose, editingDialogue }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Catalyst Library Modal */}
+      {showCatalystLibrary && (
+        <CatalystLibrary
+          onClose={() => {
+            setShowCatalystLibrary(false);
+            setCatalystSelectionContext(null);
+          }}
+          onSelectCatalyst={handleSelectCatalyst}
+          selectedCatalyst={catalystSelectionContext ? getSelectedCatalystInfo(
+            catalystSelectionContext.stage, 
+            catalystSelectionContext.substageIndex
+          ) : null}
+        />
       )}
     </div>
   );

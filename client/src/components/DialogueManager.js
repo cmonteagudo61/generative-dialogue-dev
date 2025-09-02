@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DialogueSetup from './DialogueSetup';
+import DialoguePreview from './DialoguePreview';
+import SessionOrchestrator from './SessionOrchestrator';
+import ScalableSessionOrchestrator from './ScalableSessionOrchestrator';
 import './DialogueManager.css';
 
 const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
@@ -8,6 +11,13 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
   const [selectedDialogue, setSelectedDialogue] = useState(null);
   const [editingDialogue, setEditingDialogue] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewDialogue, setPreviewDialogue] = useState(null);
+  const [showLiveSession, setShowLiveSession] = useState(false);
+  const [liveDialogue, setLiveDialogue] = useState(null);
+  const [sessionParticipants, setSessionParticipants] = useState([]);
+  const [showScalableSession, setShowScalableSession] = useState(false);
+  const [scalableParticipants, setScalableParticipants] = useState([]);
 
   // Load dialogues from localStorage on mount
   useEffect(() => {
@@ -47,14 +57,21 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
   };
 
   const handleDialogueUpdate = (updatedConfig) => {
+    console.log('🔄 DialogueManager: Received update for dialogue:', updatedConfig.id);
+    console.log('🔄 DialogueManager: New duration:', updatedConfig.totalDuration, 'minutes');
+    
     const updatedDialogue = {
       ...updatedConfig,
       lastModified: new Date().toISOString()
     };
     
-    setDialogues(prev => prev.map(d => 
-      d.id === updatedDialogue.id ? updatedDialogue : d
-    ));
+    setDialogues(prev => {
+      const newDialogues = prev.map(d => 
+        d.id === updatedDialogue.id ? updatedDialogue : d
+      );
+      console.log('🔄 DialogueManager: Updated dialogues list');
+      return newDialogues;
+    });
     
     setShowSetup(false);
     setEditingDialogue(null);
@@ -115,6 +132,56 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
     setDialogues(prev => [...prev, duplicated]);
   };
 
+  const handleDialoguePreview = (dialogue) => {
+    setPreviewDialogue(dialogue);
+    setShowPreview(true);
+  };
+
+  const handleStartLiveSession = (dialogue) => {
+    // Generate mock participants for demo
+    const mockParticipants = Array.from({ length: dialogue.gatheringSize || 6 }, (_, i) => ({
+      id: `participant_${i}`,
+      name: `Participant ${i + 1}`,
+      status: 'ready'
+    }));
+    
+    setLiveDialogue(dialogue);
+    setSessionParticipants(mockParticipants);
+    setShowLiveSession(true);
+  };
+
+  const handleSessionEnd = (sessionData) => {
+    console.log('Session ended:', sessionData);
+    setShowLiveSession(false);
+    setLiveDialogue(null);
+    setSessionParticipants([]);
+  };
+
+  const handleStartScalableSession = (dialogue, participantCount = 100) => {
+    // Generate mock participants for scale testing
+    const mockParticipants = Array.from({ length: participantCount }, (_, i) => ({
+      id: `participant_${i}`,
+      name: `Participant ${i + 1}`,
+      email: `participant${i + 1}@example.com`,
+      status: 'ready',
+      demographics: {
+        region: ['North America', 'Europe', 'Asia', 'South America', 'Africa'][Math.floor(Math.random() * 5)],
+        experience: ['Beginner', 'Intermediate', 'Advanced'][Math.floor(Math.random() * 3)],
+        interest: ['Environment', 'Technology', 'Social Justice', 'Education', 'Healthcare'][Math.floor(Math.random() * 5)]
+      }
+    }));
+    
+    setLiveDialogue(dialogue);
+    setScalableParticipants(mockParticipants);
+    setShowScalableSession(true);
+  };
+
+  const handleScalableSessionEnd = () => {
+    setShowScalableSession(false);
+    setLiveDialogue(null);
+    setScalableParticipants([]);
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'draft': return '#718096';
@@ -154,6 +221,26 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
     });
   };
 
+  // Calculate accurate duration excluding harvest
+  const calculateActualDuration = (dialogue) => {
+    if (!dialogue?.stages) return dialogue.totalDuration || 0;
+    
+    let total = 0;
+    Object.entries(dialogue.stages).forEach(([stageKey, stage]) => {
+      if (stage.enabled && stage.substages) {
+        // Exclude harvest from committed dialogue time - it's post-dialogue
+        if (stageKey === 'harvest') return;
+        
+        stage.substages.forEach(substage => {
+          total += parseInt(substage.duration) || 0;
+        });
+      }
+    });
+    
+    console.log(`📊 Dialogue "${dialogue.title}" - Stored: ${dialogue.totalDuration}min, Calculated: ${total}min`);
+    return total;
+  };
+
   const renderDialogueCard = (dialogue) => (
     <div key={dialogue.id} className="dialogue-card">
       <div className="card-header">
@@ -178,6 +265,13 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
           </button>
           <button
             className="action-btn"
+            onClick={() => handleDialoguePreview(dialogue)}
+            title="Participant Preview"
+          >
+            📖
+          </button>
+          <button
+            className="action-btn"
             onClick={() => handleDialogueDuplicate(dialogue)}
             title="Duplicate"
           >
@@ -199,17 +293,15 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
         <div className="card-stats">
           <div className="stat">
             <span className="stat-label">Duration:</span>
-            <span className="stat-value">{formatDuration(dialogue.totalDuration)}</span>
+            <span className="stat-value">{formatDuration(calculateActualDuration(dialogue))}</span>
           </div>
           <div className="stat">
-            <span className="stat-label">Max Participants:</span>
-            <span className="stat-value">{dialogue.maxParticipants}</span>
+            <span className="stat-label">Participants:</span>
+            <span className="stat-value">{dialogue.gatheringSize || dialogue.maxParticipants}</span>
           </div>
           <div className="stat">
-            <span className="stat-label">Stages:</span>
-            <span className="stat-value">
-              {Object.values(dialogue.stages).filter(s => s.enabled).length}
-            </span>
+            <span className="stat-label">Target Time:</span>
+            <span className="stat-value">{dialogue.availableTime ? `${dialogue.availableTime}min` : 'Not set'}</span>
           </div>
         </div>
 
@@ -226,12 +318,27 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
 
       <div className="card-footer">
         {dialogue.status === 'draft' && (
-          <button
-            className="btn-primary"
-            onClick={() => handleDialogueStart(dialogue)}
-          >
-            Start Dialogue
-          </button>
+          <div className="draft-controls">
+            <button
+              className="btn-secondary"
+              onClick={() => handleDialogueStart(dialogue)}
+            >
+              Start Dialogue
+            </button>
+            <button
+              className="btn-primary live-session-btn"
+              onClick={() => handleStartLiveSession(dialogue)}
+            >
+              🎬 Live Session
+            </button>
+            <button
+              className="btn-enterprise scale-test-btn"
+              onClick={() => handleStartScalableSession(dialogue, 100)}
+              title="Test with 100 participants"
+            >
+              🌐 Scale Test (100)
+            </button>
+          </div>
         )}
         {dialogue.status === 'active' && (
           <div className="active-controls">
@@ -278,9 +385,9 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
       </div>
       
       <div className="list-stats">
-        <span>{formatDuration(dialogue.totalDuration)}</span>
-        <span>{dialogue.maxParticipants} max</span>
-        <span>{Object.values(dialogue.stages).filter(s => s.enabled).length} stages</span>
+        <span>{formatDuration(calculateActualDuration(dialogue))}</span>
+        <span>{dialogue.gatheringSize || dialogue.maxParticipants} people</span>
+        <span>{dialogue.availableTime ? `${dialogue.availableTime}min target` : 'No target'}</span>
       </div>
       
       <div className="list-actions">
@@ -297,13 +404,36 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
         >
           ✏️
         </button>
+        <button
+          className="action-btn"
+          onClick={() => handleDialoguePreview(dialogue)}
+          title="Participant Preview"
+        >
+          📖
+        </button>
         {dialogue.status === 'draft' && (
-          <button
-            className="btn-primary small"
-            onClick={() => handleDialogueStart(dialogue)}
-          >
-            Start
-          </button>
+          <>
+            <button
+              className="btn-secondary small"
+              onClick={() => handleDialogueStart(dialogue)}
+            >
+              Start
+            </button>
+            <button
+              className="btn-primary small live-session-btn"
+              onClick={() => handleStartLiveSession(dialogue)}
+              title="Start Live Session"
+            >
+              🎬 Live
+            </button>
+            <button
+              className="btn-enterprise small scale-test-btn"
+              onClick={() => handleStartScalableSession(dialogue, 100)}
+              title="Scale Test with 100 participants"
+            >
+              🌐 Scale
+            </button>
+          </>
         )}
         {dialogue.status === 'active' && (
           <button
@@ -403,15 +533,15 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
                 <div className="config-grid">
                   <div className="config-item">
                     <label>Duration:</label>
-                    <span>{formatDuration(selectedDialogue.totalDuration)}</span>
+                    <span>{formatDuration(calculateActualDuration(selectedDialogue))}</span>
                   </div>
                   <div className="config-item">
-                    <label>Max Participants:</label>
-                    <span>{selectedDialogue.maxParticipants}</span>
+                    <label>Participants:</label>
+                    <span>{selectedDialogue.gatheringSize || selectedDialogue.maxParticipants}</span>
                   </div>
                   <div className="config-item">
-                    <label>Facilitator:</label>
-                    <span>{selectedDialogue.facilitator}</span>
+                    <label>Target Time:</label>
+                    <span>{selectedDialogue.availableTime ? `${selectedDialogue.availableTime} min` : 'Not set'}</span>
                   </div>
                   <div className="config-item">
                     <label>Status:</label>
@@ -423,18 +553,65 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
               </div>
 
               <div className="detail-section">
-                <h4>Enabled Stages</h4>
-                <div className="stages-list">
-                  {Object.entries(selectedDialogue.stages)
-                    .filter(([_, settings]) => settings.enabled)
-                    .map(([stage, settings]) => (
-                      <div key={stage} className="stage-item">
-                        <span className="stage-name">{stage.toUpperCase()}</span>
-                        <span className="stage-duration">{settings.duration}m</span>
-                      </div>
-                    ))
-                  }
+                <h4>Dialogue Structure</h4>
+                
+                {/* Synchronous Stages */}
+                <div className="stages-group">
+                  <div className="stages-group-header">
+                    <span className="group-title">🤝 Synchronous Activity</span>
+                    <span className="group-subtitle">Group time - all participants together</span>
+                  </div>
+                  <div className="stages-list">
+                    {Object.entries(selectedDialogue.stages)
+                      .filter(([stageKey, settings]) => settings.enabled && stageKey !== 'harvest')
+                      .map(([stage, settings]) => {
+                        // Calculate total duration for this stage
+                        const stageDuration = settings.substages 
+                          ? settings.substages.reduce((sum, substage) => sum + (parseInt(substage.duration) || 0), 0)
+                          : (parseInt(settings.duration) || 0);
+                        
+                        return (
+                          <div key={stage} className="stage-item">
+                            <span className="stage-name">{stage.toUpperCase()}</span>
+                            <span className="stage-duration">{stageDuration}m</span>
+                          </div>
+                        );
+                      })
+                    }
+                  </div>
+                  <div className="stages-subtotal">
+                    <span className="subtotal-label">Committed Group Time:</span>
+                    <span className="subtotal-value">{formatDuration(calculateActualDuration(selectedDialogue))}</span>
+                  </div>
                 </div>
+
+                {/* Asynchronous Stages */}
+                {selectedDialogue.stages.harvest?.enabled && (
+                  <div className="stages-group async">
+                    <div className="stages-group-header">
+                      <span className="group-title">🏠 Asynchronous Activity</span>
+                      <span className="group-subtitle">Individual time - completed on own schedule</span>
+                    </div>
+                    <div className="stages-list">
+                      <div className="stage-item">
+                        <span className="stage-name">HARVEST</span>
+                        <span className="stage-duration">
+                          {selectedDialogue.stages.harvest.substages 
+                            ? selectedDialogue.stages.harvest.substages.reduce((sum, substage) => sum + (parseInt(substage.duration) || 0), 0)
+                            : 0}m
+                        </span>
+                      </div>
+                    </div>
+                    <div className="stages-subtotal async">
+                      <span className="subtotal-label">Individual Commitment:</span>
+                      <span className="subtotal-value">
+                        {formatDuration(selectedDialogue.stages.harvest.substages 
+                          ? selectedDialogue.stages.harvest.substages.reduce((sum, substage) => sum + (parseInt(substage.duration) || 0), 0)
+                          : 0)}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="detail-section">
@@ -482,6 +659,58 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Dialogue Preview Modal */}
+      {showPreview && previewDialogue && (
+        <div className="preview-modal-overlay">
+          <div className="preview-modal">
+            <div className="preview-modal-header">
+              <h3>📖 Participant Preview</h3>
+              <button
+                className="close-btn"
+                onClick={() => {
+                  setShowPreview(false);
+                  setPreviewDialogue(null);
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div className="preview-modal-content">
+              <DialoguePreview 
+                dialogueConfig={previewDialogue} 
+                isParticipantView={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Live Session Orchestrator */}
+      {showLiveSession && liveDialogue && (
+        <div className="live-session-overlay">
+          <SessionOrchestrator
+            dialogueConfig={liveDialogue}
+            participants={sessionParticipants}
+            isHost={true}
+            onSessionEnd={handleSessionEnd}
+            onParticipantUpdate={setSessionParticipants}
+          />
+        </div>
+      )}
+
+      {/* Scalable Session Orchestrator */}
+      {showScalableSession && liveDialogue && (
+        <div className="scalable-session-overlay">
+          <ScalableSessionOrchestrator
+            dialogueConfig={liveDialogue}
+            participants={scalableParticipants}
+            facilitatorRole="master"
+            facilitatorId="master_001"
+            onSessionUpdate={handleScalableSessionEnd}
+          />
         </div>
       )}
     </div>

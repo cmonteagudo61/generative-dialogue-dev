@@ -1,0 +1,806 @@
+/* Stage Configuration Panel Styles */
+.stage-configuration-panel {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Floating Time Monitor - Always Visible */
+.floating-time-monitor {
+  position: fixed;
+  top: 115px;
+  right: 20px;
+  z-index: 1000;
+  background: rgba(45, 55, 72, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 0.75rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  min-width: 280px;
+  max-width: 320px;
+}
+
+.floating-time-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.floating-time-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.time-icon {
+  font-size: 1.1rem;
+}
+
+.floating-time-status {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.floating-time-status.over-time {
+  color: #f56565;
+}
+
+.floating-time-status.on-time {
+  color: #48bb78;
+}
+
+.floating-percentage {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.floating-time-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.floating-time-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #48bb78, #38a169);
+  border-radius: 3px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+.floating-time-fill.over-time {
+  background: linear-gradient(90deg, #f56565, #e53e3e);
+}
+
+.floating-time-fill.perfect {
+  background: linear-gradient(90deg, #38a169, #2f855a) !important;
+  box-shadow: 0 0 8px rgba(56, 161, 105, 0.4);
+}
+
+.floating-warning {
+  font-size: 0.75rem;
+  color: #f56565;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.floating-buffer {
+  font-size: 0.75rem;
+  color: #48bb78;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Hide floating monitor on small screens */
+@media (max-width: 768px) {
+  .floating-time-monitor {
+    display: none;
+  }
+}
+
+/* Time Overview */
+.time-overview {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.time-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.time-header h3 {
+  margin: 0;
+  color: #90cdf4;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.time-status {
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.time-status.on-time {
+  background: rgba(72, 187, 120, 0.7);
+  color: #1a202c !important;
+  border: 1px solid rgba(72, 187, 120, 0.8);
+}
+
+.time-status.over-time {
+  background: rgba(245, 101, 101, 0.9);
+  color: #1a202c;
+  border: 1px solid rgba(245, 101, 101, 0.4);
+  font-weight: 700;
+}
+
+.time-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.time-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #48bb78, #38a169);
+  transition: width 0.3s ease;
+}
+
+.time-fill.over-time {
+  background: linear-gradient(90deg, #f56565, #e53e3e);
+}
+
+  .time-fill.perfect {
+    background: linear-gradient(90deg, #38a169, #2f855a) !important;
+    box-shadow: 0 0 8px rgba(56, 161, 105, 0.4);
+  }
+
+/* Prompt Selector Styles */
+.prompt-selector {
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.prompt-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.prompt-selector-header label {
+  color: #4a5568;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.prompt-library-btn {
+  background: linear-gradient(45deg, #63b3ed, #4299e1);
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.prompt-library-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 179, 237, 0.3);
+}
+
+.prompt-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.prompt-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f7fafc;
+}
+
+.prompt-dropdown-header span {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.9rem;
+}
+
+.close-dropdown {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #718096;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+.close-dropdown:hover {
+  background: #e2e8f0;
+}
+
+.prompt-options {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.prompt-option {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.prompt-option:hover {
+  background: #f7fafc;
+}
+
+.prompt-option:last-child {
+  border-bottom: none;
+}
+
+.prompt-preview {
+  color: #2d3748;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.prompt-stats {
+  color: #718096;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.prompt-dropdown-footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f7fafc;
+}
+
+.open-library-btn {
+  background: none;
+  border: 1px solid #e2e8f0;
+  color: #4299e1;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.open-library-btn:hover {
+  background: #f7fafc;
+  border-color: #4299e1;
+}
+
+.time-warning {
+  color: #fc8181;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.time-buffer {
+  color: #68d391;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Stages Configuration */
+.stages-configuration h3 {
+  color: #90cdf4;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Activity Sections */
+.activity-section {
+  margin-bottom: 2rem;
+}
+
+.activity-header {
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
+.activity-header h4 {
+  margin: 0 0 0.25rem 0;
+  color: #f7fafc;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.activity-header p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-style: italic;
+  text-align: left;
+}
+
+/* Async time styling */
+.async-time {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.async-label {
+  font-size: 0.7rem;
+  color: #ed8936;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+/* Asynchronous section specific styling */
+.activity-section .stage-config-card .substage-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activity-section .stage-config-card .duration-config {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.activity-section .stage-config-card .substage-prompt {
+  width: 100%;
+}
+
+.activity-section .stage-config-card .substage-prompt .prompt-textarea {
+  width: 100%;
+  min-width: 100%;
+  box-sizing: border-box;
+}
+
+.stage-config-card {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.stage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.stage-header:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.stage-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stage-icon {
+  font-size: 1.5rem;
+}
+
+.stage-details h4 {
+  margin: 0 0 0.25rem 0;
+  color: #f7fafc;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.stage-details p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+}
+
+.stage-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stage-time {
+  background: rgba(99, 179, 237, 0.9);
+  color: #1a202c;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 1px solid rgba(99, 179, 237, 0.3);
+}
+
+.expand-icon {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+}
+
+/* Stage Details Panel */
+.stage-details-panel {
+  padding: 0 1rem 1rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.quick-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-top: 1rem;
+}
+
+.quick-btn {
+  background: rgba(99, 179, 237, 0.9);
+  color: #1a202c;
+  border: 1px solid rgba(99, 179, 237, 0.3);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-btn:hover {
+  background: rgba(99, 179, 237, 1);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Substage Configuration */
+.substages-config {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.substage-config {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.substage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.substage-header h5 {
+  margin: 0;
+  color: #f7fafc;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.substage-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.duration-input {
+  width: 60px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  background: #ffffff;
+  color: #1a202c;
+  font-size: 0.9rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+.duration-input.duration-warning {
+  border-color: #f56565;
+  background: #ffffff;
+  color: #1a202c;
+}
+
+.duration-warning-text {
+  font-size: 0.75rem;
+  color: #f56565;
+  font-weight: 600;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.duration-warning-text.compact {
+  font-size: 0.7rem;
+  margin-top: 0.1rem;
+}
+
+.duration-input:focus {
+  outline: none;
+  border-color: #90cdf4;
+  box-shadow: 0 0 0 2px rgba(144, 205, 244, 0.3);
+  background: #ffffff;
+  color: #1a202c;
+}
+
+.duration-input.duration-warning:focus {
+  outline: none;
+  border-color: #f56565;
+  box-shadow: 0 0 0 2px rgba(245, 101, 101, 0.3);
+  background: #ffffff;
+  color: #1a202c;
+}
+
+.duration-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Breakout Configuration */
+.breakout-config {
+  margin-bottom: 0.75rem;
+}
+
+.breakout-config label {
+  display: block;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.breakout-select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #2d3748;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.breakout-select:focus {
+  outline: none;
+  border-color: #90cdf4;
+  box-shadow: 0 0 0 2px rgba(144, 205, 244, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.breakout-select option {
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+.breakout-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.rooms-count {
+  background: rgba(237, 137, 54, 0.9);
+  color: #1a202c;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.breakout-description {
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+}
+
+/* Prompt Configuration */
+.stage-configuration-panel .substage-prompt label {
+  display: block;
+  color: #2d3748 !important;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+}
+
+.substage-prompt .prompt-textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  background: #ffffff !important;
+  color: #1a202c !important;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.substage-prompt .prompt-textarea:focus {
+  outline: none;
+  border-color: #90cdf4;
+  box-shadow: 0 0 0 2px rgba(144, 205, 244, 0.3);
+  background: #ffffff !important;
+  color: #1a202c !important;
+}
+
+.substage-prompt .prompt-textarea::placeholder {
+  color: rgba(45, 55, 72, 0.6);
+}
+
+/* Expert Tips */
+.expert-tips {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.expert-tips h4 {
+  color: #90cdf4;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+}
+
+.tip-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.tip-card strong {
+  color: #90cdf4;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stage-configuration-panel {
+    padding: 1rem;
+  }
+  
+  .time-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .stage-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .stage-summary {
+    justify-content: space-between;
+  }
+  
+  .quick-actions {
+    flex-wrap: wrap;
+  }
+  
+  .quick-btn {
+    flex: 1;
+    min-width: 80px;
+  }
+  
+  .substage-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .breakout-info {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+  }
+  
+  .tips-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Animation Effects */
+.stage-details-panel {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+
+.time-fill {
+  animation: fillBar 0.5s ease-out;
+}
+
+@keyframes fillBar {
+  from {
+    width: 0;
+  }
+}
+
+/* Focus States */
+.duration-input:focus,
+.breakout-select:focus,
+.prompt-textarea:focus {
+  transform: translateY(-1px);
+}
+
+/* Hover Effects */
+.stage-config-card:hover {
+  border-color: rgba(99, 179, 237, 0.3);
+}
+
+.substage-config:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tip-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
