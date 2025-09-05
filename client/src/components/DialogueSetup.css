@@ -207,20 +207,21 @@
 .form-group label {
   display: block;
   margin-bottom: 0.75rem;
-  font-weight: 600;
-  color: #f7fafc;
-  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff !important;
+  font-size: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   width: 100%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 6px;
   padding: 1rem;
-  color: white;
+  color: #2d3748;
   font-size: 0.95rem;
   transition: all 0.2s ease;
   font-family: inherit;
@@ -230,14 +231,15 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #63b3ed;
-  box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.2);
-  background: rgba(255, 255, 255, 0.1);
+  border-color: #4299e1;
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.3);
+  background: #ffffff;
+  color: #2d3748;
 }
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(45, 55, 72, 0.6);
 }
 
 .form-group textarea {
@@ -264,6 +266,9 @@
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.9rem;
+  color: #ffffff !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .checkbox-group input[type="checkbox"] {
@@ -359,11 +364,11 @@
 
 .substage-name-input {
   flex: 1;
-  background: rgba(226, 232, 240, 0.1);
-  border: 1px solid rgba(226, 232, 240, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   padding: 0.5rem;
-  color: white;
+  color: #2d3748;
   font-weight: 500;
 }
 
@@ -397,18 +402,20 @@
 }
 
 .substage-setting label {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  font-weight: 500;
+  font-size: 0.85rem;
+  opacity: 1;
+  font-weight: 600;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .substage-setting select,
 .duration-input {
-  background: rgba(226, 232, 240, 0.1);
-  border: 1px solid rgba(226, 232, 240, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   padding: 0.5rem;
-  color: white;
+  color: #2d3748;
   font-size: 0.9rem;
 }
 
@@ -421,11 +428,11 @@
 
 .duration-input input {
   width: 60px;
-  background: rgba(226, 232, 240, 0.1);
-  border: 1px solid rgba(226, 232, 240, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   padding: 0.5rem;
-  color: white;
+  color: #2d3748;
   text-align: center;
 }
 
@@ -441,9 +448,11 @@
 }
 
 .substage-prompt label {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  font-weight: 500;
+  font-size: 0.85rem;
+  opacity: 1;
+  font-weight: 600;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .substage-prompt textarea {
@@ -1016,17 +1025,20 @@
 }
 
 .preview-item .label {
-  font-size: 0.8rem;
-  opacity: 0.7;
+  font-size: 0.85rem;
+  opacity: 1;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-weight: 500;
+  font-weight: 600;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .preview-item .value {
-  font-weight: 600;
-  color: white;
-  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff !important;
+  font-size: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .preview-description {
@@ -1036,13 +1048,15 @@
 }
 
 .preview-description .label {
-  font-size: 0.8rem;
-  opacity: 0.7;
+  font-size: 0.85rem;
+  opacity: 1;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 0.5rem;
   display: block;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .preview-description p {
@@ -1604,11 +1618,11 @@
 .substage-tab textarea,
 .substage-tab input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 6px;
   padding: 8px 12px;
-  color: white;
+  color: #2d3748;
   font-size: 0.9rem;
 }
 
@@ -1621,8 +1635,10 @@
 .substage-tab textarea:focus,
 .substage-tab input:focus {
   outline: none;
-  border-color: #63b3ed;
-  box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.2);
+  border-color: #4299e1;
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.3);
+  background: #ffffff;
+  color: #2d3748;
 }
 
 /* Responsive adjustments */

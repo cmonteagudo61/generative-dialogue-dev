@@ -3,6 +3,8 @@ import DialogueSetup from './DialogueSetup';
 import DialoguePreview from './DialoguePreview';
 import SessionOrchestrator from './SessionOrchestrator';
 import ScalableSessionOrchestrator from './ScalableSessionOrchestrator';
+import CloudStorageSetup from './CloudStorageSetup';
+import cloudStorage from '../services/cloudStorage';
 import './DialogueManager.css';
 
 const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
@@ -18,23 +20,89 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
   const [sessionParticipants, setSessionParticipants] = useState([]);
   const [showScalableSession, setShowScalableSession] = useState(false);
   const [scalableParticipants, setScalableParticipants] = useState([]);
+  const [showCloudSetup, setShowCloudSetup] = useState(false);
+  const [cloudStatus, setCloudStatus] = useState(null);
+  const [isRealtimeUpdate, setIsRealtimeUpdate] = useState(false);
 
-  // Load dialogues from localStorage on mount
+  // Initialize cloud storage and load dialogues
   useEffect(() => {
-    const saved = localStorage.getItem('generative_dialogues');
-    if (saved) {
-      try {
-        setDialogues(JSON.parse(saved));
-      } catch (error) {
-        console.error('Error loading dialogues:', error);
+    const initializeStorage = async () => {
+      console.log('🚀 DialogueManager: Starting cloud storage initialization...');
+      
+      // Initialize cloud storage (will auto-load config from localStorage)
+      const success = await cloudStorage.initialize();
+      console.log('🚀 DialogueManager: Cloud storage initialization result:', success);
+      
+      const status = cloudStorage.getStatus();
+      console.log('🚀 DialogueManager: Cloud storage status:', status);
+      setCloudStatus(status);
+      
+      // Load dialogues from cloud/local storage
+      const loadedDialogues = await cloudStorage.loadDialogues();
+      console.log('🚀 DialogueManager: Loaded dialogues:', loadedDialogues.length);
+      
+      // Migrate dialogues to ensure all stages have enabled property
+      const migratedDialogues = loadedDialogues.map(dialogue => {
+        if (!dialogue.stages) return dialogue;
+        
+        const migratedStages = {};
+        Object.entries(dialogue.stages).forEach(([stageKey, stage]) => {
+          migratedStages[stageKey] = {
+            ...stage,
+            // Ensure enabled property exists - default to true for existing dialogues
+            enabled: stage.enabled !== undefined ? stage.enabled : true
+          };
+        });
+        
+        return {
+          ...dialogue,
+          stages: migratedStages
+        };
+      });
+      
+      // Save migrated dialogues if any changes were made
+      const needsMigration = migratedDialogues.some((dialogue, index) => 
+        JSON.stringify(dialogue.stages) !== JSON.stringify(loadedDialogues[index]?.stages)
+      );
+      
+      if (needsMigration) {
+        console.log('🔄 DialogueManager: Migrating dialogues to add missing enabled properties');
+        await cloudStorage.saveDialogues(migratedDialogues);
       }
-    }
+      
+      setDialogues(migratedDialogues);
+      
+      // Set up real-time sync if available
+      if (status.isOnline) {
+        const unsubscribe = cloudStorage.setupRealtimeSync((updatedDialogues) => {
+          console.log('🚀 DialogueManager: Real-time sync update received:', updatedDialogues.length);
+          setIsRealtimeUpdate(true);
+          setDialogues(updatedDialogues);
+          // Reset flag after a brief delay
+          setTimeout(() => setIsRealtimeUpdate(false), 100);
+        });
+        
+        // Cleanup function
+        return () => {
+          if (unsubscribe) {
+            unsubscribe();
+          }
+        };
+      }
+    };
+    
+    initializeStorage();
   }, []);
 
-  // Save dialogues to localStorage whenever dialogues change
+  // Save dialogues to cloud/local storage whenever dialogues change (but not from real-time updates)
   useEffect(() => {
-    localStorage.setItem('generative_dialogues', JSON.stringify(dialogues));
-  }, [dialogues]);
+    if (!isRealtimeUpdate && (dialogues.length > 0 || cloudStatus?.isInitialized)) {
+      console.log('💾 Saving dialogues to cloud (user-initiated change)');
+      cloudStorage.saveDialogues(dialogues);
+    } else if (isRealtimeUpdate) {
+      console.log('🔄 Skipping save (real-time update)');
+    }
+  }, [dialogues, cloudStatus, isRealtimeUpdate]);
 
   const handleDialogueCreate = (config) => {
     const newDialogue = {
@@ -76,6 +144,66 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
     setShowSetup(false);
     setEditingDialogue(null);
     setSelectedDialogue(updatedDialogue);
+  };
+
+  // Import/Export functions for cross-device synchronization
+  const handleExportDialogues = () => {
+    const exportData = {
+      dialogues: dialogues,
+      exportedAt: new Date().toISOString(),
+      version: '1.0'
+    };
+    
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `generative-dialogues-${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  const handleImportDialogues = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const importedData = JSON.parse(e.target.result);
+        
+        // Handle both old format (direct array) and new format (with metadata)
+        const importedDialogues = importedData.dialogues || importedData;
+        
+        // Validate the imported data
+        if (!Array.isArray(importedDialogues)) {
+          alert('Invalid file format. Please select a valid dialogue export file.');
+          return;
+        }
+
+        // Merge with existing dialogues, avoiding duplicates
+        const existingIds = new Set(dialogues.map(d => d.id));
+        const newDialogues = importedDialogues.filter(d => !existingIds.has(d.id));
+        
+        if (newDialogues.length === 0) {
+          alert('No new dialogues found in the import file. All dialogues already exist.');
+          return;
+        }
+
+        setDialogues(prev => [...prev, ...newDialogues]);
+        alert(`Successfully imported ${newDialogues.length} dialogue(s).`);
+        
+      } catch (error) {
+        console.error('Error importing dialogues:', error);
+        alert('Error importing dialogues. Please check the file format.');
+      }
+    };
+    
+    reader.readAsText(file);
+    // Reset the input so the same file can be selected again
+    event.target.value = '';
   };
 
   const handleDialogueStart = (dialogue) => {
@@ -237,7 +365,10 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
       }
     });
     
-    console.log(`📊 Dialogue "${dialogue.title}" - Stored: ${dialogue.totalDuration}min, Calculated: ${total}min`);
+    // Only log duration mismatches in development
+    if (process.env.NODE_ENV === 'development' && Math.abs(dialogue.totalDuration - total) > 5) {
+      console.log(`📊 Duration mismatch for "${dialogue.title}": Stored ${dialogue.totalDuration}min, Calculated ${total}min`);
+    }
     return total;
   };
 
@@ -468,6 +599,38 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
               onClick={() => setViewMode('list')}
             >
               ☰
+            </button>
+          </div>
+          
+          <div className="sync-controls">
+            <button
+              className={`btn-secondary ${cloudStatus?.isOnline ? 'cloud-online' : 'cloud-offline'}`}
+              onClick={() => setShowCloudSetup(true)}
+              title={cloudStatus?.isOnline ? 'Cloud storage active' : 'Setup cloud storage'}
+            >
+              {cloudStatus?.isOnline ? '☁️ Cloud' : '📱 Local'}
+            </button>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImportDialogues}
+              style={{ display: 'none' }}
+              id="import-dialogues"
+            />
+            <button
+              className="btn-secondary"
+              onClick={() => document.getElementById('import-dialogues').click()}
+              title="Import dialogues from another device"
+            >
+              📥 Import
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={handleExportDialogues}
+              title="Export dialogues to share with another device"
+              disabled={dialogues.length === 0}
+            >
+              📤 Export
             </button>
           </div>
           
@@ -712,6 +875,15 @@ const DialogueManager = ({ onDialogueSelect, currentDialogue }) => {
             onSessionUpdate={handleScalableSessionEnd}
           />
         </div>
+      )}
+
+      {showCloudSetup && (
+        <CloudStorageSetup
+          onClose={() => {
+            setShowCloudSetup(false);
+            setCloudStatus(cloudStorage.getStatus());
+          }}
+        />
       )}
     </div>
   );

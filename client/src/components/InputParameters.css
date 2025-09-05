@@ -204,9 +204,15 @@
 }
 
 .form-select option {
-  background: white;
-  color: #3E4C71;
-  padding: 10px;
+  background: white !important;
+  color: #3E4C71 !important;
+  padding: 10px !important;
+  font-size: 14px !important;
+}
+
+.form-select option:hover {
+  background: #f0f0f0 !important;
+  color: #3E4C71 !important;
 }
 
 /* Catalyst Preferences Section */

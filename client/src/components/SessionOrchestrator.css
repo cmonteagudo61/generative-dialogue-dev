@@ -1,8 +1,8 @@
 /* Session Orchestrator Styles */
 .session-orchestrator {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #2d3748;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   display: flex;
   flex-direction: column;
@@ -33,13 +33,13 @@
 }
 
 .preparation-content {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
+  background: #ffffff;
   border-radius: 16px;
   padding: 2rem;
   max-width: 800px;
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid #dee2e6;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .participant-check,
@@ -335,13 +335,14 @@
 }
 
 .participant-chip {
-  background: rgba(99, 179, 237, 0.2);
-  color: #63b3ed;
+  background: #ffffff;
+  color: #2d3748;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: 0.85rem;
-  font-weight: 500;
-  border: 1px solid rgba(99, 179, 237, 0.3);
+  font-weight: 600;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Host Controls */

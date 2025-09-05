@@ -73,14 +73,29 @@ function AppContent() {
     const bidParam = urlParams.get('breakoutId');
     const nameParam = urlParams.get('name');
     
+    // Debug logging
+    console.log('App routing debug:', {
+      pathname: window.location.pathname,
+      search: window.location.search,
+      pageParam,
+      currentPage
+    });
+    
     // Check URL path for direct routing (e.g., /dashboard, /signin)
     const path = window.location.pathname;
     if (path === '/dashboard') {
+      console.log('Setting page to dashboard (path)');
       setCurrentPage('dashboard');
     } else if (path === '/signin') {
+      console.log('Setting page to signin (path)');
       setCurrentPage('signin');
     } else if (pageParam) {
+      console.log('Setting page to:', pageParam);
       setCurrentPage(pageParam);
+    } else if (path === '/' || path === '') {
+      // Default to landing page for root path
+      console.log('Setting page to landing (default)');
+      setCurrentPage('landing');
     }
     setIsHost(roleParam === 'host');
 
@@ -462,24 +477,18 @@ function AppContent() {
 
   // Get current stage info for navigation
   const currentStageInfo = getCurrentStageAndSubstage();
-  console.log('Current stage info:', { 
-    currentPage, 
-    currentStageInfo: currentStageInfo ? {
-      stageKey: currentStageInfo.stageKey,
-      substageIndex: currentStageInfo.substageIndex,
-      totalSubstages: currentStageInfo.totalSubstages
-    } : null, 
-    currentIndex 
-  });
+  
+  // Track page changes for development logging (must be outside conditional)
+  const prevPage = React.useRef(currentPage);
+  
+  // Only log navigation changes in development
+  if (process.env.NODE_ENV === 'development' && prevPage.current !== currentPage) {
+    console.log('Page changed:', { from: prevPage.current, to: currentPage });
+  }
+  prevPage.current = currentPage;
+  
   const canGoBack = currentIndex > 0 || (currentStageInfo && currentStageInfo.substageIndex > 0);
   const canGoForward = currentIndex < pages.length - 1 || (currentStageInfo && currentStageInfo.substageIndex < currentStageInfo.totalSubstages - 1);
-  console.log('Navigation props:', { 
-    canGoBack, 
-    canGoForward, 
-    currentIndex, 
-    totalPages: pages.length,
-    currentPage 
-  });
 
   const navigationProps = {
     currentPage,

@@ -1,22 +1,23 @@
 /* Breakout Room Manager Styles */
 .breakout-room-manager {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #2d3748;
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 /* Header */
 .room-manager-header {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid #dee2e6;
   padding: 1.5rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .room-manager-header h2 {
@@ -28,14 +29,16 @@
 .view-controls {
   display: flex;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: #ffffff;
   border-radius: 8px;
   padding: 0.25rem;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .view-btn {
   background: transparent;
-  color: white;
+  color: #6c757d;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -45,12 +48,15 @@
 }
 
 .view-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: #f8f9fa;
+  color: #495057;
 }
 
 .view-btn.active {
-  background: rgba(255, 255, 255, 0.2);
+  background: #495057;
+  color: white;
   font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .recording-controls {
@@ -59,51 +65,87 @@
 }
 
 .record-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #ffffff;
+  color: #495057;
+  border: 1px solid #dee2e6;
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .record-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: #f8f9fa;
   transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .record-btn.start {
-  background: rgba(245, 101, 101, 0.2);
-  border-color: rgba(245, 101, 101, 0.5);
-  color: #f56565;
+  background: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.record-btn.start:hover {
+  background: #c82333;
+  border-color: #bd2130;
 }
 
 .record-btn.stop {
-  background: rgba(237, 137, 54, 0.2);
-  border-color: rgba(237, 137, 54, 0.5);
-  color: #ed8936;
+  background: #fd7e14;
+  border-color: #fd7e14;
+  color: white;
+}
+
+.record-btn.stop:hover {
+  background: #e66b02;
+  border-color: #dc6502;
 }
 
 /* Room Overview */
 .room-overview {
   padding: 2rem;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  width: 100%; /* Ensure full width */
 }
 
 .room-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 1.5rem;
+  min-width: fit-content; /* Ensure grid doesn't shrink below content width */
+}
+
+/* When there are many rooms, use horizontal scrolling layout */
+.room-grid.many-rooms {
+  display: flex !important; /* Use flexbox instead of grid for better control */
+  flex-direction: row !important;
+  flex-wrap: nowrap !important; /* Prevent wrapping to force horizontal scroll */
+  overflow-x: auto !important;
+  padding-bottom: 1rem; /* Space for scrollbar */
+  width: max-content; /* Ensure container expands to fit all items */
+  min-width: 100%; /* Ensure it takes full width */
+}
+
+/* Room cards in horizontal scroll mode */
+.room-grid.many-rooms .room-card {
+  flex: 0 0 350px; /* Fixed width, no grow/shrink */
+  margin-right: 1.5rem; /* Gap between cards */
+}
+
+.room-grid.many-rooms .room-card:last-child {
+  margin-right: 0; /* Remove margin from last card */
 }
 
 .room-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: #ffffff;
   border-radius: 16px;
   padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid #dee2e6;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .room-card:hover {
@@ -149,13 +191,151 @@
 }
 
 .participant-chip {
-  background: rgba(99, 179, 237, 0.2);
-  color: #63b3ed;
+  background: #ffffff;
+  color: #2d3748;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Room Templates Modal */
+.room-templates-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.room-templates-modal .modal-content {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 0;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.modal-description {
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.template-card {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f8f9fa;
+}
+
+.template-card:hover {
+  border-color: #4299e1;
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.15);
+}
+
+.template-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.template-header h5 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.template-type {
+  background: #e2e8f0;
+  color: #4a5568;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
   font-weight: 500;
-  border: 1px solid rgba(99, 179, 237, 0.3);
+  text-transform: uppercase;
+}
+
+.template-description {
+  color: #6c757d;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+.template-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.room-count {
+  color: #4299e1;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Template button styling */
+.template-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 0.5rem;
+}
+
+.template-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Enhanced drag and drop styles */
+.room-management-card.drag-active {
+  border: 2px dashed #4299e1;
+  background: rgba(66, 153, 225, 0.05);
+}
+
+.participant-card.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+}
+
+.participant-card {
+  transition: all 0.2s ease;
+  cursor: grab;
+}
+
+.participant-card:active {
+  cursor: grabbing;
 }
 
 .room-stats {
@@ -940,25 +1120,34 @@
 
 /* Scrollbar Styling */
 .transcript-container::-webkit-scrollbar,
-.transcript-feed::-webkit-scrollbar {
+.transcript-feed::-webkit-scrollbar,
+.room-overview::-webkit-scrollbar,
+.room-grid.many-rooms::-webkit-scrollbar {
   width: 6px;
+  height: 8px; /* For horizontal scrollbars */
 }
 
 .transcript-container::-webkit-scrollbar-track,
-.transcript-feed::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+.transcript-feed::-webkit-scrollbar-track,
+.room-overview::-webkit-scrollbar-track,
+.room-grid.many-rooms::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
 }
 
 .transcript-container::-webkit-scrollbar-thumb,
-.transcript-feed::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+.transcript-feed::-webkit-scrollbar-thumb,
+.room-overview::-webkit-scrollbar-thumb,
+.room-grid.many-rooms::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
 }
 
 .transcript-container::-webkit-scrollbar-thumb:hover,
-.transcript-feed::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+.transcript-feed::-webkit-scrollbar-thumb:hover,
+.room-overview::-webkit-scrollbar-thumb:hover,
+.room-grid.many-rooms::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 /* Animations */
@@ -1002,4 +1191,435 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Participant Management View Styles */
+.participant-management-view {
+  padding: 2rem;
+}
+
+.management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.management-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.management-controls {
+  display: flex;
+  gap: 1rem;
+}
+
+.balance-btn,
+.create-room-btn {
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.balance-btn:hover,
+.create-room-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-indicator {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.status-indicator.connected {
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  color: white;
+}
+
+.status-indicator.disconnected {
+  background: linear-gradient(45deg, #FF9800, #F57C00);
+  color: white;
+}
+
+/* Create Room Modal */
+.create-room-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  min-width: 400px;
+  color: #2d3748;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-content h4 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #2d3748;
+  font-size: 1rem;
+}
+
+.form-group input::placeholder {
+  color: #6c757d;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #495057;
+  box-shadow: 0 0 0 2px rgba(73, 80, 87, 0.2);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.modal-actions button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-actions button:first-child {
+  background: #28a745;
+  color: white;
+  border: 1px solid #28a745;
+}
+
+.modal-actions button:first-child:hover {
+  background: #218838;
+  border-color: #1e7e34;
+}
+
+.modal-actions button:last-child {
+  background: #6c757d;
+  color: white;
+  border: 1px solid #6c757d;
+}
+
+.modal-actions button:last-child:hover {
+  background: #5a6268;
+  border-color: #545b62;
+}
+
+/* Room Management Cards */
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.room-management-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 2px dashed #dee2e6;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.room-management-card:hover {
+  border-color: #495057;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.room-header h4 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.delete-room-btn {
+  background: linear-gradient(45deg, #F44336, #D32F2F);
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-room-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+}
+
+/* Engagement Metrics */
+.engagement-metrics {
+  margin-bottom: 1.5rem;
+}
+
+.engagement-score {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.score-bar {
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+  min-width: 50px;
+  transition: all 0.3s ease;
+}
+
+.activity-level {
+  font-size: 0.875rem;
+}
+
+.activity-high { color: #4CAF50; font-weight: 600; }
+.activity-medium { color: #FF9800; font-weight: 600; }
+.activity-low { color: #F44336; font-weight: 600; }
+
+/* Participants List */
+.participants-list h5 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.participant-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  cursor: grab;
+  transition: all 0.2s ease;
+  border: 1px solid #e9ecef;
+}
+
+.participant-card:hover {
+  background: #e9ecef;
+  transform: translateX(4px);
+  border-color: #495057;
+}
+
+.participant-card:active {
+  cursor: grabbing;
+}
+
+.participant-card.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+}
+
+.participant-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.participant-name {
+  font-weight: 600;
+  flex: 1;
+}
+
+.auto-balanced-tag,
+.reassigned-tag {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.25rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.participant-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4CAF50;
+}
+
+.status-dot.inactive {
+  background: #F44336;
+}
+
+.status-dot.away {
+  background: #FF9800;
+}
+
+.empty-room {
+  text-align: center;
+  padding: 2rem 1rem;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.drop-hint {
+  font-size: 0.875rem;
+  margin: 0.5rem 0 0 0;
+  font-style: italic;
+}
+
+/* Management Stats */
+.management-stats {
+  margin-top: 2rem;
+}
+
+.stat-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.stat-label {
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #4CAF50;
+}
+
+/* Drag and Drop States */
+.room-management-card.drag-over {
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+  transform: translateY(-4px);
+}
+
+.participant-card.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg) scale(0.95);
+  z-index: 1000;
 }

@@ -614,8 +614,15 @@
 }
 
 .breakout-select option {
-  background: #f7fafc;
-  color: #2d3748;
+  background: white !important;
+  color: #2d3748 !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+}
+
+.breakout-select option:hover {
+  background: #f0f0f0 !important;
+  color: #2d3748 !important;
 }
 
 .breakout-info {

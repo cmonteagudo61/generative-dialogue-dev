@@ -1,0 +1,308 @@
+/* Cloud Storage Setup Styles */
+
+.cloud-setup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+  padding: 1rem;
+}
+
+.cloud-setup-modal {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.cloud-setup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cloud-setup-header h2 {
+  color: white;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.cloud-setup-header .close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.cloud-setup-header .close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cloud-setup-content {
+  padding: 1.5rem;
+  color: white;
+}
+
+/* Status Section */
+.status-section {
+  margin-bottom: 2rem;
+}
+
+.status-section h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.status-info {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.status-item:last-child {
+  margin-bottom: 0;
+}
+
+.status-label {
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.status-value {
+  font-weight: 600;
+}
+
+.status-item.success .status-value {
+  color: #48bb78;
+}
+
+.status-item.warning .status-value {
+  color: #ed8936;
+}
+
+/* Configuration Section */
+.config-section {
+  margin-bottom: 2rem;
+}
+
+.config-section h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.config-description {
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+  line-height: 1.5;
+}
+
+.config-steps {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.config-steps h4 {
+  margin: 0 0 0.5rem 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.config-steps ol {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.config-steps li {
+  margin-bottom: 0.25rem;
+  opacity: 0.8;
+}
+
+.config-steps a {
+  color: #90cdf4;
+  text-decoration: none;
+}
+
+.config-steps a:hover {
+  text-decoration: underline;
+}
+
+.config-form {
+  margin-bottom: 1.5rem;
+}
+
+.config-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.config-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.config-form input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.config-form input:focus {
+  outline: none;
+  border-color: #90cdf4;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.config-form input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Actions Section */
+.actions-section {
+  margin-bottom: 2rem;
+}
+
+.actions-section h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.action-buttons .btn-secondary {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Environment Variables Section */
+.env-section {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.env-section h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.env-section p {
+  margin-bottom: 1rem;
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.env-vars {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.env-vars code {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  color: #90cdf4;
+}
+
+/* Button Styles */
+.btn-primary {
+  background: linear-gradient(45deg, #48bb78, #38a169);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cloud-setup-overlay {
+    padding: 0.5rem;
+  }
+  
+  .cloud-setup-modal {
+    max-height: 95vh;
+  }
+  
+  .cloud-setup-header,
+  .cloud-setup-content {
+    padding: 1rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-buttons .btn-secondary {
+    min-width: auto;
+  }
+}

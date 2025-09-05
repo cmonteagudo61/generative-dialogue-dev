@@ -700,3 +700,28 @@ code {
   50% { opacity: 1; }
   100% { opacity: 0.6; }
 }
+
+/* Global fix for dropdown option visibility across all browsers */
+select {
+  background-color: white !important;
+  color: #333 !important;
+}
+
+select option {
+  background-color: white !important;
+  color: #333 !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  border: none !important;
+}
+
+select option:hover {
+  background-color: #f0f0f0 !important;
+  color: #333 !important;
+}
+
+select option:checked,
+select option:selected {
+  background-color: #e3f2fd !important;
+  color: #1565c0 !important;
+}

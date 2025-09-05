@@ -138,15 +138,16 @@ const StageConfigurationPanel = ({
     const overTime = totalUsed > available;
     const utilizationPercent = Math.round((totalUsed / available) * 100);
     
-    // Debug logging
-    console.log('Time Analysis Debug:', {
-      totalUsed,
-      available,
-      remaining,
-      overTime,
-      utilizationPercent,
-      isPerfect: utilizationPercent === 100
-    });
+    // Debug logging (only in development)
+    if (process.env.NODE_ENV === 'development' && totalUsed !== timeAnalysis.totalUsed) {
+      console.log('Time Analysis Update:', {
+        totalUsed,
+        available,
+        remaining,
+        overTime,
+        utilizationPercent
+      });
+    }
     
     setTimeAnalysis({
       totalUsed,

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DialogueManager from './DialogueManager';
+import SessionOrchestrator from './SessionOrchestrator';
 import './SimpleDashboard.css';
 
 // Error Boundary Component
@@ -42,10 +43,11 @@ class ErrorBoundary extends React.Component {
 }
 
 const SimpleDashboard = () => {
-  const [currentView, setCurrentView] = useState('overview'); // 'overview' or 'dialogues'
+  const [currentView, setCurrentView] = useState('overview'); // 'overview', 'dialogues', or 'live-session'
   const [dashboardMode, setDashboardMode] = useState('configuration'); // 'configuration', 'live', 'analysis', 'developer'
   const [developerAccess, setDeveloperAccess] = useState(false);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [selectedDialogue, setSelectedDialogue] = useState(null);
 
   // Flash detection system removed - issue resolved with webpack overlay blocking
   const [systemHealth, setSystemHealth] = useState({
@@ -101,14 +103,16 @@ const SimpleDashboard = () => {
     };
 
     checkHealth();
-    const interval = setInterval(checkHealth, 10000);
+    // Reduced frequency to minimize console errors
+    const interval = setInterval(checkHealth, 30000); // 30 seconds instead of 10
     return () => clearInterval(interval);
   }, []);
 
   const handleDialogueSelect = (dialogue) => {
     console.log('Selected dialogue:', dialogue);
-    // Here you would integrate with your main app routing
-    // For now, just log the selection
+    // Navigate to live session for the selected dialogue
+    setCurrentView('live-session');
+    setSelectedDialogue(dialogue);
   };
 
   const handleReactError = (errorInfo) => {
@@ -253,6 +257,22 @@ const SimpleDashboard = () => {
       {currentView === 'dialogues' ? (
         <ErrorBoundary onError={handleReactError}>
           <DialogueManager onDialogueSelect={handleDialogueSelect} />
+        </ErrorBoundary>
+      ) : currentView === 'live-session' && selectedDialogue ? (
+        <ErrorBoundary onError={handleReactError}>
+          <SessionOrchestrator
+            dialogueConfig={selectedDialogue}
+            participants={Array.from({ length: selectedDialogue.gatheringSize || 6 }, (_, i) => ({
+              id: `participant_${i}`,
+              name: `Participant ${i + 1}`,
+              status: 'ready'
+            }))}
+            isHost={true}
+            onSessionEnd={() => {
+              setCurrentView('dialogues');
+              setSelectedDialogue(null);
+            }}
+          />
         </ErrorBoundary>
       ) : (
         <>
@@ -1120,6 +1140,12 @@ const SimpleDashboard = () => {
 };
 
 export default SimpleDashboard;
+
+
+
+
+
+
 
 
 

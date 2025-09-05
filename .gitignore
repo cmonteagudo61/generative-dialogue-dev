@@ -120,3 +120,6 @@ Temporary Items
 stable-backup-*/
 *.tar.gz
 backups/**
+
+# Local Netlify folder
+.netlify

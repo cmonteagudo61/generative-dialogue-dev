@@ -81,6 +81,17 @@ const LandingPage = ({
               <p className="footer-message">
                 <em>Step into a new paradigm of human connection and collective wisdom</em>
               </p>
+              
+              {/* Dashboard Access */}
+              <div className="dashboard-access">
+                <button 
+                  className="dashboard-btn"
+                  onClick={() => window.location.href = window.location.origin + '?page=dashboard'}
+                  title="Access the admin dashboard"
+                >
+                  🎛️ Admin Dashboard
+                </button>
+              </div>
             </div>
           </div>
         </main>

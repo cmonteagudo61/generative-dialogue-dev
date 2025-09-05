@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import BreakoutRoomManager from './BreakoutRoomManager';
 import './SessionOrchestrator.css';
 
@@ -29,15 +29,79 @@ const SessionOrchestrator = ({
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerRef = useRef(null);
 
-  // Participant and breakout state
-  const [participantList, setParticipantList] = useState(participants);
+  // Participant and breakout state - stabilize participants to prevent infinite re-renders
+  const stableParticipants = useMemo(() => participants, [participants, participants.length]);
+  const [participantList, setParticipantList] = useState(stableParticipants);
   const [breakoutRooms, setBreakoutRooms] = useState({});
   const [currentViewMode, setCurrentViewMode] = useState('community');
+  
+  // Stable session ID to prevent infinite re-renders
+  const stableSessionId = useMemo(() => `session_${Date.now()}`, []);
+
+  // Room management functions
+  const handleCreateRoom = useCallback(async (roomConfig) => {
+    try {
+      const newRoomId = `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const newRoom = {
+        id: newRoomId,
+        name: roomConfig.name.trim(),
+        type: roomConfig.type,
+        participants: [],
+        maxParticipants: roomConfig.type === 'dyad' ? 2 : 
+                        roomConfig.type === 'triad' ? 3 : 
+                        roomConfig.type === 'quad' ? 4 : 
+                        roomConfig.type === 'kiva' ? 6 : 4,
+        createdAt: new Date().toISOString(),
+        status: 'waiting',
+        engagementScore: 0,
+        lastActivity: new Date().toISOString()
+      };
+
+      setBreakoutRooms(prev => {
+        const updated = {
+          ...prev,
+          [newRoomId]: newRoom
+        };
+        console.log('🔧 SessionOrchestrator: Updated breakoutRooms state:', Object.keys(updated));
+        return updated;
+      });
+
+      console.log(`🏠 Room created: ${newRoom.name} (${newRoom.type})`);
+      return newRoom;
+    } catch (error) {
+      console.error('❌ Error in handleCreateRoom:', error);
+      throw error;
+    }
+  }, []);
+
+  const handleDeleteRoom = useCallback((roomId) => {
+    setBreakoutRooms(prev => {
+      const { [roomId]: deletedRoom, ...remainingRooms } = prev;
+      console.log(`🗑️ Room deleted: ${deletedRoom?.name || roomId}`);
+      return remainingRooms;
+    });
+  }, []);
 
   // Get enabled stages from dialogue config
-  const enabledStages = Object.entries(dialogueConfig?.stages || {})
+  let enabledStages = Object.entries(dialogueConfig?.stages || {})
     .filter(([_, stage]) => stage.enabled)
     .map(([name, stage]) => ({ name, ...stage }));
+  
+  // Safeguard: If no stages are enabled, enable the connect stage by default
+  if (enabledStages.length === 0 && dialogueConfig?.stages) {
+    console.warn('⚠️ No stages enabled, defaulting to connect stage');
+    const stageEntries = Object.entries(dialogueConfig.stages);
+    if (stageEntries.length > 0) {
+      // Enable the first available stage (usually connect)
+      const [firstStageName, firstStage] = stageEntries[0];
+      enabledStages = [{ name: firstStageName, ...firstStage, enabled: true }];
+      
+      // Also update the dialogue config to persist this fix
+      if (dialogueConfig.stages[firstStageName]) {
+        dialogueConfig.stages[firstStageName].enabled = true;
+      }
+    }
+  }
 
   // Get current stage and substage
   const currentStage = enabledStages[sessionState.currentStageIndex];
@@ -327,11 +391,11 @@ const SessionOrchestrator = ({
   }, [currentSubstage, generateBreakoutRooms, onParticipantUpdate]);
 
   // Format time display
-  const formatTime = (seconds) => {
+  const formatTime = useCallback((seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
   // Calculate progress
   const calculateProgress = () => {
@@ -353,8 +417,8 @@ const SessionOrchestrator = ({
 
   const progress = calculateProgress();
 
-  // Session data for child components
-  const sessionData = {
+  // Session data for child components - memoized to prevent infinite re-renders
+  const sessionData = useMemo(() => ({
     sessionState,
     currentStage,
     currentSubstage,
@@ -364,6 +428,7 @@ const SessionOrchestrator = ({
     currentViewMode,
     participantList,
     progress,
+    sessionId: stableSessionId,
     
     // Control functions
     startSession,
@@ -378,9 +443,37 @@ const SessionOrchestrator = ({
     // eslint-disable-next-line no-unused-vars
     updateParticipants,
     
+    // Room management
+    handleCreateRoom,
+    handleDeleteRoom,
+    
     // Utility functions
     formatTime
-  };
+  }), [
+    sessionState,
+    currentStage,
+    currentSubstage,
+    timeRemaining,
+    isTimerRunning,
+    breakoutRooms,
+    currentViewMode,
+    participantList,
+    progress,
+    stableSessionId,
+    startSession,
+    pauseSession,
+    resumeSession,
+    endSession,
+    advanceToNextSubstage,
+    advanceToNextStage,
+    goToPreviousSubstage,
+    addTime,
+    setCustomTime,
+    updateParticipants,
+    handleCreateRoom,
+    handleDeleteRoom,
+    formatTime
+  ]);
 
   return (
     <div className="session-orchestrator">
@@ -467,11 +560,13 @@ const SessionPreparation = ({ dialogueConfig, sessionData, isHost }) => {
         </div>
 
         {isHost && (
-          <div className="host-controls">
+          <div className="host-controls" style={{ marginTop: '2rem', padding: '1rem', backgroundColor: '#e8f5e8', border: '2px solid #4CAF50', borderRadius: '8px' }}>
+            <p style={{ margin: '0 0 1rem 0', fontWeight: 'bold', color: '#2e7d32' }}>🎯 Host Controls (You are the host)</p>
             <button 
               className="start-session-btn"
               onClick={startSession}
               disabled={participantList.length === 0}
+              style={{ fontSize: '1.2rem', padding: '1rem 2rem' }}
             >
               🚀 Start Dialogue
             </button>
@@ -494,8 +589,13 @@ const ActiveSession = ({ dialogueConfig, sessionData, isHost }) => {
     formatTime,
     pauseSession,
     advanceToNextSubstage,
-    addTime
+    addTime,
+    handleCreateRoom,
+    handleDeleteRoom
   } = sessionData;
+  
+  // Debug logging for breakoutRooms
+  console.log('🔧 ActiveSession: breakoutRooms from sessionData:', Object.keys(breakoutRooms || {}));
 
   return (
     <div className="active-session">
@@ -539,6 +639,15 @@ const ActiveSession = ({ dialogueConfig, sessionData, isHost }) => {
           currentSubstage={currentSubstage}
           isHost={isHost}
           dialogueConfig={dialogueConfig}
+          participants={sessionData.participantList}
+          participantCount={(() => {
+            const count = sessionData.participantList?.length || 0;
+            console.log('🔧 SessionOrchestrator passing participantCount:', count);
+            return count;
+          })()}
+          sessionId={sessionData.sessionId}
+          onCreateRoom={handleCreateRoom}
+          onDeleteRoom={handleDeleteRoom}
           onTranscriptUpdate={(roomId, entry) => {
             console.log('Transcript updated:', roomId, entry);
           }}
