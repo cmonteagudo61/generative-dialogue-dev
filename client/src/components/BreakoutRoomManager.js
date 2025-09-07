@@ -1,8 +1,82 @@
 /* eslint-disable no-undef */
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import CollectiveWisdomCompiler from './CollectiveWisdomCompiler';
+import SessionFlowManager from './SessionFlowManager';
 import cloudStorage from '../services/cloudStorage';
+import QuickSetup from './QuickSetup';
 import './BreakoutRoomManager.css';
+
+// Convert dialogue config stages to SessionFlowManager phase config format
+const convertDialogueConfigToPhaseConfig = (stages) => {
+  const phaseConfig = {};
+  
+  Object.entries(stages).forEach(([stageName, stage], index) => {
+    if (!stage.enabled) return;
+    
+    const capitalizedName = stageName.charAt(0).toUpperCase() + stageName.slice(1);
+    
+    phaseConfig[capitalizedName] = {
+      order: index + 1,
+      totalDuration: stage.duration * 60, // Convert minutes to seconds
+      color: getPhaseColor(stageName),
+      description: getPhaseDescription(stageName),
+      substages: {}
+    };
+    
+    // Convert substages
+    if (stage.substages) {
+      stage.substages.forEach(substage => {
+        phaseConfig[capitalizedName].substages[substage.name] = {
+          duration: substage.duration * 60, // Convert minutes to seconds
+          roomType: substage.viewMode === 'community' ? 'community' : 'configurable',
+          description: getSubstageDescription(substage.name, substage.type),
+          ...(substage.type === 'catalyst' && {
+            catalystOptions: ['meditation', 'reading', 'music', 'video', 'art', 'question', 'fishbowl', 'movement'],
+            defaultCatalyst: 'meditation'
+          }),
+          ...(substage.viewMode && substage.viewMode !== 'community' && {
+            roomOptions: ['dyad', 'triad', 'quad', 'kiva'],
+            defaultRoomType: substage.viewMode,
+            suggestedRoomType: substage.viewMode
+          })
+        };
+      });
+    }
+  });
+  
+  return phaseConfig;
+};
+
+const getPhaseColor = (stageName) => {
+  const colors = {
+    connect: '#667eea',
+    explore: '#f093fb', 
+    discover: '#f093fb',
+    closing: '#00b894'
+  };
+  return colors[stageName.toLowerCase()] || '#667eea';
+};
+
+const getPhaseDescription = (stageName) => {
+  const descriptions = {
+    connect: 'Build initial connections and trust',
+    explore: 'Deepen inquiry and expand perspectives',
+    discover: 'Breakthrough insights and deeper wisdom',
+    closing: 'Complete the dialogue session and prepare for individual harvest'
+  };
+  return descriptions[stageName.toLowerCase()] || 'Dialogue phase';
+};
+
+const getSubstageDescription = (substageName, type) => {
+  const descriptions = {
+    'Catalyst': 'Centering practice and intention setting',
+    'Dialogue': 'Meaningful sharing and connection',
+    'Summary': 'Harvest insights from breakout conversations',
+    'WE': 'Build collective understanding',
+    'Closing': 'General comments, harvest instructions, and housekeeping'
+  };
+  return descriptions[substageName] || 'Dialogue substage';
+};
 
 const BreakoutRoomManager = (props) => {
   // FINAL FIX: Destructure props inside component to avoid minification
@@ -17,16 +91,18 @@ const BreakoutRoomManager = (props) => {
     onSummaryUpdate,
     onCreateRoom,
     onDeleteRoom,
+    onReassignParticipant,
     dialogueConfig,
-    sessionId = 'default-session' // Add sessionId for Firebase sync
+    sessionId = 'default-session', // Add sessionId for Firebase sync
+    av // CRITICAL: Add av prop for cloud storage
   } = props;
-  // DEBUG: Log received props to verify participants is being passed
-  console.log('🔧 BreakoutRoomManager received props:', { 
-    participants, 
-    participantsLength: participants?.length, 
-    participantCount,
-    hasParticipantCount: participantCount !== undefined 
-  });
+  // Reduced logging for performance
+  if (Math.random() < 0.05) { // Only log 5% of the time
+    console.log('🔧 BreakoutRoomManager props:', {
+      participantCount,
+      roomCount: Object.keys(breakoutRooms).length
+    });
+  }
   
   // Create a local variable to avoid scoping issues in JSX
   const participantList = participants || [];
@@ -38,6 +114,8 @@ const BreakoutRoomManager = (props) => {
   const [participantAssignments, setParticipantAssignments] = useState({});
   const [roomEngagementMetrics, setRoomEngagementMetrics] = useState({});
   const [cloudSyncStatus, setCloudSyncStatus] = useState('disconnected');
+  const [sessionFlowConfig, setSessionFlowConfig] = useState(null);
+  
   // eslint-disable-next-line no-unused-vars
   const [editingTranscript, setEditingTranscript] = useState(null);
   // eslint-disable-next-line no-unused-vars
@@ -49,16 +127,9 @@ const BreakoutRoomManager = (props) => {
   const [isRealtimeUpdate, setIsRealtimeUpdate] = useState(false);
   
   // Debug logging for hostViewMode and room rendering
-  console.log('🔧 BreakoutRoomManager: hostViewMode =', hostViewMode);
-  console.log('🔧 BreakoutRoomManager: will render RoomOverview =', hostViewMode === 'overview');
+  // Removed excessive hostViewMode logging
   
-  // Track hostViewMode changes with stack trace
-  const originalSetHostViewMode = setHostViewMode;
-  const trackedSetHostViewMode = useCallback((newMode) => {
-    console.log('🚨 HOSTVIEWMODE CHANGE:', hostViewMode, '→', newMode);
-    console.trace('🚨 Stack trace for hostViewMode change:');
-    originalSetHostViewMode(newMode);
-  }, [hostViewMode, originalSetHostViewMode]);
+  // Removed hostViewMode change tracking for performance
   
   // eslint-disable-next-line no-unused-vars
   const transcriptRefs = useRef({});
@@ -106,7 +177,13 @@ const BreakoutRoomManager = (props) => {
   // Firebase real-time sync for breakout room data
   useEffect(() => {
     const initializeCloudSync = async () => {
-      const status = cloudStorage.getStatus();
+      if (!av || typeof av.getStatus !== 'function') {
+        console.warn('⚠️ Cloud storage (av) not available yet');
+        setCloudSyncStatus('disconnected');
+        return;
+      }
+      
+      const status = av.getStatus();
       setCloudSyncStatus(status.isOnline ? 'connected' : 'disconnected');
       
       if (status.isOnline) {
@@ -114,7 +191,7 @@ const BreakoutRoomManager = (props) => {
         
         // Load existing session data
         try {
-          const sessionData = await cloudStorage.loadSessionData(sessionId);
+          const sessionData = await av.loadSessionData(sessionId);
           if (sessionData) {
             if (sessionData.roomTranscripts && !isRealtimeUpdate) {
               setRoomTranscripts(sessionData.roomTranscripts);
@@ -134,7 +211,7 @@ const BreakoutRoomManager = (props) => {
         }
 
         // Setup real-time sync
-        const unsubscribe = cloudStorage.setupSessionSync(sessionId, (updatedData) => {
+        const unsubscribe = av.setupSessionSync(sessionId, (updatedData) => {
           console.log('🔄 Breakout room real-time update received');
           setIsRealtimeUpdate(true);
           
@@ -162,7 +239,7 @@ const BreakoutRoomManager = (props) => {
     };
 
     initializeCloudSync();
-  }, [sessionId]);
+  }, [sessionId, av]);
 
   // Sync data to cloud when changes occur (debounced)
   useEffect(() => {
@@ -184,7 +261,7 @@ const BreakoutRoomManager = (props) => {
             sessionId
           };
           
-          await cloudStorage.saveSessionData(sessionId, sessionData);
+          await av.saveSessionData(sessionId, sessionData);
           console.log('☁️ Breakout room data synced to cloud');
         } catch (error) {
           console.error('Error syncing session data:', error);
@@ -413,30 +490,22 @@ const BreakoutRoomManager = (props) => {
   // Room navigation
   const switchToRoom = useCallback((roomId) => {
     setActiveRoomId(roomId);
-    trackedSetHostViewMode('room');
-  }, [trackedSetHostViewMode]);
+    setHostViewMode('room');
+  }, [setHostViewMode]);
 
-  // Participant management handlers
-  const handleParticipantReassignment = useCallback((participantId, fromRoomId, toRoomId) => {
-    setParticipantAssignments(prev => ({
-      ...prev,
-      [participantId]: {
-        ...prev[participantId],
-        roomId: toRoomId,
-        assignedAt: new Date().toISOString(),
-        reassignedFrom: fromRoomId
-      }
-    }));
-    
-    console.log(`👥 Participant ${participantId} moved from ${fromRoomId} to ${toRoomId}`);
-  }, []);
+  // Participant management handlers - now handled by parent component
 
   const handleRoomBalancing = useCallback(() => {
     const allParticipants = Object.values(breakoutRooms).flatMap(room => room.participants || []);
-    const roomIds = Object.keys(breakoutRooms);
+    // CRITICAL FIX: Exclude Main Room from participant assignments - it should remain host-only space
+    const roomIds = Object.keys(breakoutRooms).filter(roomId => {
+      const room = breakoutRooms[roomId];
+      return room && room.name !== 'Main Room' && !roomId.includes('main') && 
+             room.type !== 'community' && room.type !== 'host-space';
+    });
     
     if (allParticipants.length === 0 || roomIds.length === 0) {
-      console.log('⚖️ No participants or rooms to balance');
+      console.log('⚖️ No participants or breakout rooms to balance');
       return;
     }
     
@@ -451,6 +520,14 @@ const BreakoutRoomManager = (props) => {
       return bEngagement - aEngagement; // High engagement first
     });
     
+    // Find current room assignments
+    const currentAssignments = {};
+    Object.entries(breakoutRooms).forEach(([roomId, room]) => {
+      (room.participants || []).forEach(participant => {
+        currentAssignments[participant.id || participant.name] = roomId;
+      });
+    });
+    
     // Distribute participants using round-robin to ensure even engagement distribution
     roomIds.forEach((roomId, roomIndex) => {
       const roomParticipants = [];
@@ -461,7 +538,16 @@ const BreakoutRoomManager = (props) => {
       }
       
       roomParticipants.forEach(participant => {
-        newAssignments[participant.id || participant.name] = {
+        const participantId = participant.id || participant.name;
+        const currentRoom = currentAssignments[participantId];
+        
+        // Only move if participant is not already in the target room
+        if (currentRoom !== roomId) {
+          // Use the proper reassignment function to move participants
+          onReassignParticipant(participantId, currentRoom, roomId);
+        }
+        
+        newAssignments[participantId] = {
           roomId,
           assignedAt: new Date().toISOString(),
           autoBalanced: true,
@@ -477,7 +563,7 @@ const BreakoutRoomManager = (props) => {
     roomIds.forEach(roomId => {
       const roomParticipants = Object.entries(newAssignments)
         .filter(([_, assignment]) => assignment.roomId === roomId)
-        .map(([participantId]) => allParticipants.find(p => (p.id || p.name) === participantId));
+        .map(([participantId]) => sortedParticipants.find(p => (p.id || p.name) === participantId));
       
       balanceMetrics[roomId] = {
         score: 85 + Math.random() * 10, // Balanced rooms get good scores
@@ -489,7 +575,25 @@ const BreakoutRoomManager = (props) => {
     
     setRoomEngagementMetrics(prev => ({ ...prev, ...balanceMetrics }));
     console.log(`⚖️ ${allParticipants.length} participants smartly balanced across ${roomIds.length} rooms`);
-  }, [breakoutRooms]);
+  }, [breakoutRooms, onReassignParticipant]);
+
+  // Auto-balance participants when rooms are auto-created from Session Flow Manager
+  useEffect(() => {
+    if (dialogueConfig?.autoCreateRooms && Object.keys(breakoutRooms).length > 0 && participantList.length > 0) {
+      // Check if participants are not yet assigned
+      const assignedParticipants = Object.keys(participantAssignments).length;
+      const totalParticipants = participantList.length;
+      
+      if (assignedParticipants === 0 && totalParticipants > 0) {
+        console.log('🎯 Auto-assigning participants to Session Flow Manager created rooms');
+        
+        // Trigger auto-balancing after a short delay to ensure rooms are fully created
+        setTimeout(() => {
+          handleRoomBalancing();
+        }, 1000);
+      }
+    }
+  }, [dialogueConfig?.autoCreateRooms, breakoutRooms, participantList.length, participantAssignments, handleRoomBalancing]);
 
   const handleCreateRoom = useCallback(async (roomConfig) => {
     if (!roomConfig.name.trim()) {
@@ -505,7 +609,7 @@ const BreakoutRoomManager = (props) => {
         
         // Save to Firebase if available
         if (cloudSyncStatus === 'connected') {
-          await cloudStorage.saveBreakoutRoom(sessionId, newRoom.id, newRoom);
+          await av.saveBreakoutRoom(sessionId, newRoom.id, newRoom);
           console.log(`☁️ Room saved to cloud: ${newRoom.name}`);
         }
         
@@ -528,12 +632,12 @@ const BreakoutRoomManager = (props) => {
     if (remainingRooms.length > 0 && roomParticipants.length > 0) {
       const targetRoom = remainingRooms[0];
       roomParticipants.forEach(participant => {
-        handleParticipantReassignment(participant.id || participant.name, roomId, targetRoom);
+        onReassignParticipant(participant.id || participant.name, roomId, targetRoom);
       });
     }
     
     console.log(`🗑️ Room ${roomId} deleted, participants reassigned`);
-  }, [breakoutRooms, handleParticipantReassignment]);
+  }, [breakoutRooms, onReassignParticipant]);
 
   // Get room statistics
   const getRoomStats = useCallback((roomId) => {
@@ -573,31 +677,31 @@ const BreakoutRoomManager = (props) => {
         <div className="view-controls">
           <button 
             className={`view-btn ${hostViewMode === 'overview' ? 'active' : ''}`}
-            onClick={() => trackedSetHostViewMode('overview')}
+            onClick={() => setHostViewMode('overview')}
           >
             📊 Overview
           </button>
           <button 
             className={`view-btn ${hostViewMode === 'room' ? 'active' : ''}`}
-            onClick={() => trackedSetHostViewMode('room')}
+            onClick={() => setHostViewMode('room')}
           >
             🏠 Room View
           </button>
           <button 
             className={`view-btn ${hostViewMode === 'transcript' ? 'active' : ''}`}
-            onClick={() => trackedSetHostViewMode('transcript')}
+            onClick={() => setHostViewMode('transcript')}
           >
             📝 Transcripts
           </button>
           <button 
             className={`view-btn ${hostViewMode === 'wisdom' ? 'active' : ''}`}
-            onClick={() => trackedSetHostViewMode('wisdom')}
+            onClick={() => setHostViewMode('wisdom')}
           >
             🌐 Collective Wisdom
           </button>
           <button 
             className={`view-btn ${hostViewMode === 'participants' ? 'active' : ''}`}
-            onClick={() => trackedSetHostViewMode('participants')}
+            onClick={() => setHostViewMode('participants')}
           >
             👥 Participants
           </button>
@@ -618,6 +722,28 @@ const BreakoutRoomManager = (props) => {
           </button>
         </div>
       </div>
+
+      {/* Session Flow Management */}
+      <SessionFlowManager
+        isHost={isHost}
+        participantCount={participantCount}
+        customPhaseConfig={dialogueConfig?.stages ? convertDialogueConfigToPhaseConfig(dialogueConfig.stages) : null}
+        onPhaseChange={(phase, subphase, config) => {
+          console.log(`🎯 Phase changed to ${phase} → ${subphase}`, config);
+          // Store the session flow configuration for Quick Setup integration
+          setSessionFlowConfig({ phase, subphase, config });
+        }}
+        onCreateBreakoutRooms={(roomType, participantCount) => {
+          console.log(`🏠 Creating ${roomType} rooms for ${participantCount} participants`);
+          // This will trigger the Quick Setup for the appropriate room type
+          // You can integrate this with your existing room creation logic
+        }}
+        onTimerComplete={() => {
+          console.log('⏰ Session timer completed');
+        }}
+        autoAdvance={false} // Can be made configurable
+        isVisible={isHost} // Only show to hosts
+      />
 
       {hostViewMode === 'overview' && (
         <RoomOverview 
@@ -676,10 +802,15 @@ const BreakoutRoomManager = (props) => {
           breakoutRooms={breakoutRooms}
           participantAssignments={participantAssignments}
           roomEngagementMetrics={roomEngagementMetrics}
-          onReassignParticipant={handleParticipantReassignment}
+          onReassignParticipant={onReassignParticipant}
           onBalanceRooms={handleRoomBalancing}
+          sessionFlowConfig={sessionFlowConfig}
           onCreateRoom={handleCreateRoom}
           onDeleteRoom={handleDeleteRoom}
+          dialogueConfig={dialogueConfig}
+          participants={participants}
+          av={av}
+          sessionId={sessionId}
         />
       )}
     </div>
@@ -699,11 +830,7 @@ const RoomOverview = ({
   const roomCount = Object.keys(breakoutRooms).length;
   const needsScrolling = roomCount > 3;
   
-  // Debug logging
-  console.log('🏠 Room grid debug - roomCount:', roomCount);
-  console.log('🏠 Room grid debug - needsScrolling:', needsScrolling);
-  console.log('🏠 Room grid debug - roomNames:', Object.keys(breakoutRooms));
-  console.log('🏠 Room grid debug - breakoutRooms:', breakoutRooms);
+  // Removed room grid debug logging for performance
   
   return (
     <div className="room-overview">
@@ -1188,8 +1315,21 @@ const ParticipantManagementView = ({
   onReassignParticipant,
   onBalanceRooms,
   onCreateRoom,
-  onDeleteRoom
+  onDeleteRoom,
+  dialogueConfig,
+  participants,
+  av,
+  sessionId,
+  sessionFlowConfig
 }) => {
+  // Reduced logging for performance
+  if (Math.random() < 0.02) { // Only log 2% of the time
+    console.log('🎛️ ParticipantManagementView rendering:', {
+      roomCount: Object.keys(breakoutRooms || {}).length,
+      participantCount: participants?.length
+    });
+  }
+  
   const [draggedParticipant, setDraggedParticipant] = useState(null);
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [showRoomTemplates, setShowRoomTemplates] = useState(false);
@@ -1282,10 +1422,21 @@ const ParticipantManagementView = ({
 
   const handleDragOver = (e) => {
     e.preventDefault();
+    // Removed excessive DRAG OVER logging
   };
 
   const handleDrop = (e, toRoomId) => {
     e.preventDefault();
+    
+    if (!draggedParticipant) {
+      return;
+    }
+    
+    if (draggedParticipant.fromRoomId === toRoomId) {
+      setDraggedParticipant(null);
+      return;
+    }
+    
     if (draggedParticipant && draggedParticipant.fromRoomId !== toRoomId) {
       onReassignParticipant(
         draggedParticipant.participant.id || draggedParticipant.participant.name,
@@ -1349,7 +1500,7 @@ const ParticipantManagementView = ({
         return;
       }
       const participantCount = mockParticipants.length;
-      console.log(`🎯 Starting template creation: ${template.name} (${template.type}, count: ${template.count})`);
+      // Template creation started
       
       // Calculate how many participants will be accommodated
       let accommodatedParticipants = 0;
@@ -1402,22 +1553,20 @@ const ParticipantManagementView = ({
           rooms.push({ name: `Dyad ${String.fromCharCode(64 + i)}`, type: 'dyad' });
         }
         
-        console.log(`📋 Creating ${rooms.length} mixed format rooms (${quadCount} quads + ${dyadCount} dyads for ${totalParticipants} people)...`);
         for (let i = 0; i < rooms.length; i++) {
           await new Promise(resolve => setTimeout(resolve, i * 100)); // Stagger creation
-          console.log(`🏠 Creating room ${i + 1}/${rooms.length}: ${rooms[i].name} (${rooms[i].type})`);
           await onCreateRoom(rooms[i]);
         }
       } else {
         // Create multiple rooms of the same type + remainder room if needed
         const totalRooms = template.count + (template.remainder >= 2 ? 1 : 0);
-        console.log(`📋 Creating ${template.count} ${template.type} room${template.count > 1 ? 's' : ''}${template.remainder >= 2 ? ' + 1 remainder room' : ''}...`);
+        // Creating rooms...
         
         // Create main rooms
         for (let i = 1; i <= template.count; i++) {
           const roomName = template.count === 1 ? template.name : `${template.name} ${i}`;
           await new Promise(resolve => setTimeout(resolve, (i - 1) * 100)); // Stagger creation
-          console.log(`🏠 Creating room ${i}/${totalRooms}: ${roomName} (${template.type})`);
+          // Creating room...
           await onCreateRoom({ 
             name: roomName, 
             type: template.type 
@@ -1431,7 +1580,7 @@ const ParticipantManagementView = ({
           const remainderName = template.remainder === 2 ? 'Remainder Dyad' : 
                                template.remainder === 3 ? 'Remainder Triad' : 
                                `Remainder Group (${template.remainder})`;
-          console.log(`🏠 Creating remainder room ${totalRooms}/${totalRooms}: ${remainderName} (${remainderType})`);
+          // Creating remainder room...
           await onCreateRoom({ 
             name: remainderName, 
             type: remainderType 
@@ -1439,17 +1588,12 @@ const ParticipantManagementView = ({
         }
       }
       
-      console.log(`✅ Template "${template.name}" completed successfully! All rooms created.`);
-      
-      // Close the template modal and show success message
-      console.log('🔄 Closing template modal and showing success message');
+      // Template completed successfully
       
       // Use requestAnimationFrame for modal closure
       requestAnimationFrame(() => {
         try {
-          console.log('🔄 Attempting to close template modal...');
           setShowRoomTemplates(false);
-          console.log('✅ Successfully closed template modal');
           
           // Show user-friendly success message with instruction
           const roomCount = template.count || 6; // Use template count or default to 6
@@ -1475,7 +1619,6 @@ const ParticipantManagementView = ({
             ⚖️ Auto Balance
           </button>
           <button className="template-btn" onClick={() => {
-            console.log('🎯 Quick Setup button clicked - opening template modal');
             setShowRoomTemplates(true);
           }}>
             🎯 Quick Setup
@@ -1523,43 +1666,15 @@ const ParticipantManagementView = ({
       )}
 
       {showRoomTemplates && (
-        <div className="room-templates-modal" onClick={(e) => e.target.className === 'room-templates-modal' && setShowRoomTemplates(false)}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h4>🎯 Quick Room Setup</h4>
-              <button className="modal-close" onClick={() => setShowRoomTemplates(false)}>×</button>
-            </div>
-            <p className="modal-description">Choose a pre-configured room layout to get started quickly:</p>
-            <div className="templates-grid">
-              {(() => {
-                const templates = getRoomTemplates();
-                return templates && templates.length > 0 ? templates.map((template, index) => (
-                <div 
-                  key={index} 
-                  className="template-card"
-                  onClick={() => handleTemplateSelect(template)}
-                >
-                  <div className="template-header">
-                    <h5>{template.name}</h5>
-                    <span className="template-type">{template.type}</span>
-                  </div>
-                  <p className="template-description">{template.description}</p>
-                  <div className="template-details">
-                    <span className="room-count">{template.count} room{template.count > 1 ? 's' : ''}</span>
-                  </div>
-                </div>
-                )) : (
-                  <div className="no-participants-message">
-                    <p>Loading participant data...</p>
-                  </div>
-                );
-              })()}
-            </div>
-            <div className="modal-actions">
-              <button onClick={() => setShowRoomTemplates(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
+        <QuickSetup
+          dialogueConfig={dialogueConfig}
+          participants={participants}
+          av={av}
+          sessionId={sessionId}
+          onCreateRoom={onCreateRoom}
+          onClose={() => setShowRoomTemplates(false)}
+          sessionFlowConfig={sessionFlowConfig}
+        />
       )}
 
       <div className="rooms-grid">
@@ -1614,7 +1729,9 @@ const ParticipantManagementView = ({
                       key={index}
                       className={`participant-card ${draggedParticipant?.participant === participant ? 'dragging' : ''}`}
                       draggable
-                      onDragStart={() => handleDragStart(participant, roomId)}
+                                  onDragStart={(e) => {
+              handleDragStart(participant, roomId);
+            }}
                     >
                       <div className="participant-info">
                         <span className="participant-name">

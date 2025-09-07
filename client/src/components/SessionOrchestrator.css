@@ -59,6 +59,12 @@
   flex-wrap: wrap;
   gap: 1rem;
   justify-content: center;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .participant-item {
@@ -77,6 +83,54 @@
 
 .participant-status {
   font-size: 1.2rem;
+}
+
+/* Large group summary styles */
+.participant-summary {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+.summary-stats {
+  display: flex;
+  justify-content: space-around;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  flex: 1;
+  justify-content: center;
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+}
+
+.stat-label {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stat-value {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #4CAF50;
+}
+
+.large-group-note {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  margin: 0;
 }
 
 .check-items {

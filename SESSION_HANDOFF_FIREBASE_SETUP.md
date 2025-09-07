@@ -26,9 +26,13 @@ const firebaseConfig = {
   apiKey: "AIzaSyAkQS_AUDwkFD7pQptTo5ZfGLJlH0rb_Bc",
   authDomain: "generative-dialogue.firebaseapp.com", 
   projectId: "generative-dialogue",
-  storageBucket: "generative-dialogue.firebasestorage.app",
+  storageBucket: "gene0
+  
+  
+  rative-dialogue.firebasestorage.app",
   messagingSenderId: "743524009076",
-  appId: "1:743524009076:web:3ddf5397503cec7b4f7d21"
+  appId: "
+  1:743524009076:web:3ddf5397503cec7b4f7d21"
 };
 ```
 

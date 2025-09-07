@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DialogueManager from './DialogueManager';
 import SessionOrchestrator from './SessionOrchestrator';
+import SessionFlowManager from './SessionFlowManager';
+import QuickDialogueSetup from './QuickDialogueSetup';
 import './SimpleDashboard.css';
 
 // Error Boundary Component
@@ -48,6 +50,7 @@ const SimpleDashboard = () => {
   const [developerAccess, setDeveloperAccess] = useState(false);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [selectedDialogue, setSelectedDialogue] = useState(null);
+  const [showQuickSetup, setShowQuickSetup] = useState(false);
 
   // Flash detection system removed - issue resolved with webpack overlay blocking
   const [systemHealth, setSystemHealth] = useState({
@@ -117,6 +120,122 @@ const SimpleDashboard = () => {
 
   const handleReactError = (errorInfo) => {
     console.log('React error caught:', errorInfo);
+  };
+
+  const handleQuickDialogueCreate = (dialogueConfig) => {
+    console.log('🎯 Quick dialogue created:', dialogueConfig);
+    
+    // Convert Quick Setup configuration to SessionOrchestrator stages format
+    const config = dialogueConfig.configuration;
+    const stages = {
+      connect: {
+        enabled: true,
+        duration: config.phases.connect.duration,
+        roomType: config.phases.connect.roomType,
+        substages: [
+          { name: 'Catalyst', duration: Math.floor(config.phases.connect.duration * 0.2), type: 'catalyst', viewMode: 'community' },
+          { name: 'Dialogue', duration: Math.floor(config.phases.connect.duration * 0.5), type: 'dialogue', roomType: config.phases.connect.roomType, viewMode: config.phases.connect.roomType },
+          { name: 'Summary', duration: Math.floor(config.phases.connect.duration * 0.15), type: 'summary', roomType: config.phases.connect.roomType, viewMode: config.phases.connect.roomType },
+          { name: 'WE', duration: Math.floor(config.phases.connect.duration * 0.15), type: 'community', viewMode: 'community' }
+        ]
+      },
+      explore: {
+        enabled: true,
+        duration: config.phases.explore.duration,
+        roomType: config.phases.explore.roomType,
+        substages: [
+          { name: 'Catalyst', duration: Math.floor(config.phases.explore.duration * 0.18), type: 'catalyst', viewMode: 'community' },
+          { name: 'Dialogue', duration: Math.floor(config.phases.explore.duration * 0.55), type: 'dialogue', roomType: config.phases.explore.roomType, viewMode: config.phases.explore.roomType },
+          { name: 'Summary', duration: Math.floor(config.phases.explore.duration * 0.12), type: 'summary', roomType: config.phases.explore.roomType, viewMode: config.phases.explore.roomType },
+          { name: 'WE', duration: Math.floor(config.phases.explore.duration * 0.15), type: 'community', viewMode: 'community' }
+        ]
+      },
+      discover: {
+        enabled: true,
+        duration: config.phases.discover.duration,
+        roomType: config.phases.discover.roomType,
+        substages: [
+          { name: 'Catalyst', duration: Math.floor(config.phases.discover.duration * 0.2), type: 'catalyst', viewMode: 'community' },
+          { name: 'Dialogue', duration: Math.floor(config.phases.discover.duration * 0.5), type: 'dialogue', roomType: config.phases.discover.roomType, viewMode: config.phases.discover.roomType },
+          { name: 'Summary', duration: Math.floor(config.phases.discover.duration * 0.15), type: 'summary', roomType: config.phases.discover.roomType, viewMode: config.phases.discover.roomType },
+          { name: 'WE', duration: Math.floor(config.phases.discover.duration * 0.15), type: 'community', viewMode: 'community' }
+        ]
+      },
+      closing: {
+        enabled: true,
+        duration: 15,
+        substages: [
+          { name: 'Closing', duration: 15, type: 'community', viewMode: 'community' }
+        ]
+      }
+    };
+
+    // Create a dialogue object compatible with the existing system
+    const dialogue = {
+      id: `quick_${Date.now()}`,
+      title: dialogueConfig.title,
+      description: `Quick setup: ${dialogueConfig.timeSlot} session for ${dialogueConfig.participantCount} participants`,
+      facilitator: 'AI Facilitator',
+      host: 'Current User',
+      gatheringSize: dialogueConfig.participantCount,
+      duration: config.phases.connect.duration + 
+                config.phases.explore.duration + 
+                config.phases.discover.duration + 15, // +15 for closing
+      createdAt: new Date().toISOString(),
+      quickSetupConfig: dialogueConfig,
+      stages: stages, // Add proper stages format
+      type: 'quick-setup'
+    };
+
+    console.log('🔧 Converted dialogue config:', dialogue);
+
+    // Set as selected dialogue and go to live session
+    setSelectedDialogue(dialogue);
+    setCurrentView('live-session');
+    setShowQuickSetup(false);
+  };
+
+  // NEW: Handle room creation from Session Flow Manager
+  const handleSessionFlowRoomCreation = (roomType, participantCount) => {
+    console.log(`🚀 Session Flow Manager: Creating ${roomType} rooms for ${participantCount} participants`);
+    
+    // Create a minimal dialogue configuration for room creation
+    const sessionFlowDialogue = {
+      id: `session_flow_${Date.now()}`,
+      title: `Session Flow: ${roomType.charAt(0).toUpperCase() + roomType.slice(1)} Rooms`,
+      description: `Created from Session Flow Manager for ${participantCount} participants`,
+      facilitator: 'Session Flow Manager',
+      host: 'Current User',
+      gatheringSize: participantCount,
+      duration: 60, // Default 60 minutes
+      roomType: roomType,
+      stages: {
+        active: {
+          enabled: true,
+          duration: 60,
+          roomType: roomType,
+          substages: [
+            { 
+              name: 'Dialogue', 
+              duration: 60, 
+              type: 'dialogue', 
+              roomType: roomType, 
+              viewMode: roomType,
+              description: `${roomType.charAt(0).toUpperCase() + roomType.slice(1)} dialogue session`
+            }
+          ]
+        }
+      },
+      createdAt: new Date().toISOString(),
+      type: 'session-flow-generated',
+      autoCreateRooms: true // Flag to trigger automatic room creation
+    };
+
+    console.log('🔧 Session Flow dialogue config:', sessionFlowDialogue);
+    
+    // Navigate to live session with auto-created rooms
+    setSelectedDialogue(sessionFlowDialogue);
+    setCurrentView('live-session');
   };
 
   const handleDeveloperModeAccess = () => {
@@ -258,6 +377,39 @@ const SimpleDashboard = () => {
         <ErrorBoundary onError={handleReactError}>
           <DialogueManager onDialogueSelect={handleDialogueSelect} />
         </ErrorBoundary>
+      ) : currentView === 'session-flow' ? (
+        <ErrorBoundary onError={handleReactError}>
+          <div className="session-flow-container">
+            <div className="session-flow-header">
+              <button 
+                className="back-btn"
+                onClick={() => setCurrentView('overview')}
+                title="Back to Dashboard"
+              >
+                ← Back to Dashboard
+              </button>
+              <h2>📋 Session Flow Manager</h2>
+              <p>Configure your dialogue phases with Quick Setup integration</p>
+            </div>
+            <SessionFlowManager
+              isHost={true}
+              participantCount={20}
+              onPhaseChange={(phase, subphase, config) => {
+                console.log(`🎯 Phase configured: ${phase} → ${subphase}`, config);
+              }}
+              onCreateBreakoutRooms={(roomType, participantCount) => {
+                console.log(`🏠 Creating ${roomType} rooms for ${participantCount} participants`);
+                // Create the dialogue configuration and navigate to live session
+                handleSessionFlowRoomCreation(roomType, participantCount);
+              }}
+              onTimerComplete={() => {
+                console.log('⏰ Session timer completed');
+              }}
+              autoAdvance={false}
+              isVisible={true}
+            />
+          </div>
+        </ErrorBoundary>
       ) : currentView === 'live-session' && selectedDialogue ? (
         <ErrorBoundary onError={handleReactError}>
           <SessionOrchestrator
@@ -283,6 +435,18 @@ const SimpleDashboard = () => {
           {dashboardMode === 'developer' && renderDeveloperMode()}
         </>
       )}
+
+      {/* Quick Dialogue Setup Modal */}
+      {showQuickSetup && (
+        <QuickDialogueSetup
+          onCreateDialogue={handleQuickDialogueCreate}
+          onClose={() => setShowQuickSetup(false)}
+          onAdvancedSetup={() => {
+            setShowQuickSetup(false);
+            setCurrentView('dialogues');
+          }}
+        />
+      )}
     </div>
   );
 
@@ -290,8 +454,48 @@ const SimpleDashboard = () => {
   function renderConfigurationMode() {
     return (
       <>
-        {/* System Health */}
+        {/* Quick Actions */}
         <div className="dashboard-section dashboard-first-section">
+          <h2>🚀 Quick Actions</h2>
+          <div className="quick-actions-grid">
+            <button 
+              className="quick-action-btn primary"
+              onClick={() => setShowQuickSetup(true)}
+              title="Create a dialogue session in under 30 seconds"
+            >
+              <div className="quick-action-icon">🎯</div>
+              <div className="quick-action-content">
+                <h3>Quick Dialogue Setup</h3>
+                <p>Create rooms in 30 seconds with smart recommendations</p>
+              </div>
+            </button>
+            <button 
+              className="quick-action-btn secondary"
+              onClick={() => setCurrentView('session-flow')}
+              title="Visual session timeline with Quick Setup integration"
+            >
+              <div className="quick-action-icon">📋</div>
+              <div className="quick-action-content">
+                <h3>Session Flow Manager</h3>
+                <p>Visual timeline with ⚙️ gear symbols for Quick Setup</p>
+              </div>
+            </button>
+            <button 
+              className="quick-action-btn tertiary"
+              onClick={() => setCurrentView('dialogues')}
+              title="Full dialogue configuration with all options"
+            >
+              <div className="quick-action-icon">⚙️</div>
+              <div className="quick-action-content">
+                <h3>Advanced Setup</h3>
+                <p>Full configuration with custom phases & catalysts</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* System Health */}
+        <div className="dashboard-section">
           <h2>🔧 System Health</h2>
         <div className="health-grid">
           <div className="health-item">

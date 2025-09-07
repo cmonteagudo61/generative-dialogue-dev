@@ -180,7 +180,6 @@ const BottomContentArea = ({ currentPage, voteTallies: externalTallies, isHost =
             try {
               if (isHost) {
                 const busEvt = { type: 'transcript', text: data.transcript, isFinal: true };
-                fetch(`${API_BASE}/health`).catch(() => {}); // keep awake
                 // Send over session-bus via window bus if available (handled in App.js)
                 window.dispatchEvent(new CustomEvent('gd-local-transcript', { detail: busEvt }));
               }

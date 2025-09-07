@@ -63,7 +63,13 @@ app.use(helmet({
   contentSecurityPolicy: false // keep simple for dev; can be tightened later
 }));
 app.use(compression());
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+// Morgan logging with health check filtering
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev', {
+  skip: function (req, res) {
+    // Skip logging for health check requests to reduce noise
+    return req.url === '/health';
+  }
+}));
 
 // CORS: permissive in dev; restricted by ALLOWED_ORIGINS in prod
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')

@@ -30,7 +30,30 @@ const SessionOrchestrator = ({
   const timerRef = useRef(null);
 
   // Participant and breakout state - stabilize participants to prevent infinite re-renders
-  const stableParticipants = useMemo(() => participants, [participants, participants.length]);
+  const stableParticipants = useMemo(() => {
+    // If no participants provided and this is a Session Flow Manager generated dialogue, create mock participants
+    if (participants.length === 0 && dialogueConfig?.autoCreateRooms && dialogueConfig?.gatheringSize) {
+      const mockParticipants = [];
+      const participantCount = dialogueConfig.gatheringSize;
+      
+      for (let i = 1; i <= participantCount; i++) {
+        mockParticipants.push({
+          id: `participant_${i}`,
+          name: `Participant ${i}`,
+          status: 'ready',
+          joinedAt: new Date().toISOString(),
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`,
+          engagementScore: 75 + Math.random() * 25 // Random score between 75-100
+        });
+      }
+      
+      console.log(`🎭 Generated ${participantCount} mock participants for Session Flow Manager dialogue`);
+      return mockParticipants;
+    }
+    
+    return participants;
+  }, [participants, participants.length, dialogueConfig?.autoCreateRooms, dialogueConfig?.gatheringSize]);
+  
   const [participantList, setParticipantList] = useState(stableParticipants);
   const [breakoutRooms, setBreakoutRooms] = useState({});
   const [currentViewMode, setCurrentViewMode] = useState('community');
@@ -82,6 +105,46 @@ const SessionOrchestrator = ({
     });
   }, []);
 
+  const handleParticipantReassignment = useCallback((participantId, fromRoomId, toRoomId) => {
+    setBreakoutRooms(prev => {
+      const newRooms = { ...prev };
+      
+      // Find and remove participant from source room
+      if (newRooms[fromRoomId]) {
+        newRooms[fromRoomId] = {
+          ...newRooms[fromRoomId],
+          participants: newRooms[fromRoomId].participants.filter(p => 
+            (p.id || p.name) !== participantId
+          )
+        };
+      }
+      
+      // Add participant to target room
+      if (newRooms[toRoomId]) {
+        // Find the participant object from the source room or create a basic one
+        let participantObj = null;
+        if (prev[fromRoomId]) {
+          participantObj = prev[fromRoomId].participants.find(p => 
+            (p.id || p.name) === participantId
+          );
+        }
+        
+        // If we can't find the participant object, create a basic one
+        if (!participantObj) {
+          participantObj = { id: participantId, name: participantId };
+        }
+        
+        newRooms[toRoomId] = {
+          ...newRooms[toRoomId],
+          participants: [...newRooms[toRoomId].participants, participantObj]
+        };
+      }
+      
+      console.log(`👥 Participant ${participantId} moved from ${fromRoomId} to ${toRoomId}`);
+      return newRooms;
+    });
+  }, []);
+
   // Get enabled stages from dialogue config
   let enabledStages = Object.entries(dialogueConfig?.stages || {})
     .filter(([_, stage]) => stage.enabled)
@@ -119,6 +182,52 @@ const SessionOrchestrator = ({
       }
     }
   }, [dialogueConfig?.id]);
+
+  // Auto-create rooms for Session Flow Manager generated dialogues
+  useEffect(() => {
+    if (dialogueConfig?.autoCreateRooms && dialogueConfig?.roomType && Object.keys(breakoutRooms).length === 0) {
+      console.log('🚀 Auto-creating rooms for Session Flow Manager dialogue');
+      
+      const roomType = dialogueConfig.roomType;
+      const participantCount = dialogueConfig.gatheringSize || 20;
+      
+      // Calculate number of rooms needed
+      const roomSizes = { dyad: 2, triad: 3, quad: 4, kiva: 6 };
+      const roomSize = roomSizes[roomType] || 4;
+      const numberOfRooms = Math.ceil(participantCount / roomSize);
+      
+      // Create rooms automatically
+      const createRoomsSequentially = async () => {
+        for (let i = 1; i <= numberOfRooms; i++) {
+          const roomConfig = {
+            name: `${roomType.charAt(0).toUpperCase() + roomType.slice(1)} ${i}`,
+            type: roomType,
+            maxParticipants: roomSize,
+            description: `Auto-created ${roomType} room for ${roomSize} participants`
+          };
+          
+          try {
+            await handleCreateRoom(roomConfig);
+            // Small delay to prevent overwhelming the system
+            await new Promise(resolve => setTimeout(resolve, 100));
+          } catch (error) {
+            console.error(`❌ Failed to create room ${i}:`, error);
+          }
+        }
+        
+        console.log(`✅ Auto-created ${numberOfRooms} ${roomType} rooms for ${participantCount} participants`);
+        
+        // Auto-assign participants after room creation
+        setTimeout(() => {
+          console.log('🎯 Triggering auto-assignment of participants to rooms');
+          // The BreakoutRoomManager will handle the actual assignment via its balancing logic
+          setCurrentViewMode(roomType); // Set the view mode to match the room type
+        }, 500); // Small delay to ensure rooms are created
+      };
+      
+      createRoomsSequentially();
+    }
+  }, [dialogueConfig?.autoCreateRooms, dialogueConfig?.roomType, dialogueConfig?.gatheringSize, breakoutRooms, handleCreateRoom]);
 
   // Timer handlers
   const handleTimerComplete = useCallback(() => {
@@ -161,6 +270,12 @@ const SessionOrchestrator = ({
   // Breakout room generation
   const generateBreakoutRooms = useCallback((viewMode, participants) => {
     if (!participants || participants.length === 0) return {};
+    
+    // Safety check for viewMode
+    if (!viewMode || typeof viewMode !== 'string') {
+      console.warn('⚠️ Invalid viewMode provided to generateBreakoutRooms:', viewMode, 'defaulting to dyad');
+      viewMode = 'dyad';
+    }
 
     const roomSizes = {
       'individual': 1,
@@ -190,7 +305,15 @@ const SessionOrchestrator = ({
         };
       });
     } else {
-      // Create balanced groups
+      // CRITICAL FIX: Always create empty Main Room as host-only space during breakout phases
+      rooms['main'] = {
+        id: 'main',
+        name: 'Main Room',
+        participants: [], // Empty - host-only space during breakouts
+        type: 'host-space'
+      };
+      
+      // Create balanced breakout groups
       const shuffled = [...participants].sort(() => Math.random() - 0.5);
       const numRooms = Math.ceil(shuffled.length / roomSize);
       
@@ -199,7 +322,7 @@ const SessionOrchestrator = ({
         if (roomParticipants.length > 0) {
           rooms[`breakout_${i}`] = {
             id: `breakout_${i}`,
-            name: `${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)} Room ${i + 1}`,
+            name: `${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)} ${i + 1}`,
             participants: roomParticipants,
             type: viewMode
           };
@@ -490,6 +613,7 @@ const SessionOrchestrator = ({
           dialogueConfig={dialogueConfig}
           sessionData={sessionData}
           isHost={isHost}
+          onReassignParticipant={handleParticipantReassignment}
         />
       )}
       
@@ -526,16 +650,43 @@ const SessionPreparation = ({ dialogueConfig, sessionData, isHost }) => {
       <div className="preparation-content">
         <div className="participant-check">
           <h3>👥 Participants ({participantList.length})</h3>
-          <div className="participant-list">
-            {participantList.map((participant, index) => (
-              <div key={index} className="participant-item">
-                <span className="participant-name">{participant.name}</span>
-                <span className={`participant-status ${participant.status || 'pending'}`}>
-                  {participant.status === 'ready' ? '✅' : '⏳'}
-                </span>
+          {participantList.length > 50 ? (
+            // Compact view for large groups
+            <div className="participant-summary">
+              <div className="summary-stats">
+                <div className="stat-item">
+                  <span className="stat-icon">✅</span>
+                  <span className="stat-label">Ready:</span>
+                  <span className="stat-value">{participantList.filter(p => p.status === 'ready').length}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-icon">⏳</span>
+                  <span className="stat-label">Pending:</span>
+                  <span className="stat-value">{participantList.filter(p => p.status !== 'ready').length}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-icon">👥</span>
+                  <span className="stat-label">Total:</span>
+                  <span className="stat-value">{participantList.length}</span>
+                </div>
               </div>
-            ))}
-          </div>
+              <p className="large-group-note">
+                📊 Large group detected - showing summary view for better performance
+              </p>
+            </div>
+          ) : (
+            // Detailed view for smaller groups
+            <div className="participant-list">
+              {participantList.map((participant, index) => (
+                <div key={index} className="participant-item">
+                  <span className="participant-name">{participant.name}</span>
+                  <span className={`participant-status ${participant.status || 'pending'}`}>
+                    {participant.status === 'ready' ? '✅' : '⏳'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="technical-check">
@@ -578,7 +729,7 @@ const SessionPreparation = ({ dialogueConfig, sessionData, isHost }) => {
 };
 
 // Active Session Component
-const ActiveSession = ({ dialogueConfig, sessionData, isHost }) => {
+const ActiveSession = ({ dialogueConfig, sessionData, isHost, onReassignParticipant }) => {
   const { 
     currentStage, 
     currentSubstage, 
@@ -595,14 +746,13 @@ const ActiveSession = ({ dialogueConfig, sessionData, isHost }) => {
   } = sessionData;
   
   // Debug logging for breakoutRooms
-  console.log('🔧 ActiveSession: breakoutRooms from sessionData:', Object.keys(breakoutRooms || {}));
 
   return (
     <div className="active-session">
       {/* Progress Header */}
       <div className="session-header">
         <div className="progress-info">
-          <h2>{currentStage?.name?.charAt(0).toUpperCase() + currentStage?.name?.slice(1)} Stage</h2>
+          <h2>{currentStage?.name ? (currentStage.name.charAt(0).toUpperCase() + currentStage.name.slice(1)) : 'Current'} Stage</h2>
           <div className="substage-info">
             {currentSubstage?.name === 'Catalyst' && '✨'}
             {currentSubstage?.name === 'Dialogue' && '💬'}
@@ -642,12 +792,12 @@ const ActiveSession = ({ dialogueConfig, sessionData, isHost }) => {
           participants={sessionData.participantList}
           participantCount={(() => {
             const count = sessionData.participantList?.length || 0;
-            console.log('🔧 SessionOrchestrator passing participantCount:', count);
             return count;
           })()}
           sessionId={sessionData.sessionId}
           onCreateRoom={handleCreateRoom}
           onDeleteRoom={handleDeleteRoom}
+          onReassignParticipant={onReassignParticipant}
           onTranscriptUpdate={(roomId, entry) => {
             console.log('Transcript updated:', roomId, entry);
           }}

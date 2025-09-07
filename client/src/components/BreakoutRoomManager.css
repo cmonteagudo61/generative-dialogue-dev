@@ -1122,7 +1122,9 @@
 .transcript-container::-webkit-scrollbar,
 .transcript-feed::-webkit-scrollbar,
 .room-overview::-webkit-scrollbar,
-.room-grid.many-rooms::-webkit-scrollbar {
+.room-grid.many-rooms::-webkit-scrollbar,
+.participant-management-view::-webkit-scrollbar,
+.rooms-grid::-webkit-scrollbar {
   width: 6px;
   height: 8px; /* For horizontal scrollbars */
 }
@@ -1130,7 +1132,9 @@
 .transcript-container::-webkit-scrollbar-track,
 .transcript-feed::-webkit-scrollbar-track,
 .room-overview::-webkit-scrollbar-track,
-.room-grid.many-rooms::-webkit-scrollbar-track {
+.room-grid.many-rooms::-webkit-scrollbar-track,
+.participant-management-view::-webkit-scrollbar-track,
+.rooms-grid::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1);
   border-radius: 4px;
 }
@@ -1138,7 +1142,9 @@
 .transcript-container::-webkit-scrollbar-thumb,
 .transcript-feed::-webkit-scrollbar-thumb,
 .room-overview::-webkit-scrollbar-thumb,
-.room-grid.many-rooms::-webkit-scrollbar-thumb {
+.room-grid.many-rooms::-webkit-scrollbar-thumb,
+.participant-management-view::-webkit-scrollbar-thumb,
+.rooms-grid::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 4px;
 }
@@ -1146,7 +1152,9 @@
 .transcript-container::-webkit-scrollbar-thumb:hover,
 .transcript-feed::-webkit-scrollbar-thumb:hover,
 .room-overview::-webkit-scrollbar-thumb:hover,
-.room-grid.many-rooms::-webkit-scrollbar-thumb:hover {
+.room-grid.many-rooms::-webkit-scrollbar-thumb:hover,
+.participant-management-view::-webkit-scrollbar-thumb:hover,
+.rooms-grid::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.5);
 }
 
@@ -1196,6 +1204,8 @@
 /* Participant Management View Styles */
 .participant-management-view {
   padding: 2rem;
+  height: calc(100vh - 200px); /* Set a fixed height to enable scrolling */
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 .management-header {
@@ -1399,6 +1409,9 @@
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
+  max-height: calc(100vh - 350px); /* Set max height to enable scrolling */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding-right: 0.5rem; /* Space for scrollbar */
 }
 
 .room-management-card {

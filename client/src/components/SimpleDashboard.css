@@ -1626,3 +1626,156 @@
 .export-btn:hover {
   background: rgba(245, 101, 101, 0.2);
 }
+
+/* Quick Actions Styles */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.quick-action-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.quick-action-btn.primary {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  border-color: #2ecc71;
+}
+
+.quick-action-btn.primary:hover {
+  box-shadow: 0 12px 32px rgba(46, 204, 113, 0.4);
+  border-color: #2ecc71;
+}
+
+.quick-action-btn.secondary {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  border-color: #3498db;
+}
+
+.quick-action-btn.secondary:hover {
+  box-shadow: 0 12px 32px rgba(52, 152, 219, 0.4);
+  border-color: #3498db;
+}
+
+.quick-action-icon {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.quick-action-content h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.quick-action-content p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+/* Responsive design for quick actions */
+@media (max-width: 768px) {
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .quick-action-btn {
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+  
+  .quick-action-icon {
+    font-size: 2.5rem;
+  }
+  
+  .quick-action-content h3 {
+    font-size: 1.2rem;
+  }
+  
+  .quick-action-content p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Session Flow Container Styles */
+.session-flow-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.session-flow-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.session-flow-header h2 {
+  margin: 0.5rem 0;
+  color: #ffffff;
+  font-size: 2rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.session-flow-header p {
+  color: #e0e0e0;
+  font-size: 1.1rem;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.back-btn {
+  position: absolute;
+  left: 2rem;
+  top: 2rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: white;
+  border-color: #2ecc71;
+  color: #2ecc71;
+  transform: translateX(-2px);
+}
+
+/* Tertiary button style for Advanced Setup */
+.quick-action-btn.tertiary {
+  background: rgba(108, 117, 125, 0.1);
+  border-color: rgba(108, 117, 125, 0.3);
+  color: #6c757d;
+}
+
+.quick-action-btn.tertiary:hover {
+  background: rgba(108, 117, 125, 0.2);
+  border-color: #6c757d;
+  color: #495057;
+}
