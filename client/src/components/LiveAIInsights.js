@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { buildApiUrl } from '../config/api';
 import './LiveAIInsights.css';
 
 /**
@@ -47,7 +48,7 @@ const LiveAIInsights = ({
       // Call AI processing endpoints
       const responses = await Promise.allSettled([
         // Get themes
-        fetch('http://localhost:8080/api/ai/themes', {
+        fetch(buildApiUrl('/api/ai/themes'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transcript })
@@ -57,7 +58,7 @@ const LiveAIInsights = ({
         }),
         
         // Get summary
-        fetch('http://localhost:8080/api/ai/summarize', {
+        fetch(buildApiUrl('/api/ai/summarize'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transcript })
@@ -67,7 +68,7 @@ const LiveAIInsights = ({
         }),
         
         // Get formatted version for keywords
-        fetch('http://localhost:8080/api/ai/format', {
+        fetch(buildApiUrl('/api/ai/format'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transcript })

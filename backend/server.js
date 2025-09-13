@@ -587,6 +587,179 @@ app.post('/api/ai/themes', async (req, res) => {
   }
 });
 
+// ==================== DAILY.CO VIDEO ROOM ENDPOINTS ====================
+
+// Create a Daily.co room for a session
+app.post('/api/daily/create-room', async (req, res) => {
+  try {
+    const { sessionCode, hostName, participantCount } = req.body;
+    
+    if (!sessionCode) {
+      return res.status(400).json({ error: 'Session code is required' });
+    }
+    
+    console.log(`🎥 Creating Daily.co room for session: ${sessionCode}`);
+    
+    // Daily.co API configuration
+    const DAILY_API_KEY = process.env.DAILY_API_KEY;
+    
+    if (!DAILY_API_KEY) {
+      console.warn('⚠️ DAILY_API_KEY not found, creating mock room for development');
+      // Return a mock room for development/testing
+      const mockRoom = {
+        url: `https://generative-dialogue.daily.co/${sessionCode.toLowerCase()}`,
+        name: `session-${sessionCode.toLowerCase()}`,
+        id: `mock-${sessionCode}`,
+        created_at: new Date().toISOString(),
+        config: {
+          max_participants: 6,
+          enable_transcription: true,
+          enable_recording: false
+        }
+      };
+      
+      return res.json({
+        success: true,
+        room: mockRoom,
+        message: 'Mock room created for development'
+      });
+    }
+    
+    // Create actual Daily.co room
+    const roomConfig = {
+      name: `session-${sessionCode.toLowerCase()}`,
+      privacy: 'public', // Can be joined with URL
+      properties: {
+        max_participants: 6,
+        enable_transcription: true,
+        enable_recording: false,
+        enable_screenshare: true,
+        enable_chat: true,
+        start_video_off: false,
+        start_audio_off: false,
+        owner_only_broadcast: false,
+        exp: Math.floor(Date.now() / 1000) + (90 * 60) // Expire in 90 minutes
+      }
+    };
+    
+    const response = await fetch('https://api.daily.co/v1/rooms', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${DAILY_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(roomConfig)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('❌ Daily.co API error:', response.status, errorData);
+      throw new Error(`Daily.co API error: ${response.status}`);
+    }
+    
+    const roomData = await response.json();
+    console.log(`✅ Daily.co room created: ${roomData.url}`);
+    
+    res.json({
+      success: true,
+      room: roomData,
+      message: 'Daily.co room created successfully'
+    });
+    
+  } catch (error) {
+    console.error('❌ Daily.co room creation error:', error);
+    res.status(500).json({ 
+      error: 'Failed to create Daily.co room',
+      details: error.message 
+    });
+  }
+});
+
+// Get Daily.co room info
+app.get('/api/daily/room/:roomName', async (req, res) => {
+  try {
+    const { roomName } = req.params;
+    const DAILY_API_KEY = process.env.DAILY_API_KEY;
+    
+    if (!DAILY_API_KEY) {
+      return res.json({
+        success: true,
+        room: {
+          url: `https://generative-dialogue.daily.co/${roomName}`,
+          name: roomName,
+          id: `mock-${roomName}`,
+          config: { max_participants: 6, enable_transcription: true }
+        },
+        message: 'Mock room info for development'
+      });
+    }
+    
+    const response = await fetch(`https://api.daily.co/v1/rooms/${roomName}`, {
+      headers: {
+        'Authorization': `Bearer ${DAILY_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Daily.co API error: ${response.status}`);
+    }
+    
+    const roomData = await response.json();
+    res.json({
+      success: true,
+      room: roomData
+    });
+    
+  } catch (error) {
+    console.error('❌ Daily.co room fetch error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch Daily.co room info',
+      details: error.message 
+    });
+  }
+});
+
+// Delete Daily.co room (cleanup)
+app.delete('/api/daily/room/:roomName', async (req, res) => {
+  try {
+    const { roomName } = req.params;
+    const DAILY_API_KEY = process.env.DAILY_API_KEY;
+    
+    if (!DAILY_API_KEY) {
+      return res.json({
+        success: true,
+        message: 'Mock room deleted for development'
+      });
+    }
+    
+    const response = await fetch(`https://api.daily.co/v1/rooms/${roomName}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${DAILY_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok && response.status !== 404) {
+      throw new Error(`Daily.co API error: ${response.status}`);
+    }
+    
+    console.log(`🗑️ Daily.co room deleted: ${roomName}`);
+    res.json({
+      success: true,
+      message: 'Daily.co room deleted successfully'
+    });
+    
+  } catch (error) {
+    console.error('❌ Daily.co room deletion error:', error);
+    res.status(500).json({ 
+      error: 'Failed to delete Daily.co room',
+      details: error.message 
+    });
+  }
+});
+
 // ==================== PARTICIPANT MANAGEMENT ENDPOINTS ====================
 
 // Register a new participant

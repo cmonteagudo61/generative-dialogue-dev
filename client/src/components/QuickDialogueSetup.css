@@ -16,9 +16,9 @@
   background: white;
   border-radius: 12px;
   padding: 30px;
-  max-width: 700px;
+  max-width: 900px;
   width: 100%;
-  max-height: 90vh;
+  max-height: 95vh;
   overflow-y: auto;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
@@ -96,13 +96,13 @@
 
 .time-options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
   margin-top: 15px;
 }
 
 .time-option {
-  padding: 12px 16px;
+  padding: 15px 20px;
   border: 2px solid #ddd;
   border-radius: 8px;
   background: white;
@@ -111,8 +111,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  font-size: 0.9rem;
+  gap: 6px;
+  font-size: 0.95rem;
+  min-height: 80px;
+  justify-content: center;
 }
 
 .time-option:hover {
@@ -142,6 +144,65 @@
 .time-label {
   font-weight: 600;
   text-align: center;
+}
+
+.time-constraint-note {
+  font-size: 0.85rem;
+  color: #667eea;
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
+.time-option.exceeds-constraint {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #f8f9fa;
+  border-color: #dee2e6;
+}
+
+.time-option.exceeds-constraint:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: #dee2e6;
+  background: #f8f9fa;
+}
+
+.constraint-indicator {
+  font-size: 0.8rem;
+  margin-left: 0.25rem;
+}
+
+/* Responsive design for time options */
+@media (max-width: 1000px) {
+  .time-options {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .time-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .quick-setup-content {
+    max-width: 95vw;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 500px) {
+  .time-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .phase-breakdown {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .phase-item {
+    min-width: 100%;
+  }
 }
 
 .recommendation-section {
@@ -179,19 +240,21 @@
 
 .phase-item {
   background: white;
-  padding: 15px 20px;
-  border-radius: 8px;
+  padding: 20px 25px;
+  border-radius: 10px;
   border: 2px solid #e9ecef;
   text-align: center;
   flex: 1;
-  min-width: 160px;
+  min-width: 180px;
   position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .phase-item strong {
   display: block;
   color: #2c3e50;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
 }
 
 .room-count {

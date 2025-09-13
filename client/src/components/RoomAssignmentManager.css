@@ -1,0 +1,283 @@
+/* Room Assignment Manager Styles */
+
+.room-assignment-manager {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+}
+
+.room-assignment-header {
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.room-assignment-header h3 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+  font-size: 1.4em;
+}
+
+.room-assignment-header p {
+  margin: 4px 0;
+  color: #666;
+}
+
+/* Room Stats */
+.room-stats {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.room-stats h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+  border-left: 4px solid #3498db;
+}
+
+.stat-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.stat-value {
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+.room-type-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.room-type-stat {
+  padding: 6px 10px;
+  background: white;
+  border-radius: 4px;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+/* Room Assignment Controls */
+.room-assignment-controls {
+  margin-bottom: 24px;
+}
+
+.room-assignment-controls h4 {
+  margin: 0 0 16px 0;
+  color: #2c3e50;
+}
+
+.room-type-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.room-type-option {
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.room-type-option:hover:not(.disabled) {
+  border-color: #3498db;
+  background: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.room-type-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f5f5f5;
+}
+
+.room-type-name {
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.room-type-details {
+  font-size: 0.9em;
+  color: #666;
+}
+
+/* Assigning Indicator */
+.assigning-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  border-left: 4px solid #2196f3;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid #2196f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Assignment Results */
+.assignment-results {
+  background: #e8f5e8;
+  border-radius: 8px;
+  padding: 20px;
+  border-left: 4px solid #4caf50;
+}
+
+.assignment-results h4 {
+  margin: 0 0 16px 0;
+  color: #2e7d32;
+}
+
+.assignment-summary {
+  margin-bottom: 20px;
+}
+
+.assignment-summary p {
+  margin: 4px 0;
+  color: #2e7d32;
+}
+
+/* Room List */
+.room-list {
+  margin-bottom: 20px;
+}
+
+.room-item {
+  background: white;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-left: 3px solid #4caf50;
+}
+
+.room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.room-header strong {
+  color: #2c3e50;
+}
+
+.room-type {
+  background: #e0e0e0;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  color: #666;
+}
+
+.room-participants {
+  color: #666;
+  font-size: 0.9em;
+  margin-bottom: 6px;
+}
+
+.room-url a {
+  color: #3498db;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+
+.room-url a:hover {
+  text-decoration: underline;
+}
+
+/* Reassign Controls */
+.reassign-controls {
+  border-top: 1px solid #c8e6c9;
+  padding-top: 16px;
+}
+
+.reassign-controls h5 {
+  margin: 0 0 12px 0;
+  color: #2e7d32;
+}
+
+.reassign-button {
+  margin-right: 8px;
+  margin-bottom: 8px;
+  padding: 8px 16px;
+  border: 1px solid #4caf50;
+  background: white;
+  color: #2e7d32;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.reassign-button:hover:not(:disabled) {
+  background: #4caf50;
+  color: white;
+}
+
+.reassign-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .room-assignment-manager {
+    padding: 16px;
+    margin: 10px 0;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .room-type-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .room-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+
+

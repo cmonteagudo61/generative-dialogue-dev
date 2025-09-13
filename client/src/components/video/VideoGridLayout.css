@@ -23,10 +23,10 @@
 
 .video-row {
   display: flex;
-  width: 100vw;
-  height: calc(50vh - 40px);
-  min-height: 0;
-  max-height: calc(50vh - 40px);
+  width: 100%;
+  height: calc(100vh - 200px); /* Full height minus AppLayout header/navigation */
+  min-height: 400px; /* Minimum height for proper video display */
+  max-height: calc(100vh - 200px);
   background: #000;
 }
 
@@ -94,6 +94,12 @@
 .dyad-view {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr;
+  min-height: 400px; /* Ensure proper height for dyad tiles */
+}
+
+.dyad-view .video-tile {
+  min-height: 300px; /* Minimum height for each dyad video tile */
+  aspect-ratio: 16/9; /* Maintain proper video aspect ratio */
 }
 
 /* Triad view specific styling */

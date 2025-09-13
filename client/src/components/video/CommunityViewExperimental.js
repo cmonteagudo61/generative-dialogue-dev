@@ -31,8 +31,8 @@ const CommunityViewTile = React.memo(({
 }) => {
   const hasVideo = participant.tracks?.video?.state === 'playable' && participant.tracks?.video?.persistentTrack;
   const displayName = participant.local
-    ? (participant.user_name || 'You')
-    : (participant.user_name || 'Participant');
+    ? (participant.displayName || participant.user_name || 'You')
+    : (participant.displayName || participant.user_name || 'Participant');
 
   // Notify parent if this tile is the center participant
   useEffect(() => {

@@ -2,6 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import './App.css';
 
+// Import room management components and config
+import RoomAssignmentManager from './components/RoomAssignmentManager';
+import { ROOM_TYPES } from './config/roomConfig';
+
 // Import components
 import GenerativeDialogue from './components/GenerativeDialogue';
 import ConnectDyadPage from './components/ConnectDyadPage';
@@ -33,7 +37,10 @@ import EmergingStoryPage from './components/EmergingStoryPage';
 import OurStoryPage from './components/OurStoryPage';
 import BuildingCommunityPage from './components/BuildingCommunityPage';
 import ParticipantSignIn from './components/ParticipantSignIn';
+import ParticipantJoin from './components/ParticipantJoin';
+import SessionLobby from './components/SessionLobby';
 import SimpleDashboard from './components/SimpleDashboard';
+import EnhancedVideoSession from './components/EnhancedVideoSession';
 import { VideoProvider, useVideo } from './components/VideoProvider';
 import AppLayout from './components/AppLayout';
 
@@ -70,6 +77,7 @@ function AppContent() {
     const pageParam = urlParams.get('page');
     const roleParam = urlParams.get('role');
     const sidParam = urlParams.get('sessionId');
+    const sessionParam = urlParams.get('session'); // Handle ?session=ABC123 format
     const bidParam = urlParams.get('breakoutId');
     const nameParam = urlParams.get('name');
     
@@ -78,8 +86,25 @@ function AppContent() {
       pathname: window.location.pathname,
       search: window.location.search,
       pageParam,
+      sessionParam,
       currentPage
     });
+    
+    // Handle session join URL (e.g., ?session=ABC123)
+    // But only if no explicit page parameter is set
+    if (sessionParam && !pageParam) {
+      console.log('🔗 Session URL detected:', sessionParam);
+      setSessionId(sessionParam);
+      // Navigate to participant join page first (to collect name)
+      console.log('🔄 Navigating to participant-join page');
+      setCurrentPage('participant-join');
+      return; // Exit early to avoid other routing logic
+    } else if (sessionParam && pageParam) {
+      // Both session and page parameters - set session but let page parameter handle routing
+      console.log('🔗 Session URL with explicit page detected:', sessionParam, pageParam);
+      setSessionId(sessionParam);
+      // Continue to page parameter handling below
+    }
     
     // Check URL path for direct routing (e.g., /dashboard, /signin)
     const path = window.location.pathname;
@@ -101,6 +126,7 @@ function AppContent() {
 
     // If join params exist, persist them and set immediately for cross-device join
     if (sidParam) {
+      console.log('🔍 App.js: Setting sessionId from sidParam:', sidParam);
       localStorage.setItem('gd_session_id', sidParam);
       setSessionId(sidParam);
     }
@@ -208,6 +234,12 @@ function AppContent() {
     const API_BASE = '';
     let sid = localStorage.getItem('gd_session_id');
     let bid = localStorage.getItem('gd_breakout_id');
+    
+    // Get sessionParam from URL in this scope
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionParam = urlParams.get('session');
+    
+    console.log('🔍 App.js: Auto-creation loaded from localStorage:', { sid, bid, sessionParam });
     const ensure = async () => {
       try {
         if (!sid) {
@@ -219,15 +251,25 @@ function AppContent() {
           if (r2.ok) { const j2 = await r2.json(); bid = j2.breakoutId; localStorage.setItem('gd_breakout_id', bid); }
         }
       } catch (_) { /* no-op */ }
-      if (sid) setSessionId(sid);
+      if (sid) {
+        console.log('🔍 App.js: Auto-creation setting sessionId to:', sid);
+        setSessionId(sid);
+      }
       if (bid) setBreakoutId(bid);
     };
-    // If params provided were already set above, skip auto-create
-    if (!sid || !bid) {
-      ensure();
+    // CRITICAL: If URL has sessionParam, use that instead of localStorage
+    if (sessionParam) {
+      console.log('🎯 App.js: URL sessionParam takes priority over localStorage:', sessionParam);
+      setSessionId(sessionParam);
+      // Don't run auto-creation when we have a URL session parameter
     } else {
-      setSessionId(sid);
-      setBreakoutId(bid);
+      // If params provided were already set above, skip auto-create
+      if (!sid || !bid) {
+        ensure();
+      } else {
+        setSessionId(sid);
+        setBreakoutId(bid);
+      }
     }
   }, []);
 
@@ -567,6 +609,29 @@ function AppContent() {
     }
   }, [voteState, sessionId, breakoutId, participantName]);
 
+  // Load session data from localStorage when sessionId changes (for participant-session page)
+  useEffect(() => {
+    if (currentPage === 'participant-session' && sessionId && !participantData) {
+      console.log('🔍 App.js: Loading session data for:', sessionId);
+      const storedSession = localStorage.getItem(`session_${sessionId}`);
+      if (storedSession) {
+        try {
+          const parsedSession = JSON.parse(storedSession);
+          const sessionData = {
+            ...parsedSession,
+            sessionId: sessionId // CRITICAL: Ensure sessionId matches URL parameter
+          };
+          console.log('🎯 Loaded session data from localStorage:', sessionData);
+          console.log('🎯 Session participants count:', sessionData.participants?.length || 0);
+          console.log('🎯 Session has room assignments:', !!sessionData.roomAssignments);
+          setParticipantData(sessionData);
+        } catch (error) {
+          console.error('❌ Failed to parse session data:', error);
+        }
+      }
+    }
+  }, [currentPage, sessionId, participantData]);
+
   let pageElement;
   switch (currentPage) {
     case 'landing':
@@ -689,11 +754,180 @@ function AppContent() {
     case 'dashboard':
       pageElement = <SimpleDashboard />;
       break;
+    case 'room-manager':
+      // Direct access to Room Assignment Manager
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionCodeParam = urlParams.get('session');
+      
+      if (!sessionCodeParam) {
+        // Redirect to landing if no session code
+        pageElement = (
+          <div style={{ padding: '40px', textAlign: 'center' }}>
+            <h2>🏠 Room Assignment Manager</h2>
+            <p>Please provide a session code to access the Room Assignment Manager.</p>
+            <button onClick={() => setCurrentPage('landing')}>← Back to Landing</button>
+          </div>
+        );
+      } else {
+        // Load session data and show Room Assignment Manager
+        const storedSession = localStorage.getItem(`session_${sessionCodeParam}`);
+        let sessionData = null;
+        
+        if (storedSession) {
+          try {
+            sessionData = JSON.parse(storedSession);
+          } catch (error) {
+            console.error('Failed to parse session data:', error);
+          }
+        }
+        
+        if (!sessionData) {
+          pageElement = (
+            <div style={{ padding: '40px', textAlign: 'center' }}>
+              <h2>🏠 Room Assignment Manager</h2>
+              <p>Session {sessionCodeParam} not found.</p>
+              <button onClick={() => setCurrentPage('landing')}>← Back to Landing</button>
+            </div>
+          );
+        } else {
+          pageElement = (
+            <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+              <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                <h1>🏠 Room Assignment Manager</h1>
+                <p>Session: <strong>{sessionCodeParam}</strong> | Participants: <strong>{sessionData.participants?.length || 0}</strong></p>
+                <button 
+                  onClick={() => setCurrentPage('dashboard')}
+                  style={{ marginRight: '10px', padding: '8px 16px' }}
+                >
+                  ← Back to Dashboard
+                </button>
+                <button 
+                  onClick={() => setCurrentPage('landing')}
+                  style={{ padding: '8px 16px' }}
+                >
+                  ← Back to Landing
+                </button>
+              </div>
+              
+              <RoomAssignmentManager
+                sessionData={{
+                  sessionId: sessionCodeParam,
+                  participants: sessionData.participants || [],
+                  roomConfiguration: {
+                    roomType: ROOM_TYPES.DYAD,
+                    allowRoomSwitching: true
+                  }
+                }}
+                onRoomAssignmentsReady={(assignments) => {
+                  console.log('🏠 Room assignments ready:', assignments);
+                  // Update session data with room assignments
+                  const sessionKey = `session_${sessionCodeParam}`;
+                  const currentSession = JSON.parse(localStorage.getItem(sessionKey) || '{}');
+                  const updatedSession = {
+                    ...currentSession,
+                    roomAssignments: assignments,
+                    status: 'rooms-assigned'
+                  };
+                  localStorage.setItem(sessionKey, JSON.stringify(updatedSession));
+                  
+                  // Notify participants of room assignments
+                  window.dispatchEvent(new CustomEvent('session-updated', {
+                    detail: { sessionCode: sessionCodeParam, sessionData: updatedSession }
+                  }));
+                }}
+                onError={(error) => {
+                  console.error('❌ Room assignment error:', error);
+                  alert(`Room assignment failed: ${error}`);
+                }}
+              />
+            </div>
+          );
+        }
+      }
+      break;
+    case 'participant-join':
+      // Participant name input and session joining
+      pageElement = (
+        <ParticipantJoin
+          sessionCode={sessionId}
+          onJoinSession={(joinedSessionData) => {
+            console.log('🎯 Participant joined session:', joinedSessionData);
+            setParticipantData(joinedSessionData);
+            setCurrentPage('participant-lobby');
+          }}
+          onBackToMain={() => {
+            setCurrentPage('landing');
+            setSessionId(null);
+            // Clear URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }}
+        />
+      );
+      break;
+    case 'participant-lobby':
+      // Participant lobby - wait for host to start and show room assignments
+      pageElement = (
+        <SessionLobby
+          sessionData={participantData || { sessionId: sessionId, participants: [] }}
+          onStartSession={(sessionDataWithRoom) => {
+            console.log('🎯 Participant navigating to video session:', sessionDataWithRoom);
+            setParticipantData(sessionDataWithRoom);
+            setCurrentPage('participant-session');
+          }}
+          onLeaveSession={() => {
+            setCurrentPage('landing');
+            setParticipantData(null);
+            setSessionId(null);
+            // Clear URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }}
+        />
+      );
+      break;
+    case 'participant-session':
+      // Enhanced participant session with room management
+      
+      // Use participantData directly (loaded by useEffect)
+      let sessionData = participantData;
+      
+      // Fallback session data
+      if (!sessionData) {
+        sessionData = {
+          sessionId: sessionId,
+          participants: [],
+          status: 'waiting'
+        };
+      }
+      
+      pageElement = (
+        <GenerativeDialogue 
+          canGoBack={false}
+          canGoForward={false}
+          onBack={() => {}}
+          onForward={() => {}}
+          currentPage={0}
+          currentIndex={0}
+          totalPages={1}
+          developmentMode={false}
+          isLoopActive={false}
+          activeSize="all"
+          onSizeChange={() => {}}
+          sessionData={sessionData}
+        />
+      );
+      break;
     default:
       pageElement = <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
   }
 
-  const useAppLayout = !['landing', 'input', 'permissions', 'harvest-outro', 'buildingcommunity', 'dashboard', 'signin'].includes(currentPage);
+  const useAppLayout = !['landing', 'input', 'permissions', 'harvest-outro', 'buildingcommunity', 'dashboard', 'signin', 'participant-join', 'participant-lobby', 'room-manager'].includes(currentPage);
+
+  // DISABLED: DEBUG: Log current page and routing decision - causing infinite render loop
+  // console.log('🔍 App render debug:', {
+  //   currentPage,
+  //   useAppLayout,
+  //   pageElementType: pageElement?.type?.name || 'unknown'
+  // });
 
   return (
     <Router>

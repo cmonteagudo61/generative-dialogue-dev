@@ -81,7 +81,9 @@ const PermissionSetup = ({
             if (joinRoom) {
                 console.log('🎥 Connecting to Daily.co room in background...');
                 try {
-                    await joinRoom(demoRoomUrl);
+                    // FIXED: Pass participant name to Daily.co demo room
+                    const participantName = localStorage.getItem('gd_participant_name') || 'Demo User';
+                    await joinRoom(demoRoomUrl, participantName);
                     console.log('🎥 Successfully connected to Daily.co');
                 } catch (dailyError) {
                     console.warn('🎥 Daily.co connection failed, but preview still works:', dailyError);

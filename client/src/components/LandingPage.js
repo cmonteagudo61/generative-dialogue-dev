@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import FooterNavigation from './FooterNavigation';
 import './LandingPage.css';
 
@@ -23,6 +23,25 @@ const LandingPage = ({
   totalTime,
   segmentTime
 }) => {
+  
+  const [sessionCode, setSessionCode] = useState('');
+  const [showSessionInput, setShowSessionInput] = useState(false);
+
+  const handleSessionJoin = () => {
+    window.location.href = '?page=session-join';
+  };
+
+  const handleJoinWithCode = () => {
+    if (sessionCode.trim()) {
+      window.location.href = `?session=${sessionCode.trim().toUpperCase()}`;
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleJoinWithCode();
+    }
+  };
   return (
     <div className="landing-page-container">
       {/* Fixed Header */}
@@ -82,6 +101,35 @@ const LandingPage = ({
                 <em>Step into a new paradigm of human connection and collective wisdom</em>
               </p>
               
+              {/* Session Code Input */}
+              <div className="session-access">
+                <h3>Join a Dialogue Session</h3>
+                <div className="session-input-section">
+                  <div className="session-input-group">
+                    <input
+                      type="text"
+                      value={sessionCode}
+                      onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Enter session code (e.g., ABC123)"
+                      maxLength={6}
+                      className="session-code-input"
+                    />
+                    <button 
+                      className="join-code-btn"
+                      onClick={handleJoinWithCode}
+                      disabled={!sessionCode.trim()}
+                      title="Join session with code"
+                    >
+                      Join Session
+                    </button>
+                  </div>
+                  <p className="session-help-text">
+                    Have a session code from your host? Enter it above to join the dialogue.
+                  </p>
+                </div>
+              </div>
+
               {/* Dashboard Access */}
               <div className="dashboard-access">
                 <button 
@@ -89,7 +137,15 @@ const LandingPage = ({
                   onClick={() => window.location.href = window.location.origin + '?page=dashboard'}
                   title="Access the admin dashboard"
                 >
-                  🎛️ Admin Dashboard
+                  🎛️ Host Dashboard
+                </button>
+                
+                <button 
+                  className="session-join-btn"
+                  onClick={handleSessionJoin}
+                  title="Join or create a 90-minute dialogue session"
+                >
+                  🎯 Create Session
                 </button>
               </div>
             </div>

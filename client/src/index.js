@@ -74,12 +74,31 @@ if (process.env.NODE_ENV === 'development') {
     subtree: true
   });
   
-  // Method 4: Periodic cleanup - remove ALL iframes from body
+  // Method 4: Periodic cleanup - remove ONLY webpack overlay iframes, preserve Daily.co
   const removeOverlays = () => {
     const allIframes = document.body.querySelectorAll('iframe');
-    if (allIframes.length > 0) {
-      console.log(`🧹 Periodic cleanup removing ${allIframes.length} iframes from body`);
-      allIframes.forEach(iframe => iframe.remove());
+    const webpackIframes = Array.from(allIframes).filter(iframe => {
+      // Only remove webpack dev server iframes, preserve Daily.co iframes
+      const src = iframe.src || '';
+      const id = iframe.id || '';
+      const className = iframe.className || '';
+      
+      // Keep Daily.co iframes (they contain 'daily.co' in src or have daily-related attributes)
+      if (src.includes('daily.co') || id.includes('daily') || className.includes('daily')) {
+        return false;
+      }
+      
+      // Remove webpack overlays and other dev iframes
+      return src.includes('webpack') || 
+             src.includes('sockjs') || 
+             id.includes('webpack') ||
+             className.includes('webpack') ||
+             iframe.style.position === 'fixed' && iframe.style.zIndex > 1000;
+    });
+    
+    if (webpackIframes.length > 0) {
+      console.log(`🧹 Periodic cleanup removing ${webpackIframes.length} webpack iframes (preserving ${allIframes.length - webpackIframes.length} Daily.co iframes)`);
+      webpackIframes.forEach(iframe => iframe.remove());
     }
   };
   

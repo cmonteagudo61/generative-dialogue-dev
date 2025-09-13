@@ -50,6 +50,151 @@
   color: #495057;
 }
 
+/* Time-First Configuration */
+.time-first-config {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+
+.time-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.time-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.time-value-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.time-value-btn:hover {
+  background: #5a6fd8;
+  transform: translateY(-1px);
+}
+
+.time-config-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.time-config-panel label {
+  display: block;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.time-input {
+  width: 100px;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.time-presets {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.time-presets button {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.time-presets button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+/* Recommended Configuration */
+.recommended-config {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 6px;
+}
+
+.apply-recommended-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.apply-recommended-btn:hover:not(:disabled) {
+  background: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.apply-recommended-btn.loading {
+  background: #f39c12;
+  cursor: not-allowed;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.apply-recommended-btn.success {
+  background: #27ae60;
+  animation: successPulse 0.6s ease-out;
+}
+
+.apply-recommended-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.recommendation-preview {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin: 0;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.4;
+}
+
 /* Session Controls */
 .session-controls {
   display: flex;
@@ -199,6 +344,30 @@
   border-color: #00b894;
 }
 
+.phase-card.config-updated {
+  animation: configUpdate 1s ease-out;
+  border-color: #f39c12 !important;
+}
+
+@keyframes configUpdate {
+  0% { 
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  25% { 
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(243, 156, 18, 0.3);
+  }
+  50% { 
+    transform: scale(1.01);
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+  }
+  100% { 
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
 .phase-card.completed::after {
   content: '✓';
   position: absolute;
@@ -231,12 +400,13 @@
 }
 
 .phase-duration {
-  background: rgba(102, 126, 234, 0.1);
-  color: #667eea;
+  background: #667eea;
+  color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .phase-card-description {
@@ -264,19 +434,22 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background: #ffffff;
+  border: 2px solid #dee2e6;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
   flex: 1;
   min-width: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .substage-btn:hover:not(:disabled) {
-  background: #e9ecef;
+  background: #f8f9fa;
+  border-color: #adb5bd;
   transform: translateX(4px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .substage-btn.current {
@@ -298,21 +471,23 @@
 
 .substage-name {
   font-weight: 700;
-  font-size: 0.9rem;
-  color: #000000;
+  font-size: 0.95rem;
+  color: #212529;
   flex: 0 1 auto;
   min-width: 0;
   margin-right: 0.5rem;
+  text-shadow: none;
 }
 
 .substage-duration {
   font-size: 0.8rem;
-  color: #000000;
-  background: rgba(0, 0, 0, 0.1);
+  color: #495057;
+  background: #e9ecef;
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
-  font-weight: 700;
+  font-weight: 600;
   flex-shrink: 0;
+  border: 1px solid #ced4da;
 }
 
 .substage-btn.current .substage-duration {
@@ -324,13 +499,14 @@
 
 .substage-room-type {
   font-size: 0.75rem;
-  color: #000000;
-  background: rgba(0, 0, 0, 0.1);
+  color: #495057;
+  background: #f8f9fa;
   padding: 0.2rem 0.4rem;
   border-radius: 10px;
   text-transform: capitalize;
-  font-weight: 700;
+  font-weight: 600;
   flex-shrink: 0;
+  border: 1px solid #dee2e6;
 }
 
 .substage-btn.current .substage-room-type {
@@ -342,13 +518,14 @@
 
 .substage-catalyst {
   font-size: 0.75rem;
-  color: #000000;
-  background: rgba(0, 0, 0, 0.1);
+  color: #495057;
+  background: #fff3cd;
   padding: 0.2rem 0.4rem;
   border-radius: 10px;
   text-transform: capitalize;
-  font-weight: 700;
+  font-weight: 600;
   flex-shrink: 0;
+  border: 1px solid #ffeaa7;
 }
 
 .substage-btn.current .substage-catalyst {
@@ -726,37 +903,42 @@
   border-radius: 0 0 16px 16px;
 }
 
-.cancel-btn {
-  padding: 0.75rem 1.5rem;
-  background: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
+.config-modal-actions .cancel-btn {
+  padding: 0.75rem 1.5rem !important;
+  background: #dc3545 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
 }
 
-.cancel-btn:hover {
-  background: #5a6268;
-  transform: translateY(-1px);
+.config-modal-actions .cancel-btn:hover {
+  background: #c82333 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3) !important;
 }
 
-.save-btn {
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
+.config-modal-actions .save-btn {
+  padding: 0.75rem 1.5rem !important;
+  background: #28a745 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
 }
 
-.save-btn:hover {
-  background: linear-gradient(135deg, #00a085 0%, #00b8b8 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 184, 148, 0.3);
+.config-modal-actions .save-btn:hover {
+  background: #218838 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3) !important;
 }
 
 /* Quick Setup Integration Styles */

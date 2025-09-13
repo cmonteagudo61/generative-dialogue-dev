@@ -1,9 +1,37 @@
 import React, { useState, useMemo } from 'react';
 import './QuickDialogueSetup.css';
 
-const QuickDialogueSetup = ({ onCreateDialogue, onClose, onAdvancedSetup }) => {
-  const [participantCount, setParticipantCount] = useState(20);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState('3-hours');
+const QuickDialogueSetup = ({ 
+  onCreateDialogue, 
+  onClose, 
+  onAdvancedSetup, 
+  initialParticipantCount = 20,
+  suggestedRoomType = null,
+  constrainedTimeMinutes = null 
+}) => {
+  const [participantCount, setParticipantCount] = useState(initialParticipantCount);
+  
+  // Determine initial time slot based on constraint
+  const getInitialTimeSlot = () => {
+    if (!constrainedTimeMinutes) return '2-hours'; // Default
+    
+    if (constrainedTimeMinutes <= 60) return '60-min';
+    if (constrainedTimeMinutes <= 90) return '90-min';
+    if (constrainedTimeMinutes <= 120) return '2-hours';
+    if (constrainedTimeMinutes <= 180) return '3-hours';
+    if (constrainedTimeMinutes <= 240) return '4-hours';
+    if (constrainedTimeMinutes <= 360) return '6-hours';
+    return 'weekend';
+  };
+  
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState(getInitialTimeSlot());
+  
+  // Debug constraint information
+  console.log('🎯 QuickDialogueSetup Debug:', {
+    constrainedTimeMinutes,
+    initialTimeSlot: getInitialTimeSlot(),
+    selectedTimeSlot
+  });
 
   // Time-based dialogue configurations with mixed breakout types
   const timeConfigurations = useMemo(() => ({
@@ -157,19 +185,35 @@ const QuickDialogueSetup = ({ onCreateDialogue, onClose, onAdvancedSetup }) => {
         </div>
 
         <div className="setup-section">
-          <label className="setup-label">⏰ How much time can you gather?</label>
+          <label className="setup-label">
+            ⏰ How much time can you gather?
+            {constrainedTimeMinutes && (
+              <span className="time-constraint-note">
+                (Time constraint: {constrainedTimeMinutes} minutes)
+              </span>
+            )}
+          </label>
           <div className="time-options">
-            {Object.entries(timeConfigurations).map(([key, config]) => (
-              <button
-                key={key}
-                className={`time-option ${selectedTimeSlot === key ? 'selected' : ''} ${config.status}`}
-                onClick={() => setSelectedTimeSlot(key)}
-                style={{ borderColor: selectedTimeSlot === key ? getStatusColor(config.status) : undefined }}
-              >
-                <span className="time-emoji">{config.emoji}</span>
-                <span className="time-label">{config.label}</span>
-              </button>
-            ))}
+            {Object.entries(timeConfigurations).map(([key, config]) => {
+              // Calculate if this option exceeds the time constraint
+              const totalMinutes = config.phases.connect.duration + config.phases.explore.duration + config.phases.discover.duration + 5; // +5 for closing
+              const exceedsConstraint = constrainedTimeMinutes && totalMinutes > constrainedTimeMinutes;
+              
+              return (
+                <button
+                  key={key}
+                  className={`time-option ${selectedTimeSlot === key ? 'selected' : ''} ${config.status} ${exceedsConstraint ? 'exceeds-constraint' : ''}`}
+                  onClick={() => !exceedsConstraint && setSelectedTimeSlot(key)}
+                  disabled={exceedsConstraint}
+                  style={{ borderColor: selectedTimeSlot === key ? getStatusColor(config.status) : undefined }}
+                  title={exceedsConstraint ? `This option requires ${totalMinutes} minutes, exceeding your ${constrainedTimeMinutes} minute constraint` : undefined}
+                >
+                  <span className="time-emoji">{config.emoji}</span>
+                  <span className="time-label">{config.label}</span>
+                  {exceedsConstraint && <span className="constraint-indicator">🚫</span>}
+                </button>
+              );
+            })}
           </div>
         </div>
 

@@ -8,12 +8,14 @@ import './BreakoutRoomManager.css';
 
 // Convert dialogue config stages to SessionFlowManager phase config format
 const convertDialogueConfigToPhaseConfig = (stages) => {
+  // DISABLED: console.log('🔧 Converting dialogue config to phase config:', stages);
   const phaseConfig = {};
   
   Object.entries(stages).forEach(([stageName, stage], index) => {
     if (!stage.enabled) return;
     
     const capitalizedName = stageName.charAt(0).toUpperCase() + stageName.slice(1);
+    // DISABLED: console.log(`🔧 Converting ${stageName} (${capitalizedName}): duration=${stage.duration} minutes`);
     
     phaseConfig[capitalizedName] = {
       order: index + 1,
@@ -44,6 +46,7 @@ const convertDialogueConfigToPhaseConfig = (stages) => {
     }
   });
   
+  // DISABLED: console.log('🔧 Final converted phase config:', phaseConfig);
   return phaseConfig;
 };
 
@@ -96,13 +99,20 @@ const BreakoutRoomManager = (props) => {
     sessionId = 'default-session', // Add sessionId for Firebase sync
     av // CRITICAL: Add av prop for cloud storage
   } = props;
+  // DISABLED: Logging causing infinite render loop
   // Reduced logging for performance
-  if (Math.random() < 0.05) { // Only log 5% of the time
-    console.log('🔧 BreakoutRoomManager props:', {
-      participantCount,
-      roomCount: Object.keys(breakoutRooms).length
-    });
-  }
+  // if (Math.random() < 0.05) { // Only log 5% of the time
+  //   console.log('🔧 BreakoutRoomManager props:', {
+  //     participantCount,
+  //     roomCount: Object.keys(breakoutRooms).length
+  //   });
+  // }
+  
+  // DISABLED: Debug current phase data (simplified) - causing infinite render loop
+  // console.log('🎯 Phase Tracking:', {
+  //   stage: currentStage?.name,
+  //   substage: currentSubstage?.name
+  // });
   
   // Create a local variable to avoid scoping issues in JSX
   const participantList = participants || [];
@@ -728,6 +738,8 @@ const BreakoutRoomManager = (props) => {
         isHost={isHost}
         participantCount={participantCount}
         customPhaseConfig={dialogueConfig?.stages ? convertDialogueConfigToPhaseConfig(dialogueConfig.stages) : null}
+        currentPhase={currentStage?.name}
+        currentSubstage={currentSubstage?.name}
         onPhaseChange={(phase, subphase, config) => {
           console.log(`🎯 Phase changed to ${phase} → ${subphase}`, config);
           // Store the session flow configuration for Quick Setup integration
@@ -746,14 +758,53 @@ const BreakoutRoomManager = (props) => {
       />
 
       {hostViewMode === 'overview' && (
-        <RoomOverview 
-          breakoutRooms={breakoutRooms}
-          getRoomStats={getRoomStats}
-          onRoomSelect={switchToRoom}
-          onToggleRecording={toggleRecording}
-          onGenerateSummary={generateAISummary}
-          aiSummaryLoading={aiSummaryLoading}
-        />
+        <>
+          {/* HOST JOIN ROOM BUTTON - Show when host has room assignment */}
+          {sessionData?.roomAssignments?.participants && 
+           Object.values(sessionData.roomAssignments.participants).find(p => 
+             p.participantName === localStorage.getItem('gd_participant_name')
+           ) && (
+            <div style={{
+              background: 'linear-gradient(135deg, #4CAF50, #45a049)',
+              color: 'white',
+              padding: '15px',
+              borderRadius: '10px',
+              margin: '10px 0',
+              textAlign: 'center'
+            }}>
+              <h3>🎥 Ready to Join Your Video Room!</h3>
+              <p>Click below to join the main community room with video integration</p>
+              <button
+                onClick={() => {
+                  // Navigate to GenerativeDialogue with session data
+                  window.location.href = `${window.location.origin}${window.location.pathname}?page=participant-session&session=${sessionData.sessionId}`;
+                }}
+                style={{
+                  background: 'white',
+                  color: '#4CAF50',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '25px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+                }}
+              >
+                🎥 Join My Video Room
+              </button>
+            </div>
+          )}
+          
+          <RoomOverview 
+            breakoutRooms={breakoutRooms}
+            getRoomStats={getRoomStats}
+            onRoomSelect={switchToRoom}
+            onToggleRecording={toggleRecording}
+            onGenerateSummary={generateAISummary}
+            aiSummaryLoading={aiSummaryLoading}
+          />
+        </>
       )}
 
       {hostViewMode === 'room' && activeRoomId && (
@@ -1322,13 +1373,14 @@ const ParticipantManagementView = ({
   sessionId,
   sessionFlowConfig
 }) => {
+  // DISABLED: Logging causing infinite render loop
   // Reduced logging for performance
-  if (Math.random() < 0.02) { // Only log 2% of the time
-    console.log('🎛️ ParticipantManagementView rendering:', {
-      roomCount: Object.keys(breakoutRooms || {}).length,
-      participantCount: participants?.length
-    });
-  }
+  // if (Math.random() < 0.02) { // Only log 2% of the time
+  //   console.log('🎛️ ParticipantManagementView rendering:', {
+  //     roomCount: Object.keys(breakoutRooms || {}).length,
+  //     participantCount: participants?.length
+  //   });
+  // }
   
   const [draggedParticipant, setDraggedParticipant] = useState(null);
   const [showCreateRoom, setShowCreateRoom] = useState(false);

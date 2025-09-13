@@ -268,13 +268,31 @@ const SessionOrchestrator = ({
   }, [isTimerRunning, timeRemaining, handleTimerComplete]);
 
   // Breakout room generation
-  const generateBreakoutRooms = useCallback((viewMode, participants) => {
+  const generateBreakoutRooms = useCallback((viewMode, participants, preserveRooms = false) => {
     if (!participants || participants.length === 0) return {};
     
     // Safety check for viewMode
     if (!viewMode || typeof viewMode !== 'string') {
       console.warn('⚠️ Invalid viewMode provided to generateBreakoutRooms:', viewMode, 'defaulting to dyad');
       viewMode = 'dyad';
+    }
+    
+    // If preserveRooms is true and we have existing breakout rooms, preserve the participant assignments
+    if (preserveRooms && Object.keys(breakoutRooms).length > 0) {
+      console.log('🔄 Preserving room assignments for Summary phase', {
+        preserveRooms,
+        existingRoomCount: Object.keys(breakoutRooms).length,
+        roomIds: Object.keys(breakoutRooms)
+      });
+      return breakoutRooms;
+    }
+    
+    // Debug logging when NOT preserving rooms
+    if (preserveRooms) {
+      console.log('⚠️ Room preservation requested but no existing rooms found', {
+        preserveRooms,
+        existingRoomCount: Object.keys(breakoutRooms).length
+      });
     }
 
     const roomSizes = {
@@ -331,7 +349,7 @@ const SessionOrchestrator = ({
     }
 
     return rooms;
-  }, []);
+  }, [breakoutRooms]);
 
   // Session control functions
   const startSession = useCallback(() => {
@@ -439,7 +457,16 @@ const SessionOrchestrator = ({
       setCurrentViewMode(nextSubstage.viewMode || 'community');
       
       // Generate new breakout rooms if needed
-      const rooms = generateBreakoutRooms(nextSubstage.viewMode, participantList);
+      // Preserve rooms if transitioning from Dialogue to Summary
+      const shouldPreserveRooms = currentSubstage?.name === 'Dialogue' && nextSubstage.name === 'Summary';
+      console.log('🔄 Substage transition:', {
+        from: currentSubstage?.name,
+        to: nextSubstage.name,
+        shouldPreserveRooms,
+        currentRoomCount: Object.keys(breakoutRooms).length
+      });
+      
+      const rooms = generateBreakoutRooms(nextSubstage.viewMode, participantList, shouldPreserveRooms);
       setBreakoutRooms(rooms);
       
       setIsTimerRunning(true);

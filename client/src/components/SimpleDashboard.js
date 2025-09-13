@@ -3,6 +3,10 @@ import DialogueManager from './DialogueManager';
 import SessionOrchestrator from './SessionOrchestrator';
 import SessionFlowManager from './SessionFlowManager';
 import QuickDialogueSetup from './QuickDialogueSetup';
+import RoomAssignmentManager from './RoomAssignmentManager';
+import { buildApiUrl } from '../config/api';
+import { roomManager } from '../services/RoomManager';
+import { ROOM_TYPES } from '../config/roomConfig';
 import './SimpleDashboard.css';
 
 // Error Boundary Component
@@ -44,13 +48,62 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-const SimpleDashboard = () => {
-  const [currentView, setCurrentView] = useState('overview'); // 'overview', 'dialogues', or 'live-session'
+const SimpleDashboard = ({ sessionData = null }) => {
+  const [currentView, setCurrentView] = useState(sessionData ? 'live-session' : 'overview'); // 'overview', 'dialogues', or 'live-session'
   const [dashboardMode, setDashboardMode] = useState('configuration'); // 'configuration', 'live', 'analysis', 'developer'
   const [developerAccess, setDeveloperAccess] = useState(false);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
-  const [selectedDialogue, setSelectedDialogue] = useState(null);
+  const [selectedDialogue, setSelectedDialogue] = useState(sessionData || null);
   const [showQuickSetup, setShowQuickSetup] = useState(false);
+  
+  // Session Management State
+  const [sessionCode, setSessionCode] = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const [isHost, setIsHost] = useState(true);
+  const [showSessionJoin, setShowSessionJoin] = useState(false);
+
+  // Load existing session data on mount
+  useEffect(() => {
+    // Check URL parameters for session code
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlSessionCode = urlParams.get('session');
+    
+    if (urlSessionCode) {
+      // Load specific session from URL
+      const sessionData = localStorage.getItem(`session_${urlSessionCode}`);
+      if (sessionData) {
+        const session = JSON.parse(sessionData);
+        console.log('🔄 Loading session from URL:', urlSessionCode, session);
+        setSessionCode(urlSessionCode);
+        setParticipants(session.participants || []);
+        return;
+      }
+    }
+    
+    // Otherwise, check for any existing host sessions
+    const allKeys = Object.keys(localStorage);
+    const sessionKeys = allKeys.filter(key => key.startsWith('session_'));
+    
+    for (const key of sessionKeys) {
+      try {
+        const sessionData = localStorage.getItem(key);
+        if (sessionData) {
+          const session = JSON.parse(sessionData);
+          // Check if this user is the host of this session
+          const hostParticipant = session.participants?.find(p => p.isHost);
+          if (hostParticipant) {
+            const code = key.replace('session_', '');
+            console.log('🔄 Loading existing host session:', code, session);
+            setSessionCode(code);
+            setParticipants(session.participants || []);
+            break; // Load the first host session found
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ Error loading session from', key, error);
+      }
+    }
+  }, []);
 
   // Flash detection system removed - issue resolved with webpack overlay blocking
   const [systemHealth, setSystemHealth] = useState({
@@ -71,7 +124,11 @@ const SimpleDashboard = () => {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const response = await fetch('http://localhost:5680/health');
+        const response = await fetch(buildApiUrl('/health'), {
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
         const health = await response.json();
         const newHealth = {
           backend: 'online',
@@ -111,11 +168,209 @@ const SimpleDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Poll for session participant updates + listen for storage events
+  useEffect(() => {
+    if (!sessionCode) return;
+
+    let lastParticipantCount = 0;
+    let lastParticipantNames = '';
+
+    const pollParticipants = () => {
+      try {
+        const key = `session_${sessionCode}`;
+        const sessionData = localStorage.getItem(key);
+        
+        if (sessionData) {
+          const session = JSON.parse(sessionData);
+          const currentCount = session.participants.length;
+          const currentNames = session.participants.map(p => p.name).sort().join(',');
+          
+          // Only log when there are actual changes
+          if (currentCount !== lastParticipantCount || currentNames !== lastParticipantNames) {
+            console.log('📊 Host dashboard: Participants updated:', currentCount, 'Names:', session.participants.map(p => p.name));
+            lastParticipantCount = currentCount;
+            lastParticipantNames = currentNames;
+          }
+          
+          setParticipants(session.participants);
+        } else {
+          // Only log missing data once
+          if (lastParticipantCount > 0) {
+            console.log('❌ Host dashboard: Session data lost for key:', key);
+            lastParticipantCount = 0;
+            lastParticipantNames = '';
+          }
+        }
+      } catch (error) {
+        console.error('Error polling participants:', error);
+      }
+    };
+
+    // Listen for storage events (cross-tab communication)
+    const handleStorageChange = (e) => {
+      if (e.key === `session_${sessionCode}` && e.newValue) {
+        try {
+          const session = JSON.parse(e.newValue);
+          console.log('🔄 Host dashboard: Storage event - participants updated:', session.participants.length);
+          setParticipants(session.participants);
+          // Update tracking variables
+          lastParticipantCount = session.participants.length;
+          lastParticipantNames = session.participants.map(p => p.name).sort().join(',');
+        } catch (error) {
+          console.error('Error handling storage change:', error);
+        }
+      }
+    };
+
+    // Listen for custom session update events (same-tab communication)
+    const handleSessionUpdate = (e) => {
+      if (e.detail.sessionCode === sessionCode) {
+        console.log('🔄 Host dashboard: Custom event - participants updated:', e.detail.sessionData.participants.length);
+        setParticipants(e.detail.sessionData.participants);
+        // Update tracking variables
+        lastParticipantCount = e.detail.sessionData.participants.length;
+        lastParticipantNames = e.detail.sessionData.participants.map(p => p.name).sort().join(',');
+      }
+    };
+
+    // Initial load
+    pollParticipants();
+    
+    // Listen for storage events and custom events
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('session-updated', handleSessionUpdate);
+    
+    // Reduced polling frequency - rely more on events, less on polling
+        const interval = setInterval(pollParticipants, 5000); // Reduced polling frequency to prevent spam
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('session-updated', handleSessionUpdate);
+      clearInterval(interval);
+    };
+  }, [sessionCode]);
+
   const handleDialogueSelect = (dialogue) => {
     console.log('Selected dialogue:', dialogue);
     // Navigate to live session for the selected dialogue
     setCurrentView('live-session');
     setSelectedDialogue(dialogue);
+  };
+
+  // Testing utility functions
+  const cleanupDuplicateParticipants = () => {
+    if (!sessionCode) {
+      console.log('❌ No session code available for cleanup');
+      return;
+    }
+    
+    try {
+      const sessionKey = `session_${sessionCode}`;
+      const sessionData = localStorage.getItem(sessionKey);
+      
+      if (!sessionData) {
+        console.log('❌ No session data found for cleanup');
+        return;
+      }
+      
+      const session = JSON.parse(sessionData);
+      console.log('🔍 Before cleanup - participants:', session.participants.length, session.participants.map(p => `${p.name}(${p.isHost ? 'host' : 'participant'})`));
+      
+      const seenNames = new Set();
+      const uniqueParticipants = [];
+      
+      // Keep only participants with truly identical name AND joinedAt time (within 1 second)
+      // This prevents removing legitimate participants with same names for testing
+      const seenParticipants = new Map();
+      
+      session.participants.forEach(participant => {
+        const key = `${participant.name.toLowerCase()}_${participant.isHost ? 'host' : 'participant'}`;
+        const existing = seenParticipants.get(key);
+        
+        if (!existing) {
+          seenParticipants.set(key, participant);
+          uniqueParticipants.push(participant);
+          console.log('✅ Keeping participant:', participant.name, participant.isHost ? '(host)' : '(participant)');
+        } else {
+          // For testing: Remove duplicates with same name and role, regardless of join time
+          console.log('🗑️ Removing duplicate:', participant.name, participant.isHost ? '(host)' : '(participant)', '(keeping first occurrence)');
+        }
+      });
+      
+      const updatedSession = {
+        ...session,
+        participants: uniqueParticipants
+      };
+      
+      // Update localStorage
+      localStorage.setItem(sessionKey, JSON.stringify(updatedSession));
+      
+      // Trigger storage event for cross-tab communication
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: sessionKey,
+        newValue: JSON.stringify(updatedSession),
+        storageArea: localStorage
+      }));
+      
+      console.log('🧹 Cleaned up participants:', {
+        before: session.participants.length,
+        after: uniqueParticipants.length,
+        removed: session.participants.length - uniqueParticipants.length
+      });
+      
+      console.log('🔍 After cleanup - participants:', uniqueParticipants.length, uniqueParticipants.map(p => `${p.name}(${p.isHost ? 'host' : 'participant'})`));
+      
+      // Update local state
+      setParticipants(uniqueParticipants);
+      
+    } catch (error) {
+      console.error('Error cleaning up participants:', error);
+    }
+  };
+
+  const resetToHostOnly = () => {
+    if (!sessionCode) return;
+    
+    try {
+      const sessionKey = `session_${sessionCode}`;
+      const sessionData = localStorage.getItem(sessionKey);
+      
+      if (!sessionData) return;
+      
+      const session = JSON.parse(sessionData);
+      
+      // Keep only the host participant
+      const hostOnlyParticipants = session.participants.filter(p => p.isHost);
+      
+      const updatedSession = {
+        ...session,
+        participants: hostOnlyParticipants,
+        // Clear room assignments if they exist
+        roomAssignments: null,
+        status: 'waiting'
+      };
+      
+      // Update localStorage
+      localStorage.setItem(sessionKey, JSON.stringify(updatedSession));
+      
+      // Trigger storage event for cross-tab communication
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: sessionKey,
+        newValue: JSON.stringify(updatedSession),
+        storageArea: localStorage
+      }));
+      
+      console.log('🔄 Reset session to host only:', {
+        before: session.participants.length,
+        after: hostOnlyParticipants.length
+      });
+      
+      // Update local state
+      setParticipants(hostOnlyParticipants);
+      
+    } catch (error) {
+      console.error('Error resetting session:', error);
+    }
   };
 
   const handleReactError = (errorInfo) => {
@@ -247,6 +502,89 @@ const SimpleDashboard = () => {
       // Need password, show prompt
       setShowPasswordPrompt(true);
     }
+  };
+
+  // Session Management Functions
+  const generateSessionCode = () => {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+  };
+
+  const handleCreateSessionCode = async () => {
+    // Prompt host for their name
+    const hostName = prompt('Enter your name as the host:');
+    if (!hostName || !hostName.trim()) {
+      alert('Host name is required to create a session.');
+      return;
+    }
+
+    const newCode = generateSessionCode();
+    setSessionCode(newCode);
+    
+    // Create session data
+    const sessionData = {
+      sessionId: newCode,
+      hostName: hostName.trim(),
+      participants: [{
+        id: 'host',
+        name: hostName.trim(),
+        isHost: true,
+        joinedAt: new Date().toISOString()
+      }],
+      createdAt: new Date().toISOString(),
+      status: 'waiting',
+      maxParticipants: 6,
+      duration: 90,
+      roomConfiguration: {
+        roomType: ROOM_TYPES.DYAD, // Default to dyads for MVP
+        allowRoomSwitching: true
+      }
+    };
+
+    try {
+      // Pre-assign rooms for the session (will be used when participants join)
+      console.log('🏠 Pre-assigning rooms for session...');
+      const roomStats = roomManager.getSystemStats();
+      console.log('🏠 Room system stats:', roomStats);
+      
+      // Store session data
+      localStorage.setItem(`session_${newCode}`, JSON.stringify(sessionData));
+      setParticipants(sessionData.participants);
+      
+      console.log(`🎯 Session created with code: ${newCode} by host: ${hostName}`);
+      console.log('🏠 Room assignments will be created when participants join');
+      
+    } catch (error) {
+      console.error('❌ Failed to create session:', error);
+      alert(`Failed to create session: ${error.message}`);
+    }
+  };
+
+  const handleJoinWithCode = (code, participantName) => {
+    // Load session from storage
+    const sessionData = localStorage.getItem(`session_${code.toUpperCase()}`);
+    if (!sessionData) {
+      alert('Session not found. Please check the code.');
+      return;
+    }
+
+    const session = JSON.parse(sessionData);
+    
+    // Add participant
+    const newParticipant = {
+      id: `participant_${Date.now()}`,
+      name: participantName,
+      isHost: false,
+      joinedAt: new Date().toISOString()
+    };
+
+    session.participants.push(newParticipant);
+    localStorage.setItem(`session_${code.toUpperCase()}`, JSON.stringify(session));
+    
+    setSessionCode(code.toUpperCase());
+    setParticipants(session.participants);
+    setIsHost(false);
+    
+    console.log(`👥 Joined session ${code} as ${participantName}`);
   };
 
   const handlePasswordSubmit = (password) => {
@@ -481,6 +819,17 @@ const SimpleDashboard = () => {
               </div>
             </button>
             <button 
+              className="quick-action-btn session-code"
+              onClick={handleCreateSessionCode}
+              title="Generate a session code for 6 remote participants"
+            >
+              <div className="quick-action-icon">🎯</div>
+              <div className="quick-action-content">
+                <h3>Create Session Code</h3>
+                <p>Generate code for 6 remote peers to join</p>
+              </div>
+            </button>
+            <button 
               className="quick-action-btn tertiary"
               onClick={() => setCurrentView('dialogues')}
               title="Full dialogue configuration with all options"
@@ -493,6 +842,297 @@ const SimpleDashboard = () => {
             </button>
           </div>
         </div>
+
+        {/* Session Management Panel */}
+        {sessionCode && (
+          <div className="dashboard-section session-management">
+            <h2>🎯 Active Session: {sessionCode}</h2>
+            <div className="session-info-grid">
+              <div className="session-card">
+                <h3>Session Code</h3>
+                <div className="session-code-display">
+                  <span className="code">{sessionCode}</span>
+                  <button 
+                    className="copy-btn"
+                    onClick={() => {
+                      navigator.clipboard.writeText(sessionCode);
+                      alert('Session code copied!');
+                    }}
+                  >
+                    📋 Copy
+                  </button>
+                </div>
+                <p>Share this code with up to 6 participants</p>
+              </div>
+              
+              <div className="session-card">
+                <h3>Participants ({participants.length}/6)</h3>
+                <div className="participants-list">
+                  {participants.map((participant) => (
+                    <div key={participant.id} className="participant-item">
+                      <span className="participant-name">{participant.name}</span>
+                      {participant.isHost && <span className="host-badge">Host</span>}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Testing Tools */}
+                {participants.length > 1 && (
+                  <div className="testing-tools" style={{ marginTop: '12px', padding: '8px', background: '#f0f8ff', borderRadius: '6px', border: '1px solid #e0e8f0' }}>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>🧪 Testing Tools:</div>
+                    <button 
+                      className="cleanup-btn"
+                      style={{ 
+                        fontSize: '11px', 
+                        padding: '4px 8px', 
+                        background: '#ff6b6b', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '4px', 
+                        cursor: 'pointer',
+                        marginRight: '6px'
+                      }}
+                      onClick={() => {
+                        if (window.confirm('Remove duplicate participant names? This will keep only the first occurrence of each name.')) {
+                          cleanupDuplicateParticipants();
+                        }
+                      }}
+                      title="Remove participants with duplicate names, keeping only the first occurrence"
+                    >
+                      🧹 Remove Duplicates
+                    </button>
+                    <button 
+                      className="reset-btn"
+                      style={{ 
+                        fontSize: '11px', 
+                        padding: '4px 8px', 
+                        background: '#ffa500', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '4px', 
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => {
+                        if (window.confirm('Reset session to host only? This will remove all participants except the host.')) {
+                          resetToHostOnly();
+                        }
+                      }}
+                      title="Remove all participants except the host"
+                    >
+                      🔄 Reset to Host Only
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              <div className="session-card">
+                <h3>Session URL</h3>
+                <div className="session-url">
+                  <input 
+                    type="text" 
+                    value={`${window.location.origin}?session=${sessionCode}`}
+                    readOnly 
+                    onClick={(e) => e.target.select()}
+                  />
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}?session=${sessionCode}`);
+                      alert('Session URL copied!');
+                    }}
+                  >
+                    🔗 Copy URL
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            {participants.length >= 2 && (
+              <div className="session-actions">
+                <button 
+                  className="start-session-btn"
+                  onClick={async () => {
+                    try {
+                      console.log('🚀 Starting dialogue session:', sessionCode);
+                      
+                      // Check if we have room assignments already
+                      const sessionKey = `session_${sessionCode}`;
+                      const currentSession = JSON.parse(localStorage.getItem(sessionKey) || '{}');
+                      
+                      if (!currentSession.roomAssignments) {
+                        throw new Error('No room assignments found. Please assign rooms first.');
+                      }
+                      
+                      console.log('✅ Using existing room assignments for dialogue session');
+                      
+                      // Create a dialogue configuration using existing room assignments
+                      const sessionDialogue = {
+                        id: `session_${sessionCode}`,
+                        title: `90-Minute Dialogue Session (${sessionCode})`,
+                        description: `Session with ${participants.length} participants`,
+                        facilitator: 'AI Facilitator',
+                        host: participants.find(p => p.isHost)?.name || 'Host',
+                        gatheringSize: participants.length,
+                        duration: 90,
+                        roomType: 'dyad',
+                        stages: {
+                          connect: { enabled: true, duration: 25, roomType: 'dyad' },
+                          explore: { enabled: true, duration: 30, roomType: 'dyad' },
+                          discover: { enabled: true, duration: 30, roomType: 'triad' },
+                          closing: { enabled: true, duration: 5, roomType: 'community' }
+                        },
+                        participants: participants,
+                        sessionCode: sessionCode,
+                        autoCreateRooms: true,
+                        roomAssignments: currentSession.roomAssignments,
+                        // Use the first room as the main room for backwards compatibility
+                        dailyRoom: Object.values(currentSession.roomAssignments.rooms)[0] || {
+                          url: `https://generativedialogue.daily.co/${sessionCode}`,
+                          name: sessionCode,
+                          id: sessionCode
+                        }
+                      };
+                      
+                      // Update session status to active
+                      const updatedSession = {
+                        ...currentSession,
+                        status: 'dialogue-active',
+                        startedAt: new Date().toISOString(),
+                        sessionDialogue: sessionDialogue
+                      };
+                      localStorage.setItem(sessionKey, JSON.stringify(updatedSession));
+                      
+                      // Notify participants that dialogue has started
+                      console.log('🚀 Dialogue session started successfully:', {
+                        sessionCode: sessionCode,
+                        participantCount: participants.length,
+                        roomCount: Object.keys(currentSession.roomAssignments.rooms).length
+                      });
+                      
+                      // Create a temporary notification key that will trigger storage events
+                      const notificationKey = `session_notification_${sessionCode}_${Date.now()}`;
+                      const notificationData = {
+                        type: 'dialogue-started',
+                        sessionCode: sessionCode,
+                        roomAssignments: currentSession.roomAssignments,
+                        timestamp: new Date().toISOString()
+                      };
+                      
+                      localStorage.setItem(notificationKey, JSON.stringify(notificationData));
+                      
+                      // Clean up notification after a brief moment
+                      setTimeout(() => {
+                        localStorage.removeItem(notificationKey);
+                      }, 1000);
+                      
+                      console.log('✅ Cross-tab notification sent via localStorage');
+                      
+                      setSelectedDialogue(sessionDialogue);
+                      setCurrentView('live-session');
+                      
+                    } catch (error) {
+                      console.error('❌ Failed to start session:', error);
+                      alert('Failed to start session. Please try again.');
+                    }
+                  }}
+                >
+                  🚀 Start 90-Minute Dialogue
+                </button>
+              </div>
+            )}
+            
+            {/* Room Assignment Manager - Show when we have participants */}
+            {participants.length >= 1 && (
+              <RoomAssignmentManager
+                sessionData={{
+                  sessionId: sessionCode,
+                  participants: participants,
+                  roomConfiguration: {
+                    roomType: ROOM_TYPES.DYAD,
+                    allowRoomSwitching: true
+                  }
+                }}
+                onRoomAssignmentsReady={(assignments) => {
+                  console.log('🏠 Room assignments ready:', assignments);
+                  // Update session data with room assignments
+                  const sessionKey = `session_${sessionCode}`;
+                  const currentSession = JSON.parse(localStorage.getItem(sessionKey) || '{}');
+                  const updatedSession = {
+                    ...currentSession,
+                    roomAssignments: assignments,
+                    status: 'rooms-assigned'
+                  };
+                  localStorage.setItem(sessionKey, JSON.stringify(updatedSession));
+                  
+                  // Notify participants of room assignments
+                  window.dispatchEvent(new CustomEvent('session-updated', {
+                    detail: { sessionCode, sessionData: updatedSession }
+                  }));
+                }}
+                onError={(error) => {
+                  console.error('❌ Room assignment error:', error);
+                  alert(`Room assignment failed: ${error}`);
+                }}
+              />
+            )}
+
+            {/* Host Join Room Button - Show when rooms are assigned */}
+            {sessionCode && (() => {
+              const sessionKey = `session_${sessionCode}`;
+              const currentSession = JSON.parse(localStorage.getItem(sessionKey) || '{}');
+              const roomAssignments = currentSession.roomAssignments;
+              
+              if (!roomAssignments) return null;
+              
+              // Find host's room assignment
+              const hostAssignment = roomAssignments.participants?.host;
+              if (!hostAssignment) return null;
+              
+              const hostRoom = Object.values(roomAssignments.rooms || {}).find(room => 
+                room.id === hostAssignment.roomId || room.name === hostAssignment.roomName
+              );
+              
+              if (!hostRoom) return null;
+              
+              return (
+                <div className="dashboard-section host-room-section">
+                  <h3>🎯 Your Room Assignment</h3>
+                  <div className="host-room-info">
+                    <p><strong>Room:</strong> {hostRoom.name}</p>
+                    <p><strong>Type:</strong> {hostRoom.type}</p>
+                    <p><strong>Participants:</strong> {hostRoom.participants?.length || 0}</p>
+                  </div>
+                  <button 
+                    className="join-room-button primary-button"
+                    onClick={() => {
+                      // Navigate to participant session with host data
+                      const hostParticipant = participants.find(p => p.isHost) || { 
+                        name: 'Host', 
+                        isHost: true 
+                      };
+                      
+                      // Store host as current participant
+                      localStorage.setItem('gd_participant_name', hostParticipant.name);
+                      
+                      // Navigate to video session
+                      const sessionData = {
+                        ...currentSession,
+                        currentParticipant: hostParticipant
+                      };
+                      
+                      // Update session with current participant
+                      localStorage.setItem(sessionKey, JSON.stringify(sessionData));
+                      
+                      // Navigate to participant session
+                      window.location.href = `/?page=participant-session&session=${sessionCode}`;
+                    }}
+                  >
+                    🎥 Join My Room
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         {/* System Health */}
         <div className="dashboard-section">

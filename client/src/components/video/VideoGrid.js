@@ -61,7 +61,7 @@ const getMockParticipants = (count, startIndex = 1) => {
   }));
 };
 
-const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showLabels = false, useExperimentalView = true, selectedParticipants = [], onParticipantSelect, isLoopActive = false }) => {
+const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showLabels = false, useExperimentalView = true, selectedParticipants = [], onParticipantSelect, isLoopActive = false, suppressMockParticipants = false }) => {
   const participants = React.useMemo(() => 
     Array.isArray(participantsProp) ? participantsProp : Object.values(participantsProp),
     [participantsProp]
@@ -86,17 +86,17 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
     setMagnifierFeedSize(feedSize);
   }, []);
 
-  // Community layout logging effect
+  // Layout logging effect - LOG ALL LAYOUTS
   useEffect(() => {
-    if (layout === 'community') {
-              console.log('🔍 VideoGrid - Community mode activated', { 
-        layout, 
-        participantCount: participants.length, 
-        experimentalMode, 
-        labelsVisible 
-      });
-    }
-  }, [layout, participants.length, experimentalMode, labelsVisible]);
+    console.log(`🔍 VideoGrid - ${layout} mode activated`, {
+      layout, 
+      participantCount: participants.length, 
+      experimentalMode, 
+      labelsVisible,
+      suppressMockParticipants,
+      participantNames: participants.map(p => p.user_name || p.name || 'Unknown')
+    });
+  }, [layout, participants.length, experimentalMode, labelsVisible, suppressMockParticipants]);
 
   // Dynamic sizing for quad view (2:1 grid)
   useEffect(() => {
@@ -112,10 +112,10 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
     return () => window.removeEventListener('resize', updateQuadGridWidth);
   }, [layout]);
 
-  // Always fill the grid with real participants first, then mocks as needed
+  // Always fill the grid with real participants first, then mocks as needed (unless suppressed)
   const maxTiles = getMaxTiles(layout, participants.length);
   const realTiles = participants.slice(0, maxTiles);
-  const mockTiles = getMockParticipants(Math.max(0, maxTiles - realTiles.length), realTiles.length + 1);
+  const mockTiles = suppressMockParticipants ? [] : getMockParticipants(Math.max(0, maxTiles - realTiles.length), realTiles.length + 1);
   const tiles = [...realTiles, ...mockTiles];
 
   const gridStyle = {
@@ -343,7 +343,7 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
           )}
           {showLabels && (
             <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4, color: '#fff', background: 'rgba(0,0,0,0.5)', fontSize: 14, borderRadius: 4, padding: '2px 6px', textAlign: 'center' }}>
-              {p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
+              {p.displayName || p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
             </div>
           )}
         </div>

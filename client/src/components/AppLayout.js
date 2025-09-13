@@ -84,7 +84,7 @@ const AppLayout = ({
 }) => {
   const isNarrow = useMediaQuery('(max-width: 1100px)');
   const isMobile = useMediaQuery('(max-width: 480px)');
-  console.log('isNarrow:', isNarrow, 'isMobile:', isMobile, 'participantCount:', participantCount);
+  // console.log('isNarrow:', isNarrow, 'isMobile:', isMobile, 'participantCount:', participantCount);
 
   const getCurrentStage = () => {
     if (activeStage) return activeStage;

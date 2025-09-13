@@ -31,6 +31,61 @@ const SessionTimer = ({
     }
   }, [isRunning]);
 
+  // Define playWarningSound before it's used
+  const playWarningSound = useCallback((type) => {
+    // Create audio context for different warning sounds
+    if (!audioRef.current) {
+      audioRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    
+    const ctx = audioRef.current;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    // Different tones for different warnings
+    switch (type) {
+      case 'minute':
+        oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.2);
+        break;
+      case 'thirty':
+        oscillator.frequency.setValueAtTime(600, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.3);
+        break;
+      case 'countdown':
+        oscillator.frequency.setValueAtTime(400, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.1);
+        break;
+      case 'complete':
+        // Play a completion chord
+        [523, 659, 784].forEach((freq, index) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.setValueAtTime(freq, ctx.currentTime);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          osc.start(ctx.currentTime + index * 0.1);
+          osc.stop(ctx.currentTime + 0.5 + index * 0.1);
+        });
+        break;
+      default:
+        oscillator.frequency.setValueAtTime(440, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.1);
+    }
+  }, []);
+
   // Timer logic
   useEffect(() => {
     if (isActive && !isPaused && timeRemaining > 0) {
@@ -78,56 +133,6 @@ const SessionTimer = ({
     };
   }, [isActive, isPaused, timeRemaining, onComplete, onTimeUpdate, autoAdvance, onPhaseAdvance, playWarningSound]);
 
-  const playWarningSound = useCallback((type) => {
-    // Create audio context for different warning sounds
-    if (!audioRef.current) {
-      audioRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    
-    const ctx = audioRef.current;
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    
-    // Different tones for different warnings
-    switch (type) {
-      case 'minute':
-        oscillator.frequency.setValueAtTime(800, ctx.currentTime);
-        gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-        oscillator.start();
-        oscillator.stop(ctx.currentTime + 0.2);
-        break;
-      case 'thirty':
-        oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
-        gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-        oscillator.start();
-        oscillator.stop(ctx.currentTime + 0.3);
-        break;
-      case 'countdown':
-        oscillator.frequency.setValueAtTime(1200, ctx.currentTime);
-        gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
-        oscillator.start();
-        oscillator.stop(ctx.currentTime + 0.1);
-        break;
-      case 'complete':
-        // Play a pleasant completion chime
-        [523, 659, 784].forEach((freq, i) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.2);
-          gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.2);
-          osc.start(ctx.currentTime + i * 0.2);
-          osc.stop(ctx.currentTime + i * 0.2 + 0.3);
-        });
-        break;
-      default:
-        break;
-    }
-  }, []);
 
   const handlePlayPause = useCallback(() => {
     if (isActive) {

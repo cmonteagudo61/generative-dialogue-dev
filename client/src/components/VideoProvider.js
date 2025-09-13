@@ -17,6 +17,14 @@ const getMockParticipants = (count, startIndex = 1) => {
   }));
 };
 
+// Helper to extract clean display name from Daily.co unique username
+const getCleanDisplayName = (userName) => {
+  if (!userName) return 'Participant';
+  // Extract original name from format: "OriginalName_timestamp_sessionId"
+  const parts = userName.split('_');
+  return parts.length >= 3 ? parts[0] : userName;
+};
+
 export const VideoProvider = ({ children }) => {
   const [participants, setParticipants] = useState({});
   const [callObject, setCallObject] = useState(null);
@@ -29,11 +37,37 @@ export const VideoProvider = ({ children }) => {
   // --- Memoized Event Handlers ---
   const handleParticipantJoined = useCallback((event) => {
     console.log('📞 Daily.co: participant-joined', event);
-    setParticipants(p => ({ ...p, [event.participant.session_id]: event.participant }));
+    
+    // CRITICAL: Track who joins which room
+    console.log('🚨 PARTICIPANT JOINED ROOM:', {
+      participantName: getCleanDisplayName(event.participant.user_name),
+      userName: event.participant.user_name,
+      sessionId: event.participant.session_id,
+      roomUrl: callObjectRef.current?.meetingState()?.roomUrl,
+      meetingId: callObjectRef.current?.meetingState()?.meetingId,
+      totalInRoom: Object.keys(callObjectRef.current?.participants() || {}).length
+    });
+    
+    // Add clean display name for UI
+    const participantWithCleanName = {
+      ...event.participant,
+      displayName: getCleanDisplayName(event.participant.user_name)
+    };
+    setParticipants(p => ({ ...p, [event.participant.session_id]: participantWithCleanName }));
   }, []);
 
   const handleParticipantLeft = useCallback((event) => {
     console.log('📞 Daily.co: participant-left', event);
+    
+    // CRITICAL: Track who leaves which room
+    console.log('🚨 PARTICIPANT LEFT ROOM:', {
+      participantName: getCleanDisplayName(event.participant.user_name),
+      userName: event.participant.user_name,
+      sessionId: event.participant.session_id,
+      roomUrl: callObjectRef.current?.meetingState()?.roomUrl,
+      totalInRoom: Object.keys(callObjectRef.current?.participants() || {}).length - 1
+    });
+    
     setParticipants(p => {
       const { [event.participant.session_id]: _, ...rest } = p;
       return rest;
@@ -56,6 +90,7 @@ export const VideoProvider = ({ children }) => {
     if (!dailyLoaded || !window.DailyIframe) return;
     if (callObjectRef.current) return;
 
+    // Create call object without invalid properties for call object mode
     const call = window.DailyIframe.createCallObject();
     callObjectRef.current = call;
     setCallObject(call);
@@ -69,7 +104,36 @@ export const VideoProvider = ({ children }) => {
     const handleJoinedMeeting = () => {
       console.log('📞 Daily.co: Joined meeting successfully');
       setIsConnected(true);
-      setParticipants(call.participants());
+      const currentParticipants = call.participants();
+      
+      // Enhanced debugging for video feed issues
+      console.log('🔍 VideoProvider: DETAILED ROOM ANALYSIS:');
+      console.log('🔍 VideoProvider: Room URL:', call.meetingState()?.roomUrl);
+      console.log('🔍 VideoProvider: Meeting ID:', call.meetingState()?.meetingId);
+      console.log('🔍 VideoProvider: Domain:', call.meetingState()?.domainName);
+      console.log('🔍 VideoProvider: Total participants in room:', Object.keys(currentParticipants).length);
+      
+      Object.keys(currentParticipants).forEach(id => {
+        const p = currentParticipants[id];
+        console.log(`🔍 VideoProvider: Participant ${id}:`, {
+          userName: p.user_name,
+          displayName: getCleanDisplayName(p.user_name),
+          local: p.local,
+          video: p.video,
+          audio: p.audio
+        });
+      });
+      
+      // Add clean display names to all participants
+      const participantsWithCleanNames = {};
+      Object.keys(currentParticipants).forEach(id => {
+        participantsWithCleanNames[id] = {
+          ...currentParticipants[id],
+          displayName: getCleanDisplayName(currentParticipants[id].user_name)
+        };
+      });
+      
+      setParticipants(participantsWithCleanNames);
     };
     
     const handleLeftMeeting = () => {
@@ -104,19 +168,85 @@ export const VideoProvider = ({ children }) => {
   }, [dailyLoaded, handleParticipantJoined, handleParticipantLeft, handleParticipantUpdated]);
 
   // --- Join Room Function ---
-  const joinRoom = useCallback(async (roomUrl) => {
+  const joinRoom = useCallback(async (roomUrl, userName = null) => {
     if (!callObjectRef.current) throw new Error('Call object not initialized');
+    
+    // CRITICAL: Log exactly what room we're trying to join
+    console.log('🚨 ATTEMPTING TO JOIN ROOM:', {
+      participantName: userName,
+      roomUrl,
+      timestamp: new Date().toISOString()
+    });
+    
     const meetingState = callObjectRef.current.meetingState();
     if (meetingState === 'joined-meeting') {
-      console.log('Already joined meeting, skipping join call');
-      return callObjectRef.current;
+      console.log('Already joined meeting, leaving first...');
+      try {
+        await callObjectRef.current.leave();
+        // Wait a moment for clean disconnect
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (e) {
+        console.log('Error leaving previous meeting:', e);
+      }
     }
     try {
-      await callObjectRef.current.join({ url: roomUrl, userName: 'User ' + Math.floor(Math.random() * 1000) });
+      // FIXED: Use provided userName or get from localStorage, fallback to random
+      let displayName = userName;
+      if (!displayName) {
+        // Try to get current participant name from localStorage
+        const participantName = localStorage.getItem('gd_participant_name');
+        displayName = participantName || `User ${Math.floor(Math.random() * 1000)}`;
+      }
+      
+      // SIMPLE BUT EFFECTIVE IDENTITY OVERRIDE: Unique name with session info
+      const timestamp = Date.now().toString().slice(-6); // Last 6 digits
+      const sessionId = Math.random().toString(36).substring(2, 6); // 4 char random
+      const uniqueDisplayName = `${displayName}_${timestamp}_${sessionId}`;
+      
+      console.log('🎥 Joining Daily.co with unique identity:', displayName, '→', uniqueDisplayName);
+      
+      // CRITICAL: Join directly with userName to suppress name prompt
+      // preAuth doesn't suppress the name prompt - we need to provide userName in join()
+      console.log('🚨 CALLING join() directly with userName to suppress name prompt');
+      await callObjectRef.current.join({ 
+        url: roomUrl, 
+        userName: uniqueDisplayName,  // This suppresses the name prompt!
+        // Additional user data for identification
+        userData: { 
+          displayName: displayName,
+          originalName: displayName, 
+          joinTime: Date.now(),
+          sessionId: sessionId 
+        }
+      });
+      console.log('🚨 join() COMPLETED successfully');
+      
+      console.log('✅ Successfully joined Daily.co room as:', uniqueDisplayName);
       return callObjectRef.current;
     } catch (error) {
       console.error('Failed to join room:', error);
       throw error;
+    }
+  }, []);
+
+  // --- Leave Room Function ---
+  const leaveRoom = useCallback(async () => {
+    if (!callObjectRef.current) {
+      console.log('No call object available to leave');
+      return;
+    }
+    const meetingState = callObjectRef.current.meetingState();
+    if (meetingState === 'joined-meeting') {
+      console.log('🎥 Leaving Daily.co room...');
+      try {
+        await callObjectRef.current.leave();
+        console.log('✅ Successfully left Daily.co room');
+      } catch (error) {
+        console.error('❌ Failed to leave room:', error);
+        throw error;
+      }
+    } else {
+      console.log('Not in a meeting, no need to leave');
     }
   }, []);
 
@@ -163,8 +293,9 @@ export const VideoProvider = ({ children }) => {
     callObject, 
     error,
     isConnected,
-    joinRoom
-  }), [composedParticipants, callObject, error, isConnected, joinRoom]);
+    joinRoom,
+    leaveRoom
+  }), [composedParticipants, callObject, error, isConnected, joinRoom, leaveRoom]);
   
   return (
     <VideoContext.Provider value={contextValue}>

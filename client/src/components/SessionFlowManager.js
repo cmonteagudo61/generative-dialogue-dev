@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import SessionTimer from './SessionTimer';
 import FacilitatorGuidance from './FacilitatorGuidance';
 import QuickDialogueSetup from './QuickDialogueSetup';
@@ -12,10 +12,12 @@ const SessionFlowManager = ({
   onTimerComplete = () => {},
   autoAdvance = false,
   customPhaseConfig = null,
-  isVisible = true
+  isVisible = true,
+  currentPhase = null,
+  currentSubstage = null
 }) => {
   // Define the standard dialogue flow
-  const defaultPhaseConfig = useMemo(() => ({
+  const basePhaseConfig = useMemo(() => ({
     'Connect': {
       order: 1,
       totalDuration: 50 * 60, // 50 minutes
@@ -130,11 +132,228 @@ const SessionFlowManager = ({
     }
   }), []);
 
-  const phaseConfig = customPhaseConfig || defaultPhaseConfig;
+  // Session state - use props if provided, otherwise default
+  const [internalCurrentPhase, setInternalCurrentPhase] = useState('Connect');
+  const [internalCurrentSubstage, setInternalCurrentSubstage] = useState('Catalyst');
+  
+  // Time-first approach: total available time
+  // Calculate from customPhaseConfig if provided, otherwise default to 180 minutes
+  const calculateTotalTimeFromConfig = useCallback((config) => {
+    console.log('🕐 Calculating total time from config:', config);
+    if (!config) {
+      console.log('🕐 No config provided, defaulting to 180 minutes');
+      return 180; // Default 3 hours
+    }
+    
+    const totalSeconds = Object.values(config).reduce((total, phase) => {
+      console.log(`🕐 Phase duration: ${phase.totalDuration || 0} seconds`);
+      return total + (phase.totalDuration || 0);
+    }, 0);
+    
+    const totalMinutes = Math.round(totalSeconds / 60);
+    console.log(`🕐 Total calculated: ${totalSeconds} seconds = ${totalMinutes} minutes`);
+    return totalMinutes; // Convert to minutes
+  }, []);
+  
+  const [totalAvailableTime, setTotalAvailableTime] = useState(() => 
+    calculateTotalTimeFromConfig(customPhaseConfig)
+  );
+  const [showTimeConfig, setShowTimeConfig] = useState(false);
+  
+  // Track if we've initialized from customPhaseConfig to prevent overriding user changes
+  const hasInitializedFromConfig = useRef(false);
+  
+  // Update totalAvailableTime when customPhaseConfig changes (only on initial load)
+  useEffect(() => {
+    if (customPhaseConfig && !hasInitializedFromConfig.current) {
+      const newTotalTime = calculateTotalTimeFromConfig(customPhaseConfig);
+      setTotalAvailableTime(newTotalTime);
+      hasInitializedFromConfig.current = true;
+      console.log(`🕐 Initialized total available time from config: ${newTotalTime} minutes`);
+    }
+  }, [customPhaseConfig, calculateTotalTimeFromConfig]);
+  
+  // Dynamic phase configuration that can be updated by recommendations
+  const [dynamicPhaseConfig, setDynamicPhaseConfig] = useState(null);
+  
+  // Visual feedback states
+  const [isApplyingConfig, setIsApplyingConfig] = useState(false);
+  const [configApplied, setConfigApplied] = useState(false);
+  const [animatePhaseCards, setAnimatePhaseCards] = useState(false);
 
-  // Session state
-  const [currentPhase, setCurrentPhase] = useState('Connect');
-  const [currentSubstage, setCurrentSubstage] = useState('Catalyst');
+  const phaseConfig = customPhaseConfig || dynamicPhaseConfig || basePhaseConfig;
+  
+  // Auto-configure based on available time - matching Quick Setup configurations
+  const getRecommendedConfiguration = useCallback((totalMinutes) => {
+    // Based on dialogue methodology best practices - matching Quick Setup
+    if (totalMinutes <= 60) {
+      // 60 minutes: Very compressed (suboptimal)
+      return {
+        connect: { duration: 15, roomType: 'dyad' },
+        explore: { duration: 20, roomType: 'dyad' },
+        discover: { duration: 20, roomType: 'dyad' },
+        closing: { duration: 5 }
+      };
+    } else if (totalMinutes <= 90) {
+      // 90 minutes: Minimal viable dialogue
+      return {
+        connect: { duration: 25, roomType: 'dyad' },
+        explore: { duration: 30, roomType: 'dyad' },
+        discover: { duration: 30, roomType: 'triad' },
+        closing: { duration: 5 }
+      };
+    } else if (totalMinutes <= 120) {
+      // 2 hours: Solid dialogue
+      return {
+        connect: { duration: 35, roomType: 'dyad' },
+        explore: { duration: 40, roomType: 'triad' },
+        discover: { duration: 40, roomType: 'triad' },
+        closing: { duration: 5 }
+      };
+    } else if (totalMinutes <= 180) {
+      // 3 hours: Full dialogue experience
+      return {
+        connect: { duration: 45, roomType: 'dyad' },
+        explore: { duration: 60, roomType: 'triad' },
+        discover: { duration: 60, roomType: 'quad' },
+        closing: { duration: 15 }
+      };
+    } else if (totalMinutes <= 240) {
+      // 4 hours: Extended dialogue
+      return {
+        connect: { duration: 60, roomType: 'dyad' },
+        explore: { duration: 75, roomType: 'triad' },
+        discover: { duration: 90, roomType: 'quad' },
+        closing: { duration: 15 }
+      };
+    } else {
+      // 6+ hours: Deep exploration
+      return {
+        connect: { duration: 90, roomType: 'dyad' },
+        explore: { duration: 120, roomType: 'triad' },
+        discover: { duration: 135, roomType: 'kiva' },
+        closing: { duration: 15 }
+      };
+    }
+  }, []);
+  
+  // Apply recommended configuration when time changes
+  const applyRecommendedConfiguration = useCallback(async () => {
+    // Start visual feedback
+    setIsApplyingConfig(true);
+    setConfigApplied(false);
+    
+    // Small delay to show loading state
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const recommended = getRecommendedConfiguration(totalAvailableTime);
+    const newConfigurations = {};
+    
+    // Apply to each phase with proper substage time allocation
+    Object.entries(recommended).forEach(([phase, config]) => {
+      if (phase !== 'closing') {
+        const phaseName = phase.charAt(0).toUpperCase() + phase.slice(1);
+        const phaseDurationMinutes = config.duration;
+        
+        // Calculate substage durations that add up to phase total
+        // Standard allocation: Catalyst 20%, Dialogue 60%, Summary 15%, WE 5%
+        const catalystDuration = Math.round(phaseDurationMinutes * 0.2);
+        const dialogueDuration = Math.round(phaseDurationMinutes * 0.6);
+        const summaryDuration = Math.round(phaseDurationMinutes * 0.15);
+        const weDuration = phaseDurationMinutes - catalystDuration - dialogueDuration - summaryDuration; // Remainder to ensure exact total
+        
+        // Configure each substage
+        newConfigurations[`${phaseName}_Catalyst`] = {
+          catalystType: 'meditation', // Default catalyst
+          duration: catalystDuration * 60 // Convert to seconds
+        };
+        newConfigurations[`${phaseName}_Dialogue`] = {
+          roomType: config.roomType,
+          duration: dialogueDuration * 60 // Convert to seconds
+        };
+        newConfigurations[`${phaseName}_Summary`] = {
+          roomType: config.roomType, // Inherit from dialogue
+          duration: summaryDuration * 60 // Convert to seconds
+        };
+        newConfigurations[`${phaseName}_WE`] = {
+          duration: weDuration * 60 // Convert to seconds
+        };
+        
+        // Also update the phase total duration configuration
+        newConfigurations[`${phaseName}_PhaseTotal`] = {
+          totalDuration: phaseDurationMinutes * 60 // Convert to seconds
+        };
+        
+        console.log(`📊 ${phaseName} phase (${phaseDurationMinutes}m total):`, {
+          catalyst: `${catalystDuration}m`,
+          dialogue: `${dialogueDuration}m`,
+          summary: `${summaryDuration}m`,
+          we: `${weDuration}m`,
+          total: `${catalystDuration + dialogueDuration + summaryDuration + weDuration}m`
+        });
+      } else {
+        // Configure closing
+        newConfigurations['Closing_Closing'] = {
+          duration: config.duration * 60
+        };
+      }
+    });
+    
+    setPhaseConfigurations(newConfigurations);
+    
+    // Update the dynamic phase config with new totals
+    setDynamicPhaseConfig(prevConfig => {
+      const updatedConfig = { ...(prevConfig || basePhaseConfig) };
+      Object.entries(recommended).forEach(([phase, config]) => {
+        if (phase !== 'closing') {
+          const phaseName = phase.charAt(0).toUpperCase() + phase.slice(1);
+          if (updatedConfig[phaseName]) {
+            updatedConfig[phaseName] = {
+              ...updatedConfig[phaseName],
+              totalDuration: config.duration * 60 // Update the phase total
+            };
+          }
+        }
+      });
+      return updatedConfig;
+    });
+    
+    // Trigger phase card animation
+    setAnimatePhaseCards(true);
+    setTimeout(() => setAnimatePhaseCards(false), 1000);
+    
+    // Show success feedback
+    setIsApplyingConfig(false);
+    setConfigApplied(true);
+    
+    // Hide success message after 3 seconds
+    setTimeout(() => setConfigApplied(false), 3000);
+    
+    console.log('🎯 Applied recommended configuration with proper time allocation and phase totals');
+  }, [totalAvailableTime, getRecommendedConfiguration, basePhaseConfig]);
+  
+  // Use external current phase/substage if provided, otherwise use internal state
+  // Convert received phase names to proper case for SessionFlowManager
+  const normalizePhase = (phase) => {
+    if (!phase) return phase;
+    const phaseMap = {
+      'connect': 'Connect',
+      'explore': 'Explore', 
+      'discover': 'Discover',
+      'closing': 'Closing'
+    };
+    return phaseMap[phase.toLowerCase()] || phase;
+  };
+  
+  const activeCurrentPhase = normalizePhase(currentPhase) || internalCurrentPhase;
+  const activeCurrentSubstage = currentSubstage || internalCurrentSubstage;
+  
+  // DISABLED: Debug phase normalization - causing infinite render loop
+  // console.log('📋 SessionFlowManager:', {
+  //   received: currentPhase,
+  //   normalized: activeCurrentPhase,
+  //   substage: activeCurrentSubstage
+  // });
   const [isSessionActive, setIsSessionActive] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [sessionStartTime, setSessionStartTime] = useState(null);
@@ -152,29 +371,37 @@ const SessionFlowManager = ({
   const [configSubstage, setConfigSubstage] = useState(null);
   const [showQuickSetup, setShowQuickSetup] = useState(false);
   const [quickSetupContext, setQuickSetupContext] = useState(null);
+  
+  // Auto-apply recommended configuration on initial load
+  React.useEffect(() => {
+    // Only auto-apply if no custom configurations exist
+    if (Object.keys(phaseConfigurations).length === 0) {
+      applyRecommendedConfiguration();
+    }
+  }, [applyRecommendedConfiguration, phaseConfigurations]);
 
   // Get current phase and substage config
-  const currentPhaseConfig = phaseConfig[currentPhase];
-  const currentSubstageConfig = currentPhaseConfig?.substages[currentSubstage];
+  const currentPhaseConfig = phaseConfig[activeCurrentPhase];
+  const currentSubstageConfig = currentPhaseConfig?.substages[activeCurrentSubstage];
   const currentDuration = currentSubstageConfig?.duration || 0;
 
   // Calculate session progress
   const sessionProgress = useMemo(() => {
     const phases = Object.keys(phaseConfig);
-    const currentPhaseIndex = phases.indexOf(currentPhase);
+    const currentPhaseIndex = phases.indexOf(activeCurrentPhase);
     const totalPhases = phases.length;
     
     if (currentPhaseIndex === -1) return 0;
     
     const substages = Object.keys(currentPhaseConfig?.substages || {});
-    const currentSubstageIndex = substages.indexOf(currentSubstage);
+    const currentSubstageIndex = substages.indexOf(activeCurrentSubstage);
     const totalSubstages = substages.length;
     
     const phaseProgress = totalSubstages > 0 ? (currentSubstageIndex + 1) / totalSubstages : 1;
     const overallProgress = (currentPhaseIndex + phaseProgress) / totalPhases;
     
     return Math.round(overallProgress * 100);
-  }, [currentPhase, currentSubstage, phaseConfig, currentPhaseConfig]);
+  }, [activeCurrentPhase, activeCurrentSubstage, phaseConfig, currentPhaseConfig]);
 
   // Start session
   const handleStartSession = useCallback(() => {
@@ -192,7 +419,7 @@ const SessionFlowManager = ({
     }
     
     onPhaseChange(currentPhase, currentSubstage, firstSubstage);
-  }, [currentPhase, currentSubstage, currentSubstageConfig, onPhaseChange, onCreateBreakoutRooms, participantCount]);
+  }, [activeCurrentPhase, activeCurrentSubstage, currentSubstageConfig, onPhaseChange, onCreateBreakoutRooms, participantCount]);
 
   // Pause/Resume session
   const handlePauseResume = useCallback(() => {
@@ -202,12 +429,15 @@ const SessionFlowManager = ({
   // Advance to next substage or phase
   const handleAdvanceSubstage = useCallback(() => {
     const substages = Object.keys(currentPhaseConfig?.substages || {});
-    const currentSubstageIndex = substages.indexOf(currentSubstage);
+    const currentSubstageIndex = substages.indexOf(activeCurrentSubstage);
     
     if (currentSubstageIndex < substages.length - 1) {
       // Move to next substage
       const nextSubstage = substages[currentSubstageIndex + 1];
-      setCurrentSubstage(nextSubstage);
+      // Only update internal state if not controlled externally
+      if (!currentPhase && !currentSubstage) {
+        setInternalCurrentSubstage(nextSubstage);
+      }
       setSubstageStartTime(Date.now());
       
       const nextSubstageConfig = currentPhaseConfig.substages[nextSubstage];
@@ -222,21 +452,24 @@ const SessionFlowManager = ({
       // Move to next phase
       handleAdvancePhase();
     }
-  }, [currentPhase, currentSubstage, currentPhaseConfig, onPhaseChange, onCreateBreakoutRooms, participantCount]);
+  }, [activeCurrentPhase, activeCurrentSubstage, currentPhaseConfig, onPhaseChange, onCreateBreakoutRooms, participantCount]);
 
   // Advance to next phase
   const handleAdvancePhase = useCallback(() => {
     const phases = Object.keys(phaseConfig);
-    const currentPhaseIndex = phases.indexOf(currentPhase);
+    const currentPhaseIndex = phases.indexOf(activeCurrentPhase);
     
     if (currentPhaseIndex < phases.length - 1) {
       const nextPhase = phases[currentPhaseIndex + 1];
       const nextPhaseConfig = phaseConfig[nextPhase];
       const firstSubstage = Object.keys(nextPhaseConfig.substages)[0];
       
-      setCompletedPhases(prev => [...prev, currentPhase]);
-      setCurrentPhase(nextPhase);
-      setCurrentSubstage(firstSubstage);
+      setCompletedPhases(prev => [...prev, activeCurrentPhase]);
+      // Only update internal state if not controlled externally
+      if (!currentPhase && !currentSubstage) {
+        setInternalCurrentPhase(nextPhase);
+        setInternalCurrentSubstage(firstSubstage);
+      }
       setPhaseStartTime(Date.now());
       setSubstageStartTime(Date.now());
       
@@ -268,8 +501,11 @@ const SessionFlowManager = ({
 
   // Jump to specific phase/substage
   const handleJumpTo = useCallback((phase, substage) => {
-    setCurrentPhase(phase);
-    setCurrentSubstage(substage);
+    // Only update internal state if not controlled externally
+    if (!currentPhase && !currentSubstage) {
+      setInternalCurrentPhase(phase);
+      setInternalCurrentSubstage(substage);
+    }
     setPhaseStartTime(Date.now());
     setSubstageStartTime(Date.now());
     
@@ -299,7 +535,10 @@ const SessionFlowManager = ({
     const configKey = `${configPhase}_${configSubstage}`;
     setPhaseConfigurations(prev => ({
       ...prev,
-      [configKey]: config
+      [configKey]: {
+        ...config,
+        isUserConfigured: true // Mark as user-configured
+      }
     }));
     setShowConfigModal(false);
     setConfigPhase(null);
@@ -382,6 +621,65 @@ const SessionFlowManager = ({
       <div className="session-header">
         <div className="session-title">
           <h2>Dialogue Session Flow</h2>
+          
+          {/* Time-First Configuration */}
+          <div className="time-first-config">
+            <div className="time-display">
+              <span className="time-label">Total Available Time:</span>
+              <button 
+                className="time-value-btn"
+                onClick={() => setShowTimeConfig(!showTimeConfig)}
+              >
+                {Math.floor(totalAvailableTime / 60)}h {totalAvailableTime % 60}m ⚙️
+              </button>
+            </div>
+            
+            {showTimeConfig && (
+              <div className="time-config-panel">
+                <label>Available Time (minutes):</label>
+                <input
+                  type="number"
+                  value={totalAvailableTime}
+                  onChange={(e) => setTotalAvailableTime(parseInt(e.target.value) || 180)}
+                  min="30"
+                  max="480"
+                  step="15"
+                  className="time-input"
+                />
+                <div className="time-presets">
+                  <button onClick={() => setTotalAvailableTime(60)}>60min</button>
+                  <button onClick={() => setTotalAvailableTime(90)}>90min</button>
+                  <button onClick={() => setTotalAvailableTime(120)}>2h</button>
+                  <button onClick={() => setTotalAvailableTime(180)}>3h</button>
+                  <button onClick={() => setTotalAvailableTime(240)}>4h</button>
+                  <button onClick={() => setTotalAvailableTime(360)}>6h</button>
+                </div>
+                
+                <div className="recommended-config">
+                  <button 
+                    className={`apply-recommended-btn ${isApplyingConfig ? 'loading' : ''} ${configApplied ? 'success' : ''}`}
+                    onClick={applyRecommendedConfiguration}
+                    disabled={isApplyingConfig}
+                  >
+                    {isApplyingConfig ? (
+                      <>⏳ Applying Configuration...</>
+                    ) : configApplied ? (
+                      <>✅ Configuration Applied!</>
+                    ) : (
+                      <>🎯 Apply Recommended Configuration</>
+                    )}
+                  </button>
+                  <p className="recommendation-preview">
+                    {(() => {
+                      const rec = getRecommendedConfiguration(totalAvailableTime);
+                      return `Connect: ${rec.connect.roomType}s (${rec.connect.duration}m) → Explore: ${rec.explore.roomType}s (${rec.explore.duration}m) → Discover: ${rec.discover.roomType}s (${rec.discover.duration}m)`;
+                    })()}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+          
           <div className="session-progress">
             <div className="progress-bar">
               <div 
@@ -433,8 +731,8 @@ const SessionFlowManager = ({
                 className="phase-indicator"
                 style={{ backgroundColor: currentPhaseConfig?.color }}
               >
-                <span className="phase-name">{currentPhase}</span>
-                <span className="substage-name">{currentSubstage}</span>
+                <span className="phase-name">{activeCurrentPhase}</span>
+                <span className="substage-name">{activeCurrentSubstage}</span>
               </div>
               <div className="phase-description">
                 {currentSubstageConfig?.description || currentPhaseConfig?.description}
@@ -473,7 +771,7 @@ const SessionFlowManager = ({
             {Object.entries(phaseConfig).map(([phaseName, phase]) => (
               <div 
                 key={phaseName}
-                className={`phase-card ${phaseName === currentPhase ? 'current' : ''} ${completedPhases.includes(phaseName) ? 'completed' : ''}`}
+                className={`phase-card ${phaseName === activeCurrentPhase ? 'current' : ''} ${completedPhases.includes(phaseName) ? 'completed' : ''} ${animatePhaseCards ? 'config-updated' : ''}`}
                 style={{ borderColor: phase.color }}
               >
                 <div className="phase-card-header">
@@ -489,17 +787,22 @@ const SessionFlowManager = ({
                     const effectiveConfig = getEffectiveConfig(phaseName, substageName);
                     const isConfigurable = substage.roomType === 'configurable' || substage.catalystOptions;
                     const configKey = `${phaseName}_${substageName}`;
-                    const isConfigured = phaseConfigurations[configKey];
+                    
+                    // Only consider it configured if there's a meaningful difference from defaults
+                    const customConfig = phaseConfigurations[configKey];
+                    
+                    // Check if this is actually configured (not just auto-applied defaults)
+                    const isConfigured = customConfig && customConfig.isUserConfigured === true;
                     
                     return (
                       <div key={substageName} className="substage-container">
                         <button
-                          className={`substage-btn ${phaseName === currentPhase && substageName === currentSubstage ? 'current' : ''}`}
+                          className={`substage-btn ${phaseName === activeCurrentPhase && substageName === activeCurrentSubstage ? 'current' : ''}`}
                           onClick={() => handleJumpTo(phaseName, substageName)}
                           disabled={!isSessionActive}
                         >
                           <span className="substage-name">{substageName}</span>
-                          <span className="substage-duration">{Math.round(substage.duration / 60)}m</span>
+                          <span className="substage-duration">{Math.round((effectiveConfig.duration || substage.duration) / 60)}m</span>
                           {/* Show room type for non-catalyst substages, or show catalyst type for catalyst substages */}
                           {effectiveConfig.catalystType ? (
                             <span className="substage-catalyst">{effectiveConfig.catalystType}</span>
@@ -570,6 +873,7 @@ const SessionFlowManager = ({
           }}
           initialParticipantCount={quickSetupContext.participantCount}
           suggestedRoomType={quickSetupContext.suggestedRoomType}
+          constrainedTimeMinutes={totalAvailableTime}
         />
       )}
     </div>
