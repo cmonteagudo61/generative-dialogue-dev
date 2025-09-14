@@ -19,10 +19,10 @@ const morgan = require('morgan');
 // Import AI Enhancement Service
 const { enhancer, AI_SERVICES } = require('./enhanced-transcript-service');
 
-// Import AI APIs from the correct path
-const grokAPI = require('../api/grokAPI');
-const anthropicAPI = require('../api/aiAPI');
-const openaiAPI = require('../api/openaiAPI');
+// Import AI APIs from backend-local api directory
+const grokAPI = require('./api/grokAPI');
+const anthropicAPI = require('./api/aiAPI');
+const openaiAPI = require('./api/openaiAPI');
 
 const app = express();
 
