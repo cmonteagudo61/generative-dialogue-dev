@@ -90,6 +90,17 @@ export const VideoProvider = ({ children }) => {
     if (!dailyLoaded || !window.DailyIframe) return;
     if (callObjectRef.current) return;
 
+    // Event handlers attachment function
+    const attachEventHandlers = (call) => {
+      call.on('joined-meeting', handleJoinedMeeting);
+      call.on('left-meeting', handleLeftMeeting);
+      call.on('participant-joined', handleParticipantJoined);
+      call.on('participant-updated', handleParticipantUpdated);
+      call.on('participant-left', handleParticipantLeft);
+      call.on('track-started', handleParticipantUpdated);
+      call.on('error', handleError);
+    };
+
     // More aggressive initialization with multiple retry attempts
     const initializeCallObject = (attempt = 1) => {
       try {
@@ -102,6 +113,9 @@ export const VideoProvider = ({ children }) => {
         callObjectRef.current = call;
         setCallObject(call);
         window.dailyCallObject = call;
+        
+        // Attach event handlers
+        attachEventHandlers(call);
         
         console.log('✅ Daily.co call object initialized successfully');
       } catch (error) {
@@ -127,13 +141,13 @@ export const VideoProvider = ({ children }) => {
     const handleJoinedMeeting = () => {
       console.log('📞 Daily.co: Joined meeting successfully');
       setIsConnected(true);
-      const currentParticipants = call.participants();
+      const currentParticipants = callObjectRef.current?.participants() || {};
       
       // Enhanced debugging for video feed issues
       console.log('🔍 VideoProvider: DETAILED ROOM ANALYSIS:');
-      console.log('🔍 VideoProvider: Room URL:', call.meetingState()?.roomUrl);
-      console.log('🔍 VideoProvider: Meeting ID:', call.meetingState()?.meetingId);
-      console.log('🔍 VideoProvider: Domain:', call.meetingState()?.domainName);
+      console.log('🔍 VideoProvider: Room URL:', callObjectRef.current?.meetingState()?.roomUrl);
+      console.log('🔍 VideoProvider: Meeting ID:', callObjectRef.current?.meetingState()?.meetingId);
+      console.log('🔍 VideoProvider: Domain:', callObjectRef.current?.meetingState()?.domainName);
       console.log('🔍 VideoProvider: Total participants in room:', Object.keys(currentParticipants).length);
       
       Object.keys(currentParticipants).forEach(id => {
@@ -165,26 +179,22 @@ export const VideoProvider = ({ children }) => {
       setParticipants({});
     };
 
-    call.on('joined-meeting', handleJoinedMeeting);
-    call.on('left-meeting', handleLeftMeeting);
-    call.on('participant-joined', handleParticipantJoined);
-    call.on('participant-updated', handleParticipantUpdated);
-    call.on('participant-left', handleParticipantLeft);
-    call.on('track-started', handleParticipantUpdated);
-    call.on('error', handleError);
+    // Event handlers will be attached during initialization
 
     return () => {
       clearTimeout(throttleTimeoutRef.current);
-      call.off('joined-meeting', handleJoinedMeeting);
-      call.off('left-meeting', handleLeftMeeting);
-      call.off('participant-joined', handleParticipantJoined);
-      call.off('participant-updated', handleParticipantUpdated);
-      call.off('participant-left', handleParticipantLeft);
-      call.off('track-started', handleParticipantUpdated);
-      call.off('error', handleError);
+      if (callObjectRef.current) {
+        callObjectRef.current.off('joined-meeting', handleJoinedMeeting);
+        callObjectRef.current.off('left-meeting', handleLeftMeeting);
+        callObjectRef.current.off('participant-joined', handleParticipantJoined);
+        callObjectRef.current.off('participant-updated', handleParticipantUpdated);
+        callObjectRef.current.off('participant-left', handleParticipantLeft);
+        callObjectRef.current.off('track-started', handleParticipantUpdated);
+        callObjectRef.current.off('error', handleError);
 
-      if (call !== window.dailyCallObject) {
-        call.destroy();
+        if (callObjectRef.current !== window.dailyCallObject) {
+          callObjectRef.current.destroy();
+        }
       }
       callObjectRef.current = null;
     };
@@ -213,6 +223,28 @@ export const VideoProvider = ({ children }) => {
           callObjectRef.current = call;
           setCallObject(call);
           window.dailyCallObject = call;
+          
+          // Attach event handlers to the force-initialized call object
+          call.on('joined-meeting', () => {
+            console.log('📞 Daily.co: Joined meeting successfully');
+            setIsConnected(true);
+            const currentParticipants = callObjectRef.current?.participants() || {};
+            setParticipants(currentParticipants);
+          });
+          call.on('left-meeting', () => {
+            console.log('📞 Daily.co: Left meeting');
+            setIsConnected(false);
+            setParticipants({});
+          });
+          call.on('participant-joined', handleParticipantJoined);
+          call.on('participant-updated', handleParticipantUpdated);
+          call.on('participant-left', handleParticipantLeft);
+          call.on('track-started', handleParticipantUpdated);
+          call.on('error', (e) => {
+            console.error('📞 Daily.co error:', e);
+            setError(e.errorMsg || 'Unknown error');
+          });
+          
           console.log('✅ Force re-initialization successful');
         } catch (error) {
           console.error('❌ Force re-initialization failed:', error);
