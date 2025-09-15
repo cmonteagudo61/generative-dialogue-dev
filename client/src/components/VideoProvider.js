@@ -90,11 +90,34 @@ export const VideoProvider = ({ children }) => {
     if (!dailyLoaded || !window.DailyIframe) return;
     if (callObjectRef.current) return;
 
-    // Create call object without invalid properties for call object mode
-    const call = window.DailyIframe.createCallObject();
-    callObjectRef.current = call;
-    setCallObject(call);
-    window.dailyCallObject = call;
+    // More aggressive initialization with multiple retry attempts
+    const initializeCallObject = (attempt = 1) => {
+      try {
+        if (callObjectRef.current) return; // Already initialized
+        
+        console.log(`🔄 Daily.co initialization attempt ${attempt}`);
+        
+        // Create call object without invalid properties for call object mode
+        const call = window.DailyIframe.createCallObject();
+        callObjectRef.current = call;
+        setCallObject(call);
+        window.dailyCallObject = call;
+        
+        console.log('✅ Daily.co call object initialized successfully');
+      } catch (error) {
+        console.error(`❌ Daily.co initialization attempt ${attempt} failed:`, error);
+        
+        // Retry up to 5 times with increasing delays
+        if (attempt < 5) {
+          setTimeout(() => initializeCallObject(attempt + 1), attempt * 200);
+        } else {
+          console.error('❌ Daily.co initialization failed after 5 attempts');
+        }
+      }
+    };
+
+    // Start initialization with a small delay
+    setTimeout(() => initializeCallObject(), 100);
 
     const handleError = (e) => {
       console.error('📞 Daily.co error:', e);
@@ -169,7 +192,38 @@ export const VideoProvider = ({ children }) => {
 
   // --- Join Room Function ---
   const joinRoom = useCallback(async (roomUrl, userName = null) => {
-    if (!callObjectRef.current) throw new Error('Call object not initialized');
+    // Ultra-robust readiness check with multiple strategies
+    if (!callObjectRef.current) {
+      console.log('🔄 Call object not ready, attempting comprehensive initialization...');
+      
+      // Strategy 1: Wait for existing initialization
+      for (let i = 0; i < 50; i++) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if (callObjectRef.current) {
+          console.log('✅ Call object ready after waiting');
+          break;
+        }
+      }
+      
+      // Strategy 2: Force re-initialization if still not ready
+      if (!callObjectRef.current && window.DailyIframe) {
+        console.log('🔧 Force re-initializing Daily.co call object...');
+        try {
+          const call = window.DailyIframe.createCallObject();
+          callObjectRef.current = call;
+          setCallObject(call);
+          window.dailyCallObject = call;
+          console.log('✅ Force re-initialization successful');
+        } catch (error) {
+          console.error('❌ Force re-initialization failed:', error);
+        }
+      }
+      
+      // Strategy 3: Final check
+      if (!callObjectRef.current) {
+        throw new Error('Call object not initialized after comprehensive attempts');
+      }
+    }
     
     // CRITICAL: Log exactly what room we're trying to join
     console.log('🚨 ATTEMPTING TO JOIN ROOM:', {

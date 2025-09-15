@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
+import { buildWsUrl } from './config/api';
 import './App.css';
 
 // Import room management components and config
@@ -38,6 +39,7 @@ import OurStoryPage from './components/OurStoryPage';
 import BuildingCommunityPage from './components/BuildingCommunityPage';
 import ParticipantSignIn from './components/ParticipantSignIn';
 import ParticipantJoin from './components/ParticipantJoin';
+import SessionJoin from './components/SessionJoin';
 import SessionLobby from './components/SessionLobby';
 import SimpleDashboard from './components/SimpleDashboard';
 import EnhancedVideoSession from './components/EnhancedVideoSession';
@@ -104,6 +106,13 @@ function AppContent() {
       console.log('🔗 Session URL with explicit page detected:', sessionParam, pageParam);
       setSessionId(sessionParam);
       // Continue to page parameter handling below
+    }
+    
+    // CRITICAL FIX: Handle session-join page explicitly
+    if (pageParam === 'session-join') {
+      console.log('🎯 Explicit session-join page requested');
+      setCurrentPage('session-join');
+      return; // Exit early to ensure session-join page is shown
     }
     
     // Check URL path for direct routing (e.g., /dashboard, /signin)
@@ -278,9 +287,9 @@ function AppContent() {
     if (!sessionId) return;
     
     try {
-      const API_PROTO = window.location.protocol === 'https:' ? 'https' : 'http';
-      const WS_PROTO = API_PROTO === 'https' ? 'wss' : 'ws';
-      const ws = new WebSocket(`${WS_PROTO}://${window.location.host}/session-bus`);
+      const wsUrl = buildWsUrl('session-bus');
+      console.log('🔌 Connecting to session-bus:', wsUrl);
+      const ws = new WebSocket(wsUrl);
       
       ws.onopen = () => {
         console.log('🔄 Session-bus connected, joining session:', sessionId);
@@ -632,6 +641,23 @@ function AppContent() {
     }
   }, [currentPage, sessionId, participantData]);
 
+  // Listen for session updates (e.g., when rooms are created)
+  useEffect(() => {
+    if (currentPage === 'participant-session' && sessionId) {
+      const handleSessionUpdate = (event) => {
+        const { sessionCode, sessionData } = event.detail;
+        if (sessionCode === sessionId) {
+          console.log('🔄 App.js: Session updated via event:', sessionData);
+          console.log('🎯 Updated session has room assignments:', !!sessionData.roomAssignments);
+          setParticipantData(sessionData);
+        }
+      };
+
+      window.addEventListener('session-updated', handleSessionUpdate);
+      return () => window.removeEventListener('session-updated', handleSessionUpdate);
+    }
+  }, [currentPage, sessionId]);
+
   let pageElement;
   switch (currentPage) {
     case 'landing':
@@ -916,11 +942,33 @@ function AppContent() {
         />
       );
       break;
+    case 'session-join':
+      pageElement = (
+        <SessionJoin 
+          onJoinSession={(sessionData) => {
+            console.log('🎯 Session joined/created:', sessionData);
+            setParticipantData(sessionData);
+            setSessionId(sessionData.sessionId);
+            
+            // ZOOM-LIKE WORKFLOW: Everyone goes to lobby first, then auto-moves to video when session starts
+            const isHost = sessionData.currentParticipant?.isHost;
+            if (isHost) {
+              console.log('🎯 Host detected: Routing to participant-lobby (SessionLobby)');
+              setCurrentPage('participant-lobby');
+            } else {
+              console.log('🎯 Participant detected: Routing to participant-lobby (SessionLobby) - will auto-move to video when session starts');
+              setCurrentPage('participant-lobby');
+            }
+          }}
+          sessionId={sessionId}
+        />
+      );
+      break;
     default:
       pageElement = <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
   }
 
-  const useAppLayout = !['landing', 'input', 'permissions', 'harvest-outro', 'buildingcommunity', 'dashboard', 'signin', 'participant-join', 'participant-lobby', 'room-manager'].includes(currentPage);
+  const useAppLayout = !['landing', 'input', 'permissions', 'harvest-outro', 'buildingcommunity', 'dashboard', 'signin', 'participant-join', 'participant-lobby', 'room-manager', 'session-join'].includes(currentPage);
 
   // DISABLED: DEBUG: Log current page and routing decision - causing infinite render loop
   // console.log('🔍 App render debug:', {
