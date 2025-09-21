@@ -622,24 +622,18 @@ const GenerativeDialogueInner = ({
       const base = JSON.parse(localStorage.getItem(storageKey) || 'null') || sessionData;
       const assignments = base.roomAssignments || { rooms: {}, participants: {} };
       const rt = String(roomType || '').toLowerCase();
-      let roomList = Object.values(assignments.rooms || {}).filter(r => {
-        const typeLc = String(r.type || '').toLowerCase();
-        const nameLc = String(r.name || '').toLowerCase();
-        const idLc = String(r.id || '').toLowerCase();
-        return typeLc === rt || nameLc.includes(rt) || idLc.includes(rt);
-      });
-      if (roomList.length === 0 && ROOM_POOL && ROOM_POOL[rt]) {
-        // If API-created rooms weren't stored, fall back to manual pool
-        ROOM_POOL[rt].forEach(r => {
-          assignments.rooms[r.id] = { ...r, participants: [] };
-        });
-        roomList = Object.values(assignments.rooms || {}).filter(r => {
-          const typeLc = String(r.type || '').toLowerCase();
-          const nameLc = String(r.name || '').toLowerCase();
-          const idLc = String(r.id || '').toLowerCase();
-          return typeLc === rt || nameLc.includes(rt) || idLc.includes(rt);
-        });
-      }
+
+      // PERMANENT FIX: Always create breakout rooms via Daily API on the configured domain.
+      // Remove any previously cached rooms of this type (e.g., from ROOM_POOL with wrong domain)
+      try {
+        const toRemove = Object.entries(assignments.rooms || {})
+          .filter(([, r]) => String(r?.type || '').toLowerCase() === rt && r && r.id !== 'main')
+          .map(([id]) => id);
+        toRemove.forEach(id => { delete assignments.rooms[id]; });
+      } catch (_) {}
+
+      // We'll build a fresh room list using Daily API
+      let roomList = [];
       const mainRoom = assignments.rooms['main'];
       const params = new URLSearchParams(window.location.search);
       const urlName = (params.get('name') || '').trim().toLowerCase();
@@ -658,11 +652,10 @@ const GenerativeDialogueInner = ({
       // Ensure enough rooms exist (on-demand create via Daily API when available)
       try {
         const roomsNeeded = Math.ceil(nonHosts.length / roomSize);
-        if (roomsNeeded > roomList.length && typeof roomManager.createDailyRoom === 'function') {
-          const missing = roomsNeeded - roomList.length;
+        if (typeof roomManager.createDailyRoom === 'function') {
           const ts = Date.now().toString().slice(-6);
-          for (let i = 0; i < missing; i++) {
-            const name = `${sessionId}-${typeLc}-${roomList.length + i + 1}-${ts}`;
+          for (let i = 0; i < roomsNeeded; i++) {
+            const name = `${sessionId}-${typeLc}-${i + 1}-${ts}`;
             const created = await roomManager.createDailyRoom(name, typeLc);
             assignments.rooms[created.id] = { ...created, participants: [], sessionId, assignedAt: new Date().toISOString() };
           }
@@ -672,9 +665,20 @@ const GenerativeDialogueInner = ({
             const i = String(r.id || '').toLowerCase();
             return t === typeLc || n.includes(typeLc) || i.includes(typeLc);
           });
+        } else if (ROOM_POOL && ROOM_POOL[typeLc]) {
+          // Fallback to ROOM_POOL but values are now normalized to DAILY_DOMAIN
+          ROOM_POOL[typeLc].forEach(r => {
+            assignments.rooms[r.id] = { ...r, participants: [], sessionId, assignedAt: new Date().toISOString(), type: typeLc };
+          });
+          roomList = Object.values(assignments.rooms || {}).filter(r => {
+            const t = String(r.type || '').toLowerCase();
+            const n = String(r.name || '').toLowerCase();
+            const i = String(r.id || '').toLowerCase();
+            return t === typeLc || n.includes(typeLc) || i.includes(typeLc);
+          });
         }
       } catch (apiErr) {
-        console.warn('Room auto-create skipped:', apiErr);
+        console.warn('Room auto-create failed:', apiErr);
       }
       roomList.forEach(r => { r.participants = []; });
       const shuffled = [...nonHosts].sort(() => Math.random() - 0.5);
