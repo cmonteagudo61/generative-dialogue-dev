@@ -80,8 +80,6 @@ const GenerativeDialogueInner = ({
       if (urlName) {
         const ss = sessionStorage.getItem('gd_current_participant_name') || '';
         if (ss !== urlName) sessionStorage.setItem('gd_current_participant_name', urlName);
-        const ls = localStorage.getItem('gd_participant_name') || '';
-        if (ls !== urlName) localStorage.setItem('gd_participant_name', urlName);
       }
     } catch (_) {}
   }, []);
@@ -159,7 +157,7 @@ const GenerativeDialogueInner = ({
       console.log('🔍 GenerativeDialogue: useEffect triggered with sessionData:', sessionData?.sessionId);
     }
     if (sessionData?.sessionId) {
-      const storedParticipantName = localStorage.getItem('gd_participant_name');
+      const storedParticipantName = (sessionStorage.getItem('gd_current_participant_name') || '').trim();
       if (Math.random() < 0.05) { // Only log 5% of the time
         console.log('🔍 GenerativeDialogue: Looking for participant:', storedParticipantName);
         console.log('🔍 GenerativeDialogue: Available participants:', sessionData.participants?.map(p => ({name: p.name, id: p.id})));
@@ -167,21 +165,8 @@ const GenerativeDialogueInner = ({
         console.log('🔍 GenerativeDialogue: All localStorage keys:', Object.keys(localStorage).filter(k => k.includes('gd_') || k.includes('session_')));
       }
       
-      // Try to find participant by stored name first
-      let currentParticipant = sessionData.participants?.find(p => 
-        p.name === storedParticipantName
-      );
-      
-      // If not found by stored name, try to find by session data currentParticipant
-      if (!currentParticipant && sessionData.currentParticipant) {
-        currentParticipant = sessionData.currentParticipant;
-        console.log('🔍 GenerativeDialogue: Using currentParticipant from sessionData:', currentParticipant);
-        // Update localStorage to match
-        if (currentParticipant.name) {
-          localStorage.setItem('gd_participant_name', currentParticipant.name);
-          console.log('🔧 GenerativeDialogue: Updated localStorage participant name to:', currentParticipant.name);
-        }
-      }
+      // Always identify current tab by sessionStorage name (per-tab identity)
+      const currentParticipant = sessionData.participants?.find(p => p.name === storedParticipantName);
       
       console.log('🔍 GenerativeDialogue: Found current participant:', currentParticipant);
       
@@ -195,35 +180,23 @@ const GenerativeDialogueInner = ({
           console.log('🔍 GenerativeDialogue: Current participant ID:', currentParticipant.id);
           console.log('🔍 GenerativeDialogue: Available participant IDs:', Object.keys(session.roomAssignments?.participants || {}));
           
-          // Try to find room assignment by participant ID first
-          let assignment = session.roomAssignments?.participants[currentParticipant.id];
+          // Prefer assignment by NAME mapping to avoid cross-tab ID confusion
+          let assignment = null;
+          if (session.roomAssignments?.participants) {
+            assignment = Object.values(session.roomAssignments.participants).find(assign => {
+              const originalParticipants = session.participants || [];
+              const originalParticipant = originalParticipants.find(p => p.id === assign.participantId);
+              return originalParticipant && originalParticipant.name === currentParticipant.name;
+            }) || null;
+          }
+          // Fallback to direct ID if name mapping not found
+          if (!assignment) assignment = session.roomAssignments?.participants[currentParticipant.id] || null;
           if (assignment) {
             setRoomAssignment(assignment);
-            setJoinAttempted(false); // Reset join attempt for new room
-            console.log('🏠 GenerativeDialogue: Found room assignment by ID:', assignment);
-            console.log('🎯 GenerativeDialogue: Room type detected from name:', assignment.roomName || assignment.roomId);
+            setJoinAttempted(false);
+            console.log('🏠 GenerativeDialogue: Using room assignment:', assignment);
           } else {
-            // FALLBACK: Try to find by participant name if ID lookup fails
-            if (session.roomAssignments?.participants) {
-              const assignmentByName = Object.values(session.roomAssignments.participants).find(assign => {
-                // Get the participant from the original session data used for room assignments
-                const originalParticipants = session.participants || [];
-                const originalParticipant = originalParticipants.find(p => p.id === assign.participantId);
-                return originalParticipant && originalParticipant.name === currentParticipant.name;
-              });
-              
-              if (assignmentByName) {
-                setRoomAssignment(assignmentByName);
-                setJoinAttempted(false); // Reset join attempt for new room
-                console.log('🏠 GenerativeDialogue: Found room assignment by name:', assignmentByName);
-                console.log('🎯 GenerativeDialogue: Room type detected from name:', assignmentByName.roomName || assignmentByName.roomId);
-              } else {
-                console.log('🔍 GenerativeDialogue: No room assignment found for participant:', {
-                  id: currentParticipant.id,
-                  name: currentParticipant.name
-                });
-              }
-            }
+            console.log('🔍 GenerativeDialogue: No room assignment found for participant:', { id: currentParticipant.id, name: currentParticipant.name });
           }
         }
       } else {
