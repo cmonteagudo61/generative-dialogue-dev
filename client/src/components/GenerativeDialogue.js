@@ -5,6 +5,7 @@ import VideoGrid from './video/VideoGrid';
 import LiveAIInsights from './LiveAIInsights';
 import AIVideoControls from './AIVideoControls';
 import { roomManager } from '../services/RoomManager';
+import { ROOM_POOL } from '../config/roomConfig';
 import '../App.css';
 
 const getLayoutFromView = (activeView) => {
@@ -70,6 +71,20 @@ const GenerativeDialogueInner = ({
   const [insightsMinimized, setInsightsMinimized] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [showAIControls, setShowAIControls] = useState(false);
+
+  // Enforce tab identity from URL ?name= param so host tab is recognized as host
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlName = (params.get('name') || '').trim();
+      if (urlName) {
+        const ss = sessionStorage.getItem('gd_current_participant_name') || '';
+        if (ss !== urlName) sessionStorage.setItem('gd_current_participant_name', urlName);
+        const ls = localStorage.getItem('gd_participant_name') || '';
+        if (ls !== urlName) localStorage.setItem('gd_participant_name', urlName);
+      }
+    } catch (_) {}
+  }, []);
   // Determine layout based on room assignment and room type
   const layout = useMemo(() => {
     // Use room type from assignment to determine layout
@@ -113,7 +128,7 @@ const GenerativeDialogueInner = ({
   useEffect(() => {
     if (!sessionData) {
       const urlParams = new URLSearchParams(window.location.search);
-      const sessionId = urlParams.get('sessionId');
+      const sessionId = urlParams.get('session') || urlParams.get('sessionId');
       
       if (sessionId) {
         console.log('🎯 GenerativeDialogue: Loading session data for:', sessionId);
@@ -217,26 +232,164 @@ const GenerativeDialogueInner = ({
     }
   }, [sessionData]);
 
+  // Listen for session updates (same-tab CustomEvent and cross-tab storage event)
+  useEffect(() => {
+    const onLocalEvent = (e) => {
+      const next = (e && e.detail && e.detail.sessionData) || null;
+      if (next && next.sessionId) {
+        setSessionData(next);
+        // Allow a fresh join attempt after assignments change
+        setJoinAttempted(false);
+      }
+    };
+    window.addEventListener('session-updated', onLocalEvent);
+
+    const sid = sessionData?.sessionId || new URLSearchParams(window.location.search).get('session') || new URLSearchParams(window.location.search).get('sessionId');
+    const storageKey = sid ? `session_${sid}` : null;
+    const onStorage = (e) => {
+      if (!storageKey) return;
+      if (e.key === storageKey && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && parsed.sessionId) setSessionData(parsed);
+        } catch (_) {}
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('session-updated', onLocalEvent);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [sessionData?.sessionId]);
+
   // Auto-join assigned room (ALL participants including host join main room initially)
   useEffect(() => {
+    const storedName = (sessionStorage.getItem('gd_current_participant_name') || localStorage.getItem('gd_participant_name') || '').trim();
     const currentParticipant = sessionData?.participants?.find(p => 
-      p.name === localStorage.getItem('gd_participant_name')
+      p.name === storedName
     );
     
-    // EVERYONE (including host) joins their assigned room
-    // Initially everyone is assigned to main Community View room
+    // Join main room if no assignment yet
+    if (!roomAssignment && !hasJoinedRoom && !isJoining && !joinAttempted) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlSessionId = urlParams.get('session') || urlParams.get('sessionId') || sessionData?.sessionId;
+      const main = sessionData?.roomAssignments?.rooms?.main || (urlSessionId ? { roomUrl: roomManager.getMainRoomUrl(urlSessionId), name: `main-${urlSessionId}` } : null);
+      if (main?.roomUrl) {
+        const participantName = storedName || currentParticipant?.name || 'Participant';
+        console.log('🏛️ Auto-joining main room (no breakout assignment yet):', main);
+        setIsJoining(true);
+        setJoinAttempted(true);
+        joinRoom(main.roomUrl, participantName)
+          .then(() => {
+            setCurrentRoom({ ...main, roomId: 'main', roomType: 'community' });
+            setHasJoinedRoom(true);
+          })
+          .catch(async (e) => {
+            console.error('❌ Failed to join main room:', e);
+            const msg = String(e?.errorMsg || e?.message || '');
+            if (msg.includes('does not exist') && typeof roomManager.createDailyRoom === 'function' && urlSessionId) {
+              try {
+                const ts = Date.now().toString().slice(-6);
+                const created = await roomManager.createDailyRoom(`${urlSessionId}-community-main-${ts}`, 'community');
+                const storageKey = `session_${urlSessionId}`;
+                const base = JSON.parse(localStorage.getItem(storageKey) || 'null') || sessionData || {};
+                const assignments = base.roomAssignments || { rooms: {}, participants: {} };
+                assignments.rooms = assignments.rooms || {};
+                assignments.rooms.main = { id: created.id, name: created.name || created.id, url: created.url, type: 'community', participants: [] };
+                const updated = { ...base, roomAssignments: assignments };
+                localStorage.setItem(storageKey, JSON.stringify(updated));
+                try { window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: urlSessionId, sessionData: updated } })); } catch (_) {}
+                try { window.dispatchEvent(new CustomEvent('gd-session-updated-local', { detail: { sessionId: urlSessionId, sessionData: updated } })); } catch (_) {}
+                setSessionData(updated);
+                // Immediately join the newly created main room
+                const pn = (sessionStorage.getItem('gd_current_participant_name') || localStorage.getItem('gd_participant_name') || 'Participant').trim();
+                await joinRoom(created.url, pn);
+                setCurrentRoom({ id: 'main', roomId: 'main', roomType: 'community', roomUrl: created.url, name: created.name });
+                setHasJoinedRoom(true);
+                setJoinAttempted(false);
+              } catch (err) {
+                console.warn('Failed to auto-create main room:', err);
+              }
+            }
+          })
+          .finally(() => setIsJoining(false));
+        return;
+      }
+    }
+
+    // Only non-hosts auto-join breakouts; host stays in community unless assigned to main/community
     if (roomAssignment && !hasJoinedRoom && !isJoining && !joinAttempted && roomAssignment.roomName) {
+      // Gate breakouts on flag; allow joining MAIN even when inactive
+      if (!sessionData?.breakoutsActive) {
+        const isCommunityAssignment = (roomAssignment.roomId === 'main') ||
+          (roomAssignment.roomName && (roomAssignment.roomName.includes('community') || roomAssignment.roomName.includes('main')));
+        if (!isCommunityAssignment) {
+          // Force-join main when breakouts are inactive
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlSessionId = urlParams.get('session') || urlParams.get('sessionId') || sessionData?.sessionId;
+          const main = sessionData?.roomAssignments?.rooms?.main || (urlSessionId ? { roomUrl: roomManager.getMainRoomUrl(urlSessionId), name: `main-${urlSessionId}` } : null);
+          if (main?.roomUrl) {
+            const participantName = (sessionStorage.getItem('gd_current_participant_name') || localStorage.getItem('gd_participant_name') || 'Participant').trim();
+            setIsJoining(true);
+            setJoinAttempted(true);
+            joinRoom(main.roomUrl, participantName)
+              .then(() => {
+                setCurrentRoom({ ...main, roomId: 'main', roomType: 'community' });
+                setHasJoinedRoom(true);
+              })
+              .catch(() => {})
+              .finally(() => setIsJoining(false));
+          }
+          return;
+        }
+      }
+      const params = new URLSearchParams(window.location.search);
+      const urlNameLc = (params.get('name') || '').trim().toLowerCase();
+      const isHostMe = !!(
+        currentParticipant?.isHost ||
+        (sessionData?.hostName && urlNameLc && sessionData.hostName.toLowerCase() === urlNameLc)
+      );
+      const isCommunityAssignment = (roomAssignment.roomId === 'main') ||
+        (roomAssignment.roomName && (roomAssignment.roomName.includes('community') || roomAssignment.roomName.includes('main')));
+      if (isHostMe && !isCommunityAssignment) {
+        console.log('🛑 Host detected; preventing auto-join to breakout. Staying in community.');
+        return;
+      }
       console.log('🎯 Auto-joining assigned room:', {
         roomAssignment,
         hasJoinedRoom,
         isJoining,
-        participantName: localStorage.getItem('gd_participant_name'),
+        participantName: (sessionStorage.getItem('gd_current_participant_name') || localStorage.getItem('gd_participant_name') || '').trim(),
         isHost: currentParticipant?.isHost,
         roomType: roomAssignment.roomType
       });
       joinAssignedRoom();
     }
   }, [roomAssignment?.roomName, hasJoinedRoom, isJoining, joinAttempted, sessionData?.sessionId]);
+
+  // When a new assignment arrives, switch rooms even if already connected
+  useEffect(() => {
+    if (!roomAssignment) return;
+    const targetIsMain = (roomAssignment.roomId === 'main') || (roomAssignment.roomName && roomAssignment.roomName.includes('community'));
+    const currentIsMain = (currentRoom?.roomId === 'main') || (currentRoom?.roomType === 'community');
+
+    // Identify if this tab is the host
+    const storedName = (sessionStorage.getItem('gd_current_participant_name') || localStorage.getItem('gd_participant_name') || '').trim();
+    const me = sessionData?.participants?.find(p => p.name === storedName);
+    const isHostMe = !!(me && me.isHost) || (sessionData?.hostName && me && me.name && sessionData.hostName.toLowerCase() === me.name.toLowerCase());
+
+    if (targetIsMain && !currentIsMain) {
+      // Move back to main
+      returnToMainRoom();
+    } else if (!targetIsMain && currentIsMain) {
+      // Move from main to breakout (non-hosts only)
+      if (!isHostMe) {
+        // Allow re-join even if already connected
+        setJoinAttempted(false);
+        joinAssignedRoom();
+      }
+    }
+  }, [roomAssignment?.roomId, roomAssignment?.roomName, currentRoom?.roomId, currentRoom?.roomType]);
 
   const joinAssignedRoom = async () => {
     console.log('🔍 GenerativeDialogue: joinAssignedRoom called with:', roomAssignment);
@@ -258,8 +411,8 @@ const GenerativeDialogueInner = ({
     // CRITICAL: Generate roomUrl from roomName if missing
     let roomUrl = roomAssignment?.roomUrl;
     if (!roomUrl && roomAssignment?.roomName) {
-      // Generate Daily.co URL from room name
-      roomUrl = `https://generativedialogue.daily.co/${roomAssignment.roomName}`;
+      // Generate Daily.co URL from room name using configured domain
+      roomUrl = roomManager.getRoomUrlFromName(roomAssignment.roomName);
       console.log('🔧 GenerativeDialogue: Generated roomUrl from roomName:', roomUrl);
     }
     
@@ -285,10 +438,9 @@ const GenerativeDialogueInner = ({
       }
 
       // Join new room with participant name
-      const currentParticipant = sessionData.participants?.find(p => 
-        p.name === localStorage.getItem('gd_participant_name')
-      );
-      const participantName = currentParticipant?.name || localStorage.getItem('gd_participant_name') || 'Participant';
+      const storedName = (sessionStorage.getItem('gd_current_participant_name') || localStorage.getItem('gd_participant_name') || '').trim();
+      const currentParticipant = sessionData.participants?.find(p => p.name === storedName) || sessionData.currentParticipant || null;
+      const participantName = (currentParticipant?.name || storedName || 'Participant');
       console.log('🎥 GenerativeDialogue: Joining as:', participantName);
       console.log('🔍 GenerativeDialogue: Current participant data:', currentParticipant);
       
@@ -461,6 +613,160 @@ const GenerativeDialogueInner = ({
     // Could execute control actions like enabling turn-taking
   }, []);
 
+  // Host controls: assign and end breakouts
+  const hostCreateBreakouts = useCallback(async (roomType) => {
+    if (!sessionData?.sessionId || !sessionData?.participants || !sessionData?.roomAssignments) return;
+    try {
+      const sessionId = sessionData.sessionId;
+      const storageKey = `session_${sessionId}`;
+      const base = JSON.parse(localStorage.getItem(storageKey) || 'null') || sessionData;
+      const assignments = base.roomAssignments || { rooms: {}, participants: {} };
+      const rt = String(roomType || '').toLowerCase();
+      let roomList = Object.values(assignments.rooms || {}).filter(r => {
+        const typeLc = String(r.type || '').toLowerCase();
+        const nameLc = String(r.name || '').toLowerCase();
+        const idLc = String(r.id || '').toLowerCase();
+        return typeLc === rt || nameLc.includes(rt) || idLc.includes(rt);
+      });
+      if (roomList.length === 0 && ROOM_POOL && ROOM_POOL[rt]) {
+        // If API-created rooms weren't stored, fall back to manual pool
+        ROOM_POOL[rt].forEach(r => {
+          assignments.rooms[r.id] = { ...r, participants: [] };
+        });
+        roomList = Object.values(assignments.rooms || {}).filter(r => {
+          const typeLc = String(r.type || '').toLowerCase();
+          const nameLc = String(r.name || '').toLowerCase();
+          const idLc = String(r.id || '').toLowerCase();
+          return typeLc === rt || nameLc.includes(rt) || idLc.includes(rt);
+        });
+      }
+      const mainRoom = assignments.rooms['main'];
+      const params = new URLSearchParams(window.location.search);
+      const urlName = (params.get('name') || '').trim().toLowerCase();
+      const participantsList = (base.participants || []);
+      const hostCandidate = participantsList.find(p => p.isHost)
+        || participantsList.find(p => p.name && p.name.toLowerCase() === urlName)
+        || (base.hostName ? participantsList.find(p => p.name && p.name.toLowerCase() === String(base.hostName).toLowerCase()) : null);
+      const nonHosts = participantsList.filter(p => {
+        if (p.isHost) return false;
+        if (hostCandidate && p.id === hostCandidate.id) return false;
+        return true;
+      });
+      const typeLc = rt;
+      const roomSize = typeLc === 'dyad' ? 2 : typeLc === 'triad' ? 3 : typeLc === 'quad' ? 4 : 2;
+
+      // Ensure enough rooms exist (on-demand create via Daily API when available)
+      try {
+        const roomsNeeded = Math.ceil(nonHosts.length / roomSize);
+        if (roomsNeeded > roomList.length && typeof roomManager.createDailyRoom === 'function') {
+          const missing = roomsNeeded - roomList.length;
+          const ts = Date.now().toString().slice(-6);
+          for (let i = 0; i < missing; i++) {
+            const name = `${sessionId}-${typeLc}-${roomList.length + i + 1}-${ts}`;
+            const created = await roomManager.createDailyRoom(name, typeLc);
+            assignments.rooms[created.id] = { ...created, participants: [], sessionId, assignedAt: new Date().toISOString() };
+          }
+          roomList = Object.values(assignments.rooms || {}).filter(r => {
+            const t = String(r.type || '').toLowerCase();
+            const n = String(r.name || '').toLowerCase();
+            const i = String(r.id || '').toLowerCase();
+            return t === typeLc || n.includes(typeLc) || i.includes(typeLc);
+          });
+        }
+      } catch (apiErr) {
+        console.warn('Room auto-create skipped:', apiErr);
+      }
+      roomList.forEach(r => { r.participants = []; });
+      const shuffled = [...nonHosts].sort(() => Math.random() - 0.5);
+      for (let i = 0; i < shuffled.length; i += roomSize) {
+        const group = shuffled.slice(i, i + roomSize);
+        const room = roomList[Math.floor(i / roomSize)];
+        if (!room) break;
+        room.participants = group.map(p => p.id);
+        group.forEach(p => {
+          assignments.participants[p.id] = {
+            participantId: p.id,
+            roomId: room.id,
+            roomUrl: room.url,
+            roomName: room.name,
+            assignedAt: new Date().toISOString()
+          };
+        });
+      }
+      const host = hostCandidate;
+      if (host && mainRoom) {
+        assignments.participants[host.id] = {
+          participantId: host.id,
+          roomId: 'main',
+          roomUrl: mainRoom.url,
+          roomName: mainRoom.name,
+          assignedAt: new Date().toISOString()
+        };
+        mainRoom.participants = [host.id];
+      }
+      const updatedSession = { ...base, roomAssignments: assignments, breakoutsActive: true, status: 'breakouts-active' };
+      localStorage.setItem(storageKey, JSON.stringify(updatedSession));
+      window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: sessionId, sessionData: updatedSession } }));
+      // Notify App (host) to broadcast over session-bus to all participants
+      try {
+        window.dispatchEvent(new CustomEvent('gd-session-updated-local', { detail: { sessionId, sessionData: updatedSession } }));
+      } catch (_) {}
+      setSessionData(updatedSession);
+      console.log('✅ Breakouts assigned:', { roomType, rooms: roomList.length });
+    } catch (e) {
+      console.error('❌ Failed to create breakouts:', e);
+    }
+  }, [sessionData]);
+
+  const hostEndBreakouts = useCallback(() => {
+    if (!sessionData?.sessionId || !sessionData?.roomAssignments) return;
+    try {
+      const sessionId = sessionData.sessionId;
+      const storageKey = `session_${sessionId}`;
+      const base = JSON.parse(localStorage.getItem(storageKey) || 'null') || sessionData;
+      const assignments = base.roomAssignments || { rooms: {}, participants: {} };
+      const mainRoom = assignments.rooms['main'];
+      if (!mainRoom) return;
+      const host = (base.participants || []).find(p => p.isHost);
+      const nonHosts = (base.participants || []).filter(p => !p.isHost);
+      Object.values(assignments.rooms).forEach(r => { r.participants = []; });
+      mainRoom.participants = [ ...(host ? [host.id] : []), ...nonHosts.map(p => p.id) ];
+      [...nonHosts, ...(host ? [host] : [])].forEach(p => {
+        assignments.participants[p.id] = {
+          participantId: p.id,
+          roomId: 'main',
+          roomUrl: mainRoom.url,
+          roomName: mainRoom.name,
+          assignedAt: new Date().toISOString()
+        };
+      });
+      const updatedSession = { ...base, roomAssignments: assignments, breakoutsActive: false, status: 'rooms-assigned' };
+      localStorage.setItem(storageKey, JSON.stringify(updatedSession));
+      window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: sessionId, sessionData: updatedSession } }));
+      setSessionData(updatedSession);
+      console.log('✅ Ended breakouts: everyone back to main');
+    } catch (e) {
+      console.error('❌ Failed to end breakouts:', e);
+    }
+  }, [sessionData]);
+
+  // Hook host nav events → breakout actions
+  useEffect(() => {
+    const onCreate = (e) => {
+      const rt = (e && e.detail && e.detail.roomType) || '';
+      if (rt) {
+        console.log('[HostNav] Received host-create-breakouts event:', rt);
+        hostCreateBreakouts(rt);
+      }
+    };
+    const onEnd = () => { console.log('[HostNav] Received host-end-breakouts'); hostEndBreakouts(); };
+    window.addEventListener('host-create-breakouts', onCreate);
+    window.addEventListener('host-end-breakouts', onEnd);
+    return () => {
+      window.removeEventListener('host-create-breakouts', onCreate);
+      window.removeEventListener('host-end-breakouts', onEnd);
+    };
+  }, [hostCreateBreakouts, hostEndBreakouts]);
   return (
     <React.Fragment>
       {/* Daily.co Video Integration - Show iframe when connected, fallback to VideoGrid */}
@@ -489,13 +795,15 @@ const GenerativeDialogueInner = ({
           fontWeight: 'bold',
           zIndex: 1000
         }}>
-          {isConnected ? `🎥 Live Video (${realParticipants.length} in room)` : hasJoinedRoom ? '🔄 Connecting to video...' : '⏳ Waiting for room assignment...'}
+          {isConnected ? `🎥 Live Video (${realParticipants.filter(p=>!p.local).length} participants in room)` : hasJoinedRoom ? '🔄 Connecting to video...' : '⏳ Waiting for room assignment...'}
           <br />
           Session: {sessionData.sessionId}
           <br />
           Total Participants: {sessionData.participants?.length || 0}
         </div>
       )}
+
+      {/* Host Controls removed; handled via left navigation */}
 
       {/* Return to Main Room Button - Only show for participants in breakout rooms */}
       {sessionData && roomAssignment && currentRoom && 

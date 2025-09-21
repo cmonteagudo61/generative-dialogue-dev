@@ -113,11 +113,13 @@
   flex: 1;
 }
 
-.participant-name {
+.participants-section .participant-card .participant-info .participant-name {
   display: block;
-  font-weight: 600;
-  color: #2d3748;
+  font-weight: 900;
+  color: #000000 !important; /* force maximum contrast */
   margin-bottom: 4px;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6); /* subtle lift on light backgrounds */
 }
 
 .host-badge {

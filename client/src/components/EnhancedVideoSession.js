@@ -265,16 +265,16 @@ const EnhancedVideoSession = ({ sessionData, participantId, onLeaveSession }) =>
         <div className="dev-room-switcher">
           <h4>🔧 Dev: Quick Room Switch</h4>
           <div className="quick-switch-buttons">
-            <button onClick={() => switchRoom('https://generativedialogue.daily.co/MainRoom', 'Main Room')}>
+            <button onClick={() => switchRoom('https://generative-dialogue.daily.co/MainRoom', 'Main Room')}>
               Main Room
             </button>
-            <button onClick={() => switchRoom('https://generativedialogue.daily.co/Dyad1', 'Dyad 1')}>
+            <button onClick={() => switchRoom('https://generative-dialogue.daily.co/Dyad1', 'Dyad 1')}>
               Dyad 1
             </button>
-            <button onClick={() => switchRoom('https://generativedialogue.daily.co/Dyad2', 'Dyad 2')}>
+            <button onClick={() => switchRoom('https://generative-dialogue.daily.co/Dyad2', 'Dyad 2')}>
               Dyad 2
             </button>
-            <button onClick={() => switchRoom('https://generativedialogue.daily.co/Triad1', 'Triad 1')}>
+            <button onClick={() => switchRoom('https://generative-dialogue.daily.co/Triad1', 'Triad 1')}>
               Triad 1
             </button>
           </div>

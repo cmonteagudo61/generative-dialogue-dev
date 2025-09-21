@@ -8,8 +8,17 @@ const SessionLobby = ({ sessionData, onStartSession, onLeaveSession }) => {
   const [copied, setCopied] = useState(false);
   const [roomAssignments, setRoomAssignments] = useState(null);
   const [isAssigningRooms, setIsAssigningRooms] = useState(false);
-  const currentParticipant = sessionData.currentParticipant;
-  const isHost = currentParticipant?.isHost;
+  // Robust host detection from URL name or sessionStorage, with fallbacks
+  const urlNameParam = new URLSearchParams(window.location.search).get('name') || '';
+  const storedName = (sessionStorage.getItem('gd_current_participant_name') || urlNameParam || '').trim();
+  const hostInList = (participants || []).find(p => p.isHost) || null;
+  const currentParticipant = sessionData.currentParticipant ||
+    (participants || []).find(p => p.name === storedName) ||
+    hostInList || null;
+  const isHost = !!(currentParticipant?.isHost || (
+    storedName && hostInList?.name && hostInList.name.toLowerCase().startsWith(storedName.toLowerCase())
+  ));
+  try { if (currentParticipant?.name) sessionStorage.setItem('gd_current_participant_name', currentParticipant.name); } catch (_) {}
 
   // Poll for new participants and room assignments
   useEffect(() => {
@@ -39,6 +48,114 @@ const SessionLobby = ({ sessionData, onStartSession, onLeaveSession }) => {
     navigator.clipboard.writeText(sessionCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Host-only: remove duplicate participant names (keep first occurrence, preserve host)
+  const handleRemoveDuplicates = () => {
+    try {
+      const key = `session_${sessionCode}`;
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      const seen = new Set();
+      const cleaned = [];
+      // Ensure host stays first
+      const host = (data.participants || []).find(p => p.isHost);
+      if (host) {
+        cleaned.push(host);
+        seen.add(host.name?.toLowerCase() || '');
+      }
+      (data.participants || []).forEach(p => {
+        if (p?.isHost) return;
+        const keyName = (p?.name || '').toLowerCase();
+        if (!seen.has(keyName)) {
+          seen.add(keyName);
+          cleaned.push(p);
+        }
+      });
+      const updated = { ...data, participants: cleaned };
+      localStorage.setItem(key, JSON.stringify(updated));
+      setParticipants(cleaned);
+      window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode, sessionData: updated } }));
+      console.log('🧹 Removed duplicate names. Kept:', cleaned.map(p => p.name));
+    } catch (e) {
+      console.warn('Remove duplicates failed:', e);
+    }
+  };
+
+  // Host-only: reset session to host only and clear room assignments/status
+  const handleResetSession = () => {
+    try {
+      const key = `session_${sessionCode}`;
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      const hostOnly = (data.participants || []).filter(p => p.isHost);
+      const updated = {
+        ...data,
+        participants: hostOnly,
+        roomAssignments: null,
+        status: 'waiting'
+      };
+      localStorage.setItem(key, JSON.stringify(updated));
+      setParticipants(hostOnly);
+      setRoomAssignments(null);
+      window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode, sessionData: updated } }));
+      console.log('🔄 Session reset to host only');
+    } catch (e) {
+      console.warn('Reset session failed:', e);
+    }
+  };
+
+  // Host-only: join existing main room if present (fallback)
+  const handleHostJoinMainRoom = () => {
+    try {
+      const key = `session_${sessionCode}`;
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      const mainRoom = data?.roomAssignments?.rooms?.['main'];
+      if (!mainRoom) return;
+      const host = (data.participants || []).find(p => p.isHost) || { id: 'host', name: 'Host', isHost: true };
+      const updated = {
+        ...data,
+        currentParticipant: host,
+        status: data.status || 'main-room-active'
+      };
+      localStorage.setItem(key, JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode, sessionData: updated } }));
+      const urlName = encodeURIComponent(host.name || 'Host');
+      window.location.href = `${window.location.origin}/?page=participant-session&session=${sessionCode}&name=${urlName}`;
+    } catch (e) {
+      console.warn('Host join main room failed:', e);
+    }
+  };
+
+  // Host-only: regenerate room assignments to include latest participants
+  const handleReassignRoomsHost = async () => {
+    try {
+      console.log('🏠 Host requested room reassignment for', participants.length, 'participants');
+      const roomConfiguration = { roomType: 'dyad', allowRoomSwitching: true };
+      const assignments = await roomManager.assignRoomsForSession(
+        sessionCode,
+        participants,
+        roomConfiguration
+      );
+      const updatedSession = {
+        ...sessionData,
+        participants,
+        roomAssignments: assignments,
+        status: 'rooms-assigned',
+        reAssignedAt: new Date().toISOString()
+      };
+      localStorage.setItem(`session_${sessionCode}`, JSON.stringify(updatedSession));
+      window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode, sessionData: updatedSession } }));
+      setRoomAssignments(assignments);
+      console.log('✅ Rooms reassigned');
+    } catch (e) {
+      console.error('❌ Reassign rooms failed:', e);
+      alert('Failed to reassign rooms.');
+    }
   };
 
   const handleStartSession = async () => {
@@ -250,6 +367,60 @@ const SessionLobby = ({ sessionData, onStartSession, onLeaveSession }) => {
                 </div>
                 <p>Share this link with participants, or have them enter code: <strong>{sessionCode}</strong></p>
               </div>
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  onClick={handleRemoveDuplicates}
+                  style={{
+                    background: '#ff6b6b',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  🧹 Remove Duplicate Names
+                </button>
+                <button
+                  onClick={handleResetSession}
+                  style={{
+                    marginLeft: '8px',
+                    background: '#805ad5',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  🔁 Reset Session (Host)
+                </button>
+                {(() => {
+                  try {
+                    const stored = JSON.parse(localStorage.getItem(`session_${sessionCode}`) || 'null');
+                    const hasMain = !!stored?.roomAssignments?.rooms?.['main'];
+                    return hasMain ? (
+                      <button
+                        onClick={handleHostJoinMainRoom}
+                        style={{
+                          marginLeft: '8px',
+                          background: '#2b6cb0',
+                          color: 'white',
+                          border: 'none',
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        🎥 Join Main Room (Host)
+                      </button>
+                    ) : null;
+                  } catch (_) { return null; }
+                })()}
+              </div>
             </div>
           )}
 
@@ -300,24 +471,36 @@ const SessionLobby = ({ sessionData, onStartSession, onLeaveSession }) => {
                       <p>Room Type: {myRoom.roomType}</p>
                       <p>Room URL: <a href={myRoom.roomUrl} target="_blank" rel="noopener noreferrer">Join Room</a></p>
                     </div>
-                    <button 
-                      className="join-room-btn"
-                      onClick={handleJoinMyRoom}
-                    >
-                      🎥 Join My Room
-                    </button>
+                    {!isHost ? (
+                      <button 
+                        className="join-room-btn"
+                        onClick={handleJoinMyRoom}
+                      >
+                        🎥 Join My Room
+                      </button>
+                    ) : (
+                      <div style={{ color: '#4a5568', fontSize: 14 }}>
+                        Host tip: Click "Start 90-Minute Dialogue" below to send everyone to the main room.
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="no-room-assigned">
-                    <p>⏳ You joined after room assignments were created.</p>
-                    <p>Ask the host to reassign rooms to include you!</p>
-                    {isHost && (
-                      <button 
-                        className="reassign-btn"
-                        onClick={() => window.location.reload()}
-                      >
-                        🔄 Reassign Rooms (Host)
-                      </button>
+                    {isHost ? (
+                      <>
+                        <p>📣 You are the host and remain in the main room.</p>
+                        <button 
+                          className="reassign-btn"
+                          onClick={handleReassignRoomsHost}
+                        >
+                          🔄 Reassign Rooms (Host)
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p>⏳ You joined after room assignments were created.</p>
+                        <p>Ask the host to reassign rooms to include you!</p>
+                      </>
                     )}
                   </div>
                 );

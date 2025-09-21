@@ -18,7 +18,7 @@ export const ROOM_POOL = {
     {
       id: 'main-1',
       name: 'Main Room',
-      url: 'https://generativedialogue.daily.co/MainRoom',
+      url: 'https://generative-dialogue.daily.co/MainRoom',
       type: ROOM_TYPES.MAIN,
       maxParticipants: 50,
       status: 'available'
@@ -30,7 +30,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-1',
       name: 'Dyad 1',
-      url: 'https://generativedialogue.daily.co/Dyad1',
+      url: 'https://generative-dialogue.daily.co/Dyad1',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -38,7 +38,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-2', 
       name: 'Dyad 2',
-      url: 'https://generativedialogue.daily.co/Dyad2',
+      url: 'https://generative-dialogue.daily.co/Dyad2',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -46,7 +46,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-3',
       name: 'Dyad 3', 
-      url: 'https://generativedialogue.daily.co/Dyad3',
+      url: 'https://generative-dialogue.daily.co/Dyad3',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -54,7 +54,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-4',
       name: 'Dyad 4',
-      url: 'https://generativedialogue.daily.co/Dyad4', 
+      url: 'https://generative-dialogue.daily.co/Dyad4', 
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -62,7 +62,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-5',
       name: 'Dyad 5',
-      url: 'https://generativedialogue.daily.co/Dyad5',
+      url: 'https://generative-dialogue.daily.co/Dyad5',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -70,7 +70,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-6',
       name: 'Dyad 6',
-      url: 'https://generativedialogue.daily.co/Dyad6',
+      url: 'https://generative-dialogue.daily.co/Dyad6',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -78,7 +78,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-7',
       name: 'Dyad 7',
-      url: 'https://generativedialogue.daily.co/Dyad7',
+      url: 'https://generative-dialogue.daily.co/Dyad7',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -86,7 +86,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-8',
       name: 'Dyad 8',
-      url: 'https://generativedialogue.daily.co/Dyad8',
+      url: 'https://generative-dialogue.daily.co/Dyad8',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -94,7 +94,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-9',
       name: 'Dyad 9',
-      url: 'https://generativedialogue.daily.co/Dyad9',
+      url: 'https://generative-dialogue.daily.co/Dyad9',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -102,7 +102,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-10',
       name: 'Dyad 10',
-      url: 'https://generativedialogue.daily.co/Dyad10',
+      url: 'https://generative-dialogue.daily.co/Dyad10',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -110,7 +110,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-11',
       name: 'Dyad 11',
-      url: 'https://generativedialogue.daily.co/Dyad11',
+      url: 'https://generative-dialogue.daily.co/Dyad11',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -118,7 +118,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-12',
       name: 'Dyad 12',
-      url: 'https://generativedialogue.daily.co/Dyad12',
+      url: 'https://generative-dialogue.daily.co/Dyad12',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -126,7 +126,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-13',
       name: 'Dyad 13',
-      url: 'https://generativedialogue.daily.co/Dyad13',
+      url: 'https://generative-dialogue.daily.co/Dyad13',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -134,7 +134,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-14',
       name: 'Dyad 14',
-      url: 'https://generativedialogue.daily.co/Dyad14',
+      url: 'https://generative-dialogue.daily.co/Dyad14',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -142,7 +142,7 @@ export const ROOM_POOL = {
     {
       id: 'dyad-15',
       name: 'Dyad 15',
-      url: 'https://generativedialogue.daily.co/Dyad15',
+      url: 'https://generative-dialogue.daily.co/Dyad15',
       type: ROOM_TYPES.DYAD,
       maxParticipants: 2,
       status: 'available'
@@ -154,7 +154,7 @@ export const ROOM_POOL = {
     {
       id: 'triad-1',
       name: 'Triad 1',
-      url: 'https://generativedialogue.daily.co/Triad1',
+      url: 'https://generative-dialogue.daily.co/Triad1',
       type: ROOM_TYPES.TRIAD,
       maxParticipants: 3,
       status: 'available'
@@ -162,7 +162,7 @@ export const ROOM_POOL = {
     {
       id: 'triad-2',
       name: 'Triad 2', 
-      url: 'https://generativedialogue.daily.co/Triad2',
+      url: 'https://generative-dialogue.daily.co/Triad2',
       type: ROOM_TYPES.TRIAD,
       maxParticipants: 3,
       status: 'available'
@@ -170,7 +170,7 @@ export const ROOM_POOL = {
     {
       id: 'triad-3',
       name: 'Triad 3',
-      url: 'https://generativedialogue.daily.co/Triad3',
+      url: 'https://generative-dialogue.daily.co/Triad3',
       type: ROOM_TYPES.TRIAD,
       maxParticipants: 3,
       status: 'available'
@@ -178,7 +178,7 @@ export const ROOM_POOL = {
     {
       id: 'triad-4',
       name: 'Triad 4',
-      url: 'https://generativedialogue.daily.co/Triad4',
+      url: 'https://generative-dialogue.daily.co/Triad4',
       type: ROOM_TYPES.TRIAD,
       maxParticipants: 3,
       status: 'available'
@@ -190,7 +190,7 @@ export const ROOM_POOL = {
     {
       id: 'quad-1',
       name: 'Quad 1',
-      url: 'https://generativedialogue.daily.co/Quad1',
+      url: 'https://generative-dialogue.daily.co/Quad1',
       type: ROOM_TYPES.QUAD,
       maxParticipants: 4,
       status: 'available'
@@ -198,7 +198,7 @@ export const ROOM_POOL = {
     {
       id: 'quad-2',
       name: 'Quad 2',
-      url: 'https://generativedialogue.daily.co/Quad2',
+      url: 'https://generative-dialogue.daily.co/Quad2',
       type: ROOM_TYPES.QUAD,
       maxParticipants: 4,
       status: 'available'
@@ -206,7 +206,7 @@ export const ROOM_POOL = {
     {
       id: 'quad-3',
       name: 'Quad 3',
-      url: 'https://generativedialogue.daily.co/Quad3',
+      url: 'https://generative-dialogue.daily.co/Quad3',
       type: ROOM_TYPES.QUAD,
       maxParticipants: 4,
       status: 'available'
@@ -218,7 +218,7 @@ export const ROOM_POOL = {
     {
       id: 'kiva-1',
       name: 'Kiva 1',
-      url: 'https://generativedialogue.daily.co/Kiva1',
+      url: 'https://generative-dialogue.daily.co/Kiva1',
       type: ROOM_TYPES.KIVA,
       maxParticipants: 6,
       status: 'available'
@@ -226,7 +226,7 @@ export const ROOM_POOL = {
     {
       id: 'kiva-2',
       name: 'Kiva 2',
-      url: 'https://generativedialogue.daily.co/Kiva2',
+      url: 'https://generative-dialogue.daily.co/Kiva2',
       type: ROOM_TYPES.KIVA,
       maxParticipants: 6,
       status: 'available'

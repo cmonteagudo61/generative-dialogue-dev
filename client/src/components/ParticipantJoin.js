@@ -98,7 +98,25 @@ const ParticipantJoin = ({ sessionCode, onJoinSession, onBackToMain }) => {
         participants: currentSession.participants.map(p => p.name)
       });
 
-      // Check if session is full
+      // Deduplicate by name before capacity check (keeps first occurrence)
+      try {
+        const seen = new Set();
+        const deduped = [];
+        for (const p of currentSession.participants) {
+          const key = (p.name || '').trim().toLowerCase();
+          if (!seen.has(key)) {
+            seen.add(key);
+            deduped.push(p);
+          }
+        }
+        if (deduped.length !== currentSession.participants.length) {
+          currentSession.participants = deduped;
+          localStorage.setItem(`session_${urlSessionCode}`, JSON.stringify(currentSession));
+          console.log('🧹 ParticipantJoin: Deduped participants before capacity check:', deduped.map(p=>p.name));
+        }
+      } catch (e) { /* noop */ }
+
+      // Check if session is full after dedupe
       if (currentSession.participants.length >= currentSession.maxParticipants) {
         console.error('❌ Session appears full:', {
           current: currentSession.participants.length,
@@ -133,9 +151,10 @@ const ParticipantJoin = ({ sessionCode, onJoinSession, onBackToMain }) => {
         participants: [...currentSession.participants, newParticipant]
       };
 
-      // Store participant name in localStorage for GenerativeDialogue to find
+      // Store participant name for this tab
+      sessionStorage.setItem('gd_current_participant_name', participantName.trim());
       localStorage.setItem('gd_participant_name', participantName.trim());
-      console.log('💾 ParticipantJoin: Stored participant name in localStorage:', participantName.trim());
+      console.log('💾 ParticipantJoin: Stored participant name:', participantName.trim());
 
       // Update localStorage
       const storageKey = `session_${urlSessionCode}`;

@@ -76,7 +76,7 @@ const PermissionSetup = ({
             }
 
             // Now try to connect to Daily.co in the background for the next page
-            const demoRoomUrl = 'https://generativedialogue.daily.co/ReactRoom';
+            const demoRoomUrl = 'https://generative-dialogue.daily.co/ReactRoom';
             
             if (joinRoom) {
                 console.log('🎥 Connecting to Daily.co room in background...');

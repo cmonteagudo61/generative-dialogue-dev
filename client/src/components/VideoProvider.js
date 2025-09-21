@@ -78,7 +78,13 @@ export const VideoProvider = ({ children }) => {
     if (!throttleTimeoutRef.current) {
       throttleTimeoutRef.current = setTimeout(() => {
         if (callObjectRef.current) {
-            setParticipants(callObjectRef.current.participants());
+          const current = callObjectRef.current.participants();
+          const withCleanNames = {};
+          Object.keys(current).forEach(id => {
+            const p = current[id] || {};
+            withCleanNames[id] = { ...p, displayName: getCleanDisplayName(p.user_name) };
+          });
+          setParticipants(withCleanNames);
         }
         throttleTimeoutRef.current = null;
       }, 250);
@@ -169,6 +175,12 @@ export const VideoProvider = ({ children }) => {
 
   // --- Join Room Function ---
   const joinRoom = useCallback(async (roomUrl, userName = null) => {
+    // Wait for Daily to initialize if needed
+    let waitMs = 0;
+    while (!callObjectRef.current && waitMs < 2000) {
+      await new Promise(r => setTimeout(r, 50));
+      waitMs += 50;
+    }
     if (!callObjectRef.current) throw new Error('Call object not initialized');
     
     // CRITICAL: Log exactly what room we're trying to join

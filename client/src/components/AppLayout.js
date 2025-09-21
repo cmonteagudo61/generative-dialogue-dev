@@ -178,7 +178,24 @@ const AppLayout = ({
       <div className="main-content">
         {isNarrow && <div className="secondary-header">{headerInfo}</div>}
         <div className="grid-wrapper">
-          <NavigationMap activeSize={activeSize} onSizeChange={onSizeChange} />
+          <NavigationMap
+            activeSize={activeSize}
+            onSizeChange={(newSize) => {
+              // Preserve existing behavior
+              if (onSizeChange) onSizeChange(newSize);
+              // Host-triggered breakout actions via nav
+              try {
+                const map = { 2: 'dyad', 3: 'triad', 4: 'quad' };
+                if (newSize === 'all') {
+                  console.log('[HostNav] End Breakouts via nav');
+                  window.dispatchEvent(new CustomEvent('host-end-breakouts'));
+                } else if (map[newSize]) {
+                  console.log('[HostNav] Create breakouts via nav:', map[newSize]);
+                  window.dispatchEvent(new CustomEvent('host-create-breakouts', { detail: { roomType: map[newSize] } }));
+                }
+              } catch (_) {}
+            }}
+          />
           <div className="viewing-area">
             <div className="view-content">
               {children}

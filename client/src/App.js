@@ -80,6 +80,7 @@ function AppContent() {
     const sessionParam = urlParams.get('session'); // Handle ?session=ABC123 format
     const bidParam = urlParams.get('breakoutId');
     const nameParam = urlParams.get('name');
+    const sessionParamUpper = (sessionParam || '').toUpperCase();
     
     // Debug logging
     console.log('App routing debug:', {
@@ -106,6 +107,35 @@ function AppContent() {
       // Continue to page parameter handling below
     }
     
+    // Host guard removed: allow host to open participant-session directly
+
+    // Auto-enroll: If deep-linked to participant-session with session+name, ensure participant exists in local session
+    try {
+      if (pageParam === 'participant-session' && sessionParamUpper && nameParam) {
+        const storageKey = `session_${sessionParamUpper}`;
+        const raw = localStorage.getItem(storageKey);
+        let session = raw ? JSON.parse(raw) : {
+          sessionId: sessionParamUpper,
+          hostName: 'Host',
+          participants: [],
+          createdAt: new Date().toISOString(),
+          status: 'waiting',
+          maxParticipants: 6,
+          duration: 90,
+          roomAssignments: null
+        };
+        const exists = (session.participants || []).some(p => p.name === nameParam);
+        if (!exists) {
+          session.participants = [...(session.participants || []), { id: `participant_${Date.now()}`, name: nameParam, isHost: false, joinedAt: new Date().toISOString() }];
+          localStorage.setItem(storageKey, JSON.stringify(session));
+          window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: sessionParamUpper, sessionData: session } }));
+          console.log('➕ Auto-enrolled participant from deep link:', { session: sessionParamUpper, name: nameParam });
+        }
+        try { sessionStorage.setItem('gd_current_participant_name', nameParam); } catch (_) {}
+        setSessionId(sessionParamUpper);
+      }
+    } catch (e) { console.warn('Auto-enroll failed:', e); }
+
     // Check URL path for direct routing (e.g., /dashboard, /signin)
     const path = window.location.pathname;
     if (path === '/dashboard') {
@@ -118,9 +148,9 @@ function AppContent() {
       console.log('Setting page to:', pageParam);
       setCurrentPage(pageParam);
     } else if (path === '/' || path === '') {
-      // Default to landing page for root path
-      console.log('Setting page to landing (default)');
-      setCurrentPage('landing');
+      // Default to session-join landing to simplify start flow
+      console.log('Setting page to session-join (default)');
+      setCurrentPage('session-join');
     }
     setIsHost(roleParam === 'host');
 
@@ -278,9 +308,8 @@ function AppContent() {
     if (!sessionId) return;
     
     try {
-      const API_PROTO = window.location.protocol === 'https:' ? 'https' : 'http';
-      const WS_PROTO = API_PROTO === 'https' ? 'wss' : 'ws';
-      const ws = new WebSocket(`${WS_PROTO}://${window.location.host}/session-bus`);
+      // Always use Render backend for session-bus in production
+      const ws = new WebSocket('wss://generative-dialogue-dev.onrender.com/session-bus');
       
       ws.onopen = () => {
         console.log('🔄 Session-bus connected, joining session:', sessionId);
@@ -293,6 +322,11 @@ function AppContent() {
             setCurrentPage(msg.page);
           } else if (msg.type === 'voting' && typeof msg.open === 'boolean') {
             setIsVotingOpen(msg.open);
+          } else if (msg.type === 'sessionUpdate' && msg.sessionData && msg.sessionId === sessionId) {
+            console.log('📥 Session-bus: sessionUpdate received');
+            // Apply new room assignments/session data
+            setParticipantData(msg.sessionData);
+            window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: sessionId, sessionData: msg.sessionData } }));
           } else if (msg.type === 'transcript' && typeof msg.text === 'string') {
             console.log('📥 Received remote transcript:', msg.text);
             // Bubble up to a simple custom event so BottomContentArea can append
@@ -328,6 +362,22 @@ function AppContent() {
       console.warn('Session-bus connection failed (non-fatal):', e);
     }
   }, [sessionId, isHost]);
+
+  // Broadcast local session updates to all participants via session-bus (no host gating)
+  useEffect(() => {
+    const handler = (e) => {
+      const detail = (e && e.detail) || {};
+      if (!detail.sessionData || !detail.sessionId) return;
+      if (bus && bus.readyState === WebSocket.OPEN) {
+        try {
+          console.log('📤 Session-bus: broadcasting sessionUpdate');
+          bus.send(JSON.stringify({ type: 'sessionUpdate', sessionId: detail.sessionId, sessionData: detail.sessionData }));
+        } catch (_) {}
+      }
+    };
+    window.addEventListener('gd-session-updated-local', handler);
+    return () => window.removeEventListener('gd-session-updated-local', handler);
+  }, [bus]);
 
   const navigateToStage = useCallback((stage) => {
     // Map stage key to first subpage in that stage

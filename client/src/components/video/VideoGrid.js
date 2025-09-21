@@ -185,7 +185,7 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
               )}
               {showLabels && (
                 <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4, color: '#fff', background: 'rgba(0,0,0,0.5)', fontSize: 14, borderRadius: 4, padding: '2px 6px', textAlign: 'center' }}>
-                  {p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
+                  {p.displayName || p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
                 </div>
               )}
             </div>
@@ -246,7 +246,7 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
               )}
               {showLabels && (
                 <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4, color: '#fff', background: 'rgba(0,0,0,0.5)', fontSize: 14, borderRadius: 4, padding: '2px 6px', textAlign: 'center' }}>
-                  {p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
+                  {p.displayName || p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
                 </div>
               )}
             </div>
@@ -307,7 +307,7 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
               )}
               {showLabels && (
                 <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4, color: '#fff', background: 'rgba(0,0,0,0.5)', fontSize: 14, borderRadius: 4, padding: '2px 6px', textAlign: 'center' }}>
-                  {p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
+                  {p.displayName || p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
                 </div>
               )}
             </div>

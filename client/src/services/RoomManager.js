@@ -7,7 +7,8 @@ import { ROOM_POOL, ROOM_TYPES, USE_API_ROOMS } from '../config/roomConfig';
 // Daily.co API configuration
 const DAILY_API_KEY = process.env.REACT_APP_DAILY_API_KEY;
 const DAILY_DOMAIN = process.env.REACT_APP_DAILY_DOMAIN || 'generativedialogue.daily.co';
-const USE_DAILY_API = process.env.REACT_APP_USE_DAILY_API === 'true' || false; // Disable API for now, use manual pool
+// Enable API mode if explicitly requested or if an API key is present
+const USE_DAILY_API = (process.env.REACT_APP_USE_DAILY_API === 'true') || !!DAILY_API_KEY;
 const DEBUG_ROOMS = process.env.REACT_APP_DEBUG_ROOMS === 'true' || true; // Enable debug logging
 
 class RoomManager {
@@ -280,7 +281,13 @@ class RoomManager {
   getMainRoomUrl(sessionId) {
     // For now, use a predictable main room URL
     // In production, this would be a real Daily.co room URL
-    return `https://generative-dialogue.daily.co/main-${sessionId}`;
+    return `https://${DAILY_DOMAIN}/main-${sessionId}`;
+  }
+
+  // Build a room URL from a Daily room name using configured domain
+  getRoomUrlFromName(roomName) {
+    if (!roomName) return null;
+    return `https://${DAILY_DOMAIN}/${roomName}`;
   }
 
   // Get system capacity and usage stats
@@ -372,56 +379,23 @@ class RoomManager {
         console.log(`✅ Created main community room for ${participants.length} participants (including host)`);
       }
 
-      // CRITICAL: Exclude host from BREAKOUT room creation (host stays in main)
+      // Prepare breakout rooms but DO NOT assign participants yet.
+      // Everyone stays in the main room until the host triggers breakouts.
       const nonHostParticipants = participants.filter(p => !p.isHost);
-      
-      // Calculate room requirements (only for non-host participants)
       const roomSize = this.getRoomSize(roomConfiguration.roomType);
       const roomsNeeded = Math.ceil(nonHostParticipants.length / roomSize);
-      
       if (DEBUG_ROOMS) {
-        console.log(`🏠 Need ${roomsNeeded} ${roomConfiguration.roomType} rooms for ${nonHostParticipants.length} non-host participants (${participants.length} total)`);
+        console.log(`🏠 Preparing ${roomsNeeded} ${roomConfiguration.roomType} rooms for ${nonHostParticipants.length} non-hosts (no assignment yet)`);
       }
-
-      // Create rooms via Daily.co API
-      const createdRooms = [];
-      // Reuse timestamp from main room creation above
       for (let i = 0; i < roomsNeeded; i++) {
         const roomName = `${sessionId}-${roomConfiguration.roomType}-${i + 1}-${timestamp}`;
         const room = await this.createDailyRoom(roomName, roomConfiguration.roomType);
-        createdRooms.push(room);
-      }
-
-      // Assign participants to rooms (only non-host participants)
-      const shuffledParticipants = [...nonHostParticipants].sort(() => Math.random() - 0.5);
-      
-      for (let i = 0; i < roomsNeeded; i++) {
-        const room = createdRooms[i];
-        const roomParticipants = shuffledParticipants.slice(
-          i * roomSize, 
-          Math.min((i + 1) * roomSize, shuffledParticipants.length)
-        );
-
-        if (roomParticipants.length > 0) {
-          // Store room assignment
-          assignments.rooms[room.id] = {
-            ...room,
-            participants: roomParticipants.map(p => p.id),
-            sessionId,
-            assignedAt: new Date().toISOString()
-          };
-
-          // Assign participants to room
-          roomParticipants.forEach(participant => {
-            assignments.participants[participant.id] = {
-              participantId: participant.id,
-              roomId: room.id,
-              roomUrl: room.url,
-              roomName: room.name,
-              assignedAt: new Date().toISOString()
-            };
-          });
-        }
+        assignments.rooms[room.id] = {
+          ...room,
+          participants: [],
+          sessionId,
+          assignedAt: new Date().toISOString()
+        };
       }
 
       // Store assignments for session management

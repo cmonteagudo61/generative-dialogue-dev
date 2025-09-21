@@ -986,7 +986,7 @@ const SimpleDashboard = ({ sessionData = null }) => {
                         roomAssignments: currentSession.roomAssignments,
                         // Use the first room as the main room for backwards compatibility
                         dailyRoom: Object.values(currentSession.roomAssignments.rooms)[0] || {
-                          url: `https://generativedialogue.daily.co/${sessionCode}`,
+                          url: `https://generative-dialogue.daily.co/${sessionCode}`,
                           name: sessionCode,
                           id: sessionCode
                         }
