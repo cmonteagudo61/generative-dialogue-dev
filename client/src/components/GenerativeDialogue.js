@@ -697,11 +697,16 @@ const GenerativeDialogueInner = ({
       }
       roomList.forEach(r => { r.participants = []; });
       const shuffled = [...nonHosts].sort(() => Math.random() - 0.5);
+      // Strictly cap number of rooms to Math.ceil(nonHosts/roomSize)
+      const groups = [];
       for (let i = 0; i < shuffled.length; i += roomSize) {
-        const group = shuffled.slice(i, i + roomSize);
-        const room = roomList[Math.floor(i / roomSize)];
+        groups.push(shuffled.slice(i, i + roomSize));
+      }
+      const roomsToUse = roomList.slice(0, groups.length);
+      for (let i = 0; i < groups.length; i++) {
+        const group = groups[i];
+        const room = roomsToUse[i];
         if (!room) break;
-        // Assign unique participants to this room
         const uniqueIds = Array.from(new Set(group.map(p => p.id)));
         room.participants = uniqueIds;
         uniqueIds.forEach(id => {

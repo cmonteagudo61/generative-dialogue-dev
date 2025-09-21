@@ -193,6 +193,8 @@ const AppLayout = ({
                   console.log('[HostNav] Create breakouts via nav:', map[newSize]);
                   window.dispatchEvent(new CustomEvent('host-create-breakouts', { detail: { roomType: map[newSize] } }));
                 }
+                // Broadcast active icon for participants to highlight
+                localStorage.setItem('gd_active_size', String(newSize));
               } catch (_) {}
             }}
           />

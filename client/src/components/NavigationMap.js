@@ -59,6 +59,24 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange }) => {
       setCurrentSize(activeSize);
     }
   }, [activeSize, currentSize]);
+
+  // Listen for global nav highlight updates via localStorage key
+  useEffect(() => {
+    const applyFromStorage = () => {
+      try {
+        const v = localStorage.getItem('gd_active_size') || '';
+        if (!v) return;
+        const parsed = (v === 'all' || v === 'fishbowl') ? v : parseInt(v);
+        if (parsed !== currentSize) setCurrentSize(parsed);
+      } catch (_) {}
+    };
+    applyFromStorage();
+    const onStorage = (e) => {
+      if (e.key === 'gd_active_size') applyFromStorage();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [currentSize]);
   
   // Get icon based on name and state
   const getIcon = (iconName, isActive, isHovered) => {
