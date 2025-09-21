@@ -382,11 +382,13 @@ class RoomManager {
       const nonHostParticipants = participants.filter(p => !p.isHost);
       const roomSize = this.getRoomSize(roomConfiguration.roomType);
       const roomsNeeded = Math.ceil(nonHostParticipants.length / roomSize);
+      // Use a short timestamp to avoid name collisions when re-running in the same session
+      const ts = Date.now().toString().slice(-6);
       if (DEBUG_ROOMS) {
         console.log(`🏠 Preparing ${roomsNeeded} ${roomConfiguration.roomType} rooms for ${nonHostParticipants.length} non-hosts (no assignment yet)`);
       }
       for (let i = 0; i < roomsNeeded; i++) {
-        const roomName = `${sessionId}-${roomConfiguration.roomType}-${i + 1}-${timestamp}`;
+        const roomName = `${sessionId}-${roomConfiguration.roomType}-${i + 1}-${ts}`;
         const room = await this.createDailyRoom(roomName, roomConfiguration.roomType);
         assignments.rooms[room.id] = {
           ...room,
