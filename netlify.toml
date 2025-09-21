@@ -8,3 +8,4 @@
   NODE_VERSION = "18"
   REACT_APP_DAILY_DOMAIN = "generativedialogue.daily.co"
   REACT_APP_USE_DAILY_API = "true"
+  CI = "false"
