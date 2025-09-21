@@ -40,6 +40,7 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false
   const [hovered, setHovered] = useState(null);
   
   // Log activeSize (from props) and currentSize (internal state) on every render (for debugging)
+  const hostFlag = isHost || localStorage.getItem('gd_is_host') === 'true';
   if (localStorage.getItem('gd_debug_nav') === '1') {
     console.log("[NavigationMap] activeSize (prop):", activeSize, "currentSize (internal):", currentSize);
   }
@@ -57,11 +58,11 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false
   
   // Update active size when props change
   useEffect(() => {
-    if (!isHost) return; // Participants do not override highlight from props
+    if (!hostFlag) return; // Participants do not override highlight from props
     if (activeSize !== currentSize) {
       setCurrentSize(activeSize);
     }
-  }, [activeSize, currentSize, isHost]);
+  }, [activeSize, currentSize, hostFlag]);
 
   // Listen for global nav highlight updates via localStorage key
   useEffect(() => {
@@ -117,8 +118,8 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false
     setCurrentSize(newSize);
     
     // Call onSizeChange callback if provided
-    if (isHost && onSizeChange) {
-      onSizeChange(newSize);
+    if (onSizeChange) {
+      onSizeChange(newSize); // Parent (AppLayout) will gate host-only actions
     }
   };
   
