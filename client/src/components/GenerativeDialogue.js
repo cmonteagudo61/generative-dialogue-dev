@@ -428,6 +428,21 @@ const GenerativeDialogueInner = ({
       roomUrl = roomManager.getRoomUrlFromName(roomAssignment.roomName);
       console.log('🔧 GenerativeDialogue: Generated roomUrl from roomName:', roomUrl);
     }
+
+    // Host guard: never join a breakout; stay in community
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlNameLc = (params.get('name') || '').trim().toLowerCase();
+      const me = sessionData?.participants?.find(p => p.name && p.name.toLowerCase() === urlNameLc);
+      const isHostMe = !!(me?.isHost) || (sessionData?.hostName && urlNameLc && sessionData.hostName.toLowerCase() === urlNameLc);
+      const targetIsMain = !!(roomAssignment?.roomId === 'main' || (roomAssignment?.roomName && (roomAssignment.roomName.includes('community') || roomAssignment.roomName.includes('main'))));
+      if (isHostMe && !targetIsMain) {
+        console.log('🛑 Host guard: refusing to join breakout; staying in community');
+        setIsJoining(false);
+        setJoinAttempted(false);
+        return;
+      }
+    } catch (_) {}
     
     if (!roomUrl) {
       console.log('🏠 GenerativeDialogue: No room assignment available yet');
@@ -439,6 +454,13 @@ const GenerativeDialogueInner = ({
     }
 
     try {
+      // Skip re-joining the same room to avoid stutter
+      if (isConnected && currentRoom?.roomUrl && currentRoom.roomUrl === roomUrl) {
+        console.log('⏭️ Already in target room; skipping re-join');
+        setHasJoinedRoom(true);
+        setIsJoining(false);
+        return;
+      }
       console.log('🎥 GenerativeDialogue: Joining assigned Daily.co room:', roomUrl);
       console.log('🔍 GenerativeDialogue: Video context available:', !!joinRoom);
       console.log('🔍 GenerativeDialogue: Room assignment details:', roomAssignment);
@@ -781,10 +803,14 @@ const GenerativeDialogueInner = ({
   useEffect(() => {
     const onCreate = (e) => {
       const rt = (e && e.detail && e.detail.roomType) || '';
-      if (rt) {
-        console.log('[HostNav] Received host-create-breakouts event:', rt);
-        hostCreateBreakouts(rt);
-      }
+      if (!rt) return;
+      // Debounce to prevent double assignment bursts
+      const now = Date.now();
+      const last = Number(localStorage.getItem('gd_last_breakouts_ts') || 0);
+      if (now - last < 1500) { console.log('[HostNav] Ignored duplicate breakout trigger'); return; }
+      localStorage.setItem('gd_last_breakouts_ts', String(now));
+      console.log('[HostNav] Received host-create-breakouts event:', rt);
+      hostCreateBreakouts(rt);
     };
     const onEnd = () => { console.log('[HostNav] Received host-end-breakouts'); hostEndBreakouts(); };
     window.addEventListener('host-create-breakouts', onCreate);
