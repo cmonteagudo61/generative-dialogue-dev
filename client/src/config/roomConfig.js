@@ -20,8 +20,8 @@ export const ROOM_POOL = {
   main: [
     {
       id: 'main-1',
-      name: 'Main Room',
-      url: `https://${DAILY_DOMAIN}/MainRoom`,
+      name: 'Main Room (placeholder)',
+      url: `https://${DAILY_DOMAIN}/placeholder-main`,
       type: ROOM_TYPES.MAIN,
       maxParticipants: 50,
       status: 'available'

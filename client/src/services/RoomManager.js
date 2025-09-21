@@ -279,9 +279,8 @@ class RoomManager {
 
   // Get main room URL for host community view
   getMainRoomUrl(sessionId) {
-    // For now, use a predictable main room URL
-    // In production, this would be a real Daily.co room URL
-    return `https://${DAILY_DOMAIN}/main-${sessionId}`;
+    // Deterministic community room name for this session
+    return `https://${DAILY_DOMAIN}/${sessionId}-community-main`;
   }
 
   // Build a room URL from a Daily room name using configured domain
@@ -350,8 +349,7 @@ class RoomManager {
 
     try {
       // CRITICAL: Create main Community View room for EVERYONE (including host)
-      const timestamp = Date.now().toString().slice(-6);
-      const mainRoomName = `${sessionId}-community-main-${timestamp}`;
+      const mainRoomName = `${sessionId}-community-main`;
       const mainRoom = await this.createDailyRoom(mainRoomName, 'community');
       
       // Store main room
@@ -446,6 +444,19 @@ class RoomManager {
     });
 
     if (!response.ok) {
+      // If room already exists (409), return deterministic room metadata
+      if (response.status === 409) {
+        const url = this.getRoomUrlFromName(roomName);
+        return {
+          id: roomName,
+          name: roomName,
+          url,
+          type: roomType,
+          maxParticipants: roomType === 'community' ? 50 : this.getRoomSize(roomType) + 2,
+          createdAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 24*60*60*1000).toISOString()
+        };
+      }
       const error = await response.text();
       throw new Error(`Daily.co API error: ${response.status} - ${error}`);
     }

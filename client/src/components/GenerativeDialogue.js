@@ -273,7 +273,7 @@ const GenerativeDialogueInner = ({
     if (!roomAssignment && !hasJoinedRoom && !isJoining && !joinAttempted) {
       const urlParams = new URLSearchParams(window.location.search);
       const urlSessionId = urlParams.get('session') || urlParams.get('sessionId') || sessionData?.sessionId;
-      const main = sessionData?.roomAssignments?.rooms?.main || (urlSessionId ? { roomUrl: roomManager.getMainRoomUrl(urlSessionId), name: `main-${urlSessionId}` } : null);
+      const main = sessionData?.roomAssignments?.rooms?.main || (urlSessionId ? { roomUrl: roomManager.getMainRoomUrl(urlSessionId), name: `${urlSessionId}-community-main` } : null);
       if (main?.roomUrl) {
         const participantName = storedName || currentParticipant?.name || 'Participant';
         console.log('🏛️ Auto-joining main room (no breakout assignment yet):', main);
@@ -327,7 +327,7 @@ const GenerativeDialogueInner = ({
           // Force-join main when breakouts are inactive
           const urlParams = new URLSearchParams(window.location.search);
           const urlSessionId = urlParams.get('session') || urlParams.get('sessionId') || sessionData?.sessionId;
-          const main = sessionData?.roomAssignments?.rooms?.main || (urlSessionId ? { roomUrl: roomManager.getMainRoomUrl(urlSessionId), name: `main-${urlSessionId}` } : null);
+          const main = sessionData?.roomAssignments?.rooms?.main || (urlSessionId ? { roomUrl: roomManager.getMainRoomUrl(urlSessionId), name: `${urlSessionId}-community-main` } : null);
           if (main?.roomUrl) {
             const participantName = (sessionStorage.getItem('gd_current_participant_name') || localStorage.getItem('gd_participant_name') || 'Participant').trim();
             setIsJoining(true);
@@ -632,6 +632,13 @@ const GenerativeDialogueInner = ({
         toRemove.forEach(id => { delete assignments.rooms[id]; });
       } catch (_) {}
 
+      // HARD RESET: clear all non-main rooms and all non-host participant assignments
+      try {
+        Object.keys(assignments.rooms || {}).forEach(id => { if (id !== 'main') delete assignments.rooms[id]; });
+      } catch (_) {}
+      const preservedHostId = Object.values(base.participants || {}).find(p => p.isHost)?.id || null;
+      assignments.participants = {};
+
       // We'll build a fresh room list using Daily API
       let roomList = [];
       const mainRoom = assignments.rooms['main'];
@@ -686,8 +693,11 @@ const GenerativeDialogueInner = ({
         const group = shuffled.slice(i, i + roomSize);
         const room = roomList[Math.floor(i / roomSize)];
         if (!room) break;
-        room.participants = group.map(p => p.id);
-        group.forEach(p => {
+        // Assign unique participants to this room
+        const uniqueIds = Array.from(new Set(group.map(p => p.id)));
+        room.participants = uniqueIds;
+        uniqueIds.forEach(id => {
+          const p = group.find(x => x.id === id);
           assignments.participants[p.id] = {
             participantId: p.id,
             roomId: room.id,
