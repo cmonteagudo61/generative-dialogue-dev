@@ -289,14 +289,27 @@ const GenerativeDialogueInner = ({
             const msg = String(e?.errorMsg || e?.message || '');
             if (msg.includes('does not exist') && typeof roomManager.createDailyRoom === 'function' && urlSessionId) {
               try {
-                const ts = Date.now().toString().slice(-6);
-                const created = await roomManager.createDailyRoom(`${urlSessionId}-community-main-${ts}`, 'community');
+                // Deterministic main room name so all tabs converge on the same room
+                const created = await roomManager.createDailyRoom(`${urlSessionId}-community-main`, 'community');
                 const storageKey = `session_${urlSessionId}`;
                 const base = JSON.parse(localStorage.getItem(storageKey) || 'null') || sessionData || {};
                 const assignments = base.roomAssignments || { rooms: {}, participants: {} };
                 assignments.rooms = assignments.rooms || {};
                 assignments.rooms.main = { id: created.id, name: created.name || created.id, url: created.url, type: 'community', participants: [] };
-                const updated = { ...base, roomAssignments: assignments };
+                // Assign EVERYONE to main when we first create it
+                const allParticipants = Array.isArray(base.participants) ? base.participants : [];
+                allParticipants.forEach(p => {
+                  assignments.participants[p.id] = {
+                    participantId: p.id,
+                    roomId: 'main',
+                    roomUrl: created.url,
+                    roomName: created.name || created.id,
+                    roomType: 'community',
+                    assignedAt: new Date().toISOString()
+                  };
+                });
+                assignments.rooms.main.participants = allParticipants.map(p => p.id);
+                const updated = { ...base, roomAssignments: assignments, breakoutsActive: false, status: 'rooms-assigned' };
                 localStorage.setItem(storageKey, JSON.stringify(updated));
                 try { window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: urlSessionId, sessionData: updated } })); } catch (_) {}
                 try { window.dispatchEvent(new CustomEvent('gd-session-updated-local', { detail: { sessionId: urlSessionId, sessionData: updated } })); } catch (_) {}
