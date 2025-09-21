@@ -34,13 +34,15 @@ import {
  * @param {number|string} props.activeSize - The currently active size (1, 2, 3, 4, 6, or 'all')
  * @param {Function} props.onSizeChange - Callback when user changes the size
  */
-const NavigationMap = React.memo(({ activeSize = 3, onSizeChange }) => {
+const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false }) => {
   // Internal state
   const [currentSize, setCurrentSize] = useState(activeSize);
   const [hovered, setHovered] = useState(null);
   
   // Log activeSize (from props) and currentSize (internal state) on every render (for debugging)
-  console.log("[NavigationMap] activeSize (prop):", activeSize, "currentSize (internal):", currentSize);
+  if (localStorage.getItem('gd_debug_nav') === '1') {
+    console.log("[NavigationMap] activeSize (prop):", activeSize, "currentSize (internal):", currentSize);
+  }
   
   // Configuration
   const SIZES = [
@@ -55,10 +57,11 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange }) => {
   
   // Update active size when props change
   useEffect(() => {
+    if (!isHost) return; // Participants do not override highlight from props
     if (activeSize !== currentSize) {
       setCurrentSize(activeSize);
     }
-  }, [activeSize, currentSize]);
+  }, [activeSize, currentSize, isHost]);
 
   // Listen for global nav highlight updates via localStorage key
   useEffect(() => {
@@ -114,7 +117,7 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange }) => {
     setCurrentSize(newSize);
     
     // Call onSizeChange callback if provided
-    if (onSizeChange) {
+    if (isHost && onSizeChange) {
       onSizeChange(newSize);
     }
   };

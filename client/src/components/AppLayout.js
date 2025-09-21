@@ -180,6 +180,7 @@ const AppLayout = ({
         <div className="grid-wrapper">
           <NavigationMap
             activeSize={activeSize}
+            isHost={isHost}
             onSizeChange={(newSize) => {
               // Preserve existing behavior
               if (onSizeChange) onSizeChange(newSize);
