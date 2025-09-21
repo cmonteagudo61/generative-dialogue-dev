@@ -185,16 +185,22 @@ const AppLayout = ({
               if (onSizeChange) onSizeChange(newSize);
               // Host-triggered breakout actions via nav
               try {
+                // Only the host may trigger breakout actions
+                const hostFlag = (isHost || localStorage.getItem('gd_is_host') === 'true');
                 const map = { 2: 'dyad', 3: 'triad', 4: 'quad' };
-                if (newSize === 'all') {
-                  console.log('[HostNav] End Breakouts via nav');
-                  window.dispatchEvent(new CustomEvent('host-end-breakouts'));
-                } else if (map[newSize]) {
-                  console.log('[HostNav] Create breakouts via nav:', map[newSize]);
-                  window.dispatchEvent(new CustomEvent('host-create-breakouts', { detail: { roomType: map[newSize] } }));
+                if (hostFlag) {
+                  if (newSize === 'all') {
+                    console.log('[HostNav] End Breakouts via nav');
+                    window.dispatchEvent(new CustomEvent('host-end-breakouts'));
+                  } else if (map[newSize]) {
+                    console.log('[HostNav] Create breakouts via nav:', map[newSize]);
+                    window.dispatchEvent(new CustomEvent('host-create-breakouts', { detail: { roomType: map[newSize] } }));
+                  }
                 }
                 // Broadcast active icon for participants to highlight
-                localStorage.setItem('gd_active_size', String(newSize));
+                const prev = localStorage.getItem('gd_active_size');
+                const next = String(newSize);
+                if (prev !== next) localStorage.setItem('gd_active_size', next);
               } catch (_) {}
             }}
           />
