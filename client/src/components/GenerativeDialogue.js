@@ -104,6 +104,9 @@ const GenerativeDialogueInner = ({
       } else if (roomType === 'kiva' || roomAssignment.roomName?.includes('kiva')) {
         console.log('🎯 In kiva breakout room: Using kiva layout');
         return 'kiva';
+      } else if (roomType === 'fishbowl' || roomAssignment.roomName?.includes('fishbowl')) {
+        console.log('🎯 In fishbowl: Using fishbowl layout');
+        return 'fishbowl';
       }
     }
     
@@ -708,7 +711,7 @@ const GenerativeDialogueInner = ({
         return true;
       });
       const typeLc = rt;
-      const roomSize = typeLc === 'dyad' ? 2 : typeLc === 'triad' ? 3 : typeLc === 'quad' ? 4 : 2;
+      const roomSize = typeLc === 'dyad' ? 2 : typeLc === 'triad' ? 3 : typeLc === 'quad' ? 4 : typeLc === 'kiva' ? 6 : typeLc === 'fishbowl' ? 6 : 2;
 
       // Ensure enough rooms exist (on-demand create via Daily API when available)
       try {

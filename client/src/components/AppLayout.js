@@ -188,7 +188,7 @@ const AppLayout = ({
               try {
                 // Only the host may trigger breakout actions
                 const hostFlag = (isHost || localStorage.getItem('gd_is_host') === 'true');
-                const map = { 2: 'dyad', 3: 'triad', 4: 'quad' };
+                const map = { 2: 'dyad', 3: 'triad', 4: 'quad', 6: 'kiva', fishbowl: 'fishbowl' };
                 if (hostFlag) {
                   if (newSize === 'all') {
                     console.log('[HostNav] End Breakouts via nav');
