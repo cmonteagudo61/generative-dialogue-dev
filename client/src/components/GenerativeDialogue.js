@@ -107,6 +107,9 @@ const GenerativeDialogueInner = ({
       } else if (roomType === 'fishbowl' || roomAssignment.roomName?.includes('fishbowl')) {
         console.log('🎯 In fishbowl: Using fishbowl layout');
         return 'fishbowl';
+      } else if (roomType === 'self' || roomAssignment.roomName?.includes('self')) {
+        console.log('🎯 In individual reflection: Using self layout');
+        return 'self';
       }
     }
     
@@ -678,6 +681,75 @@ const GenerativeDialogueInner = ({
 
       // Bootstrap main room if missing
       if (!assignments.rooms || !assignments.rooms.main) await ensureMainRoom(sessionId);
+
+      // SPECIAL: Fishbowl → 6 people in center; everyone else remains in main
+      const typeLcInit = String(roomType || '').toLowerCase();
+      if (typeLcInit === 'fishbowl') {
+        // Determine center-6 from selectedParticipants; fallback to first 6 non-hosts
+        const cleanName = (n) => (String(n || '').split('_')[0] || '').trim();
+        const selectedSessionIds = Array.isArray(selectedParticipants) ? selectedParticipants : [];
+        const selectedNames = (realParticipants || [])
+          .filter(p => selectedSessionIds.includes(p.session_id))
+          .map(p => cleanName(p.displayName || p.user_name || p.userName || p.name));
+        const host = (base.participants || []).find(p => p.isHost) || null;
+        const nonHosts = (base.participants || []).filter(p => !p.isHost);
+        let center = selectedNames
+          .map(n => nonHosts.find(p => p.name === n))
+          .filter(Boolean)
+          .map(p => p.id);
+        if (center.length < 6) {
+          for (const p of nonHosts) {
+            if (center.length >= 6) break;
+            if (!center.includes(p.id)) center.push(p.id);
+          }
+        }
+        center = center.slice(0, 6);
+
+        // Ensure fishbowl room exists
+        let fishbowlRoom;
+        try {
+          const ts = Date.now().toString().slice(-6);
+          fishbowlRoom = await roomManager.createDailyRoom(`${sessionId}-fishbowl-1-${ts}`, 'fishbowl');
+        } catch (_) {
+          const fallbackId = `${sessionId}-fishbowl-1`;
+          fishbowlRoom = { id: fallbackId, name: fallbackId, url: roomManager.getRoomUrlFromName(fallbackId), type: 'fishbowl' };
+        }
+        assignments.rooms[fishbowlRoom.id] = { ...fishbowlRoom, participants: center, sessionId, assignedAt: new Date().toISOString() };
+
+        // Assign main for others incl. host
+        const main = assignments.rooms.main;
+        const everyone = (base.participants || []);
+        main.participants = everyone.filter(p => !center.includes(p.id)).map(p => p.id);
+
+        // Write participant assignments
+        for (const p of everyone) {
+          if (center.includes(p.id)) {
+            assignments.participants[p.id] = {
+              participantId: p.id,
+              roomId: fishbowlRoom.id,
+              roomUrl: fishbowlRoom.url,
+              roomName: fishbowlRoom.name,
+              assignedAt: new Date().toISOString()
+            };
+          } else {
+            assignments.participants[p.id] = {
+              participantId: p.id,
+              roomId: 'main',
+              roomUrl: main.url,
+              roomName: main.name,
+              assignedAt: new Date().toISOString()
+            };
+          }
+        }
+
+        const updatedSession = { ...base, roomAssignments: assignments, breakoutsActive: true, status: 'fishbowl-active' };
+        localStorage.setItem(storageKey, JSON.stringify(updatedSession));
+        window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: sessionId, sessionData: updatedSession } }));
+        try { window.dispatchEvent(new CustomEvent('gd-session-updated-local', { detail: { sessionId, sessionData: updatedSession } })); } catch (_) {}
+        setSessionData(updatedSession);
+        console.log('✅ Fishbowl assigned:', { centerCount: center.length });
+        return;
+      }
       const rt = String(roomType || '').toLowerCase();
 
       // PERMANENT FIX: Always create breakout rooms via Daily API on the configured domain.
@@ -711,7 +783,7 @@ const GenerativeDialogueInner = ({
         return true;
       });
       const typeLc = rt;
-      const roomSize = typeLc === 'dyad' ? 2 : typeLc === 'triad' ? 3 : typeLc === 'quad' ? 4 : typeLc === 'kiva' ? 6 : typeLc === 'fishbowl' ? 6 : 2;
+      const roomSize = typeLc === 'dyad' ? 2 : typeLc === 'triad' ? 3 : typeLc === 'quad' ? 4 : typeLc === 'kiva' ? 6 : typeLc === 'fishbowl' ? 6 : typeLc === 'self' ? 1 : 2;
 
       // Ensure enough rooms exist (on-demand create via Daily API when available)
       try {
