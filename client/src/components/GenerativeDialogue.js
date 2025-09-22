@@ -623,12 +623,36 @@ const GenerativeDialogueInner = ({
 
   // Host controls: assign and end breakouts
   const hostCreateBreakouts = useCallback(async (roomType) => {
-    if (!sessionData?.sessionId || !sessionData?.participants || !sessionData?.roomAssignments) return;
+    if (!sessionData?.sessionId || !sessionData?.participants) return;
     try {
       const sessionId = sessionData.sessionId;
       const storageKey = `session_${sessionId}`;
       const base = JSON.parse(localStorage.getItem(storageKey) || 'null') || sessionData;
       const assignments = base.roomAssignments || { rooms: {}, participants: {} };
+
+      // Bootstrap main room if missing
+      if (!assignments.rooms || !assignments.rooms.main) {
+        assignments.rooms = assignments.rooms || {};
+        try {
+          const createdMain = await roomManager.createDailyRoom(`${sessionId}-community-main`, 'community');
+          assignments.rooms.main = { id: createdMain.id, name: createdMain.name, url: createdMain.url, type: 'community', participants: [] };
+        } catch (_) {
+          const url = roomManager.getMainRoomUrl(sessionId);
+          assignments.rooms.main = { id: `${sessionId}-community-main`, name: `${sessionId}-community-main`, url, type: 'community', participants: [] };
+        }
+        // Assign everyone to main as a baseline
+        (base.participants || []).forEach(p => {
+          assignments.participants[p.id] = {
+            participantId: p.id,
+            roomId: 'main',
+            roomUrl: assignments.rooms.main.url,
+            roomName: assignments.rooms.main.name,
+            roomType: 'community',
+            assignedAt: new Date().toISOString()
+          };
+        });
+        assignments.rooms.main.participants = (base.participants || []).map(p => p.id);
+      }
       const rt = String(roomType || '').toLowerCase();
 
       // PERMANENT FIX: Always create breakout rooms via Daily API on the configured domain.
