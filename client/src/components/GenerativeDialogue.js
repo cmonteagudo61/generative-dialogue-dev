@@ -85,6 +85,10 @@ const GenerativeDialogueInner = ({
   }, []);
   // Determine layout based on room assignment and room type
   const layout = useMemo(() => {
+    if (sessionData?.status === 'fishbowl-active') {
+      console.log('🎯 Global fishbowl active: Using fishbowl layout');
+      return 'fishbowl';
+    }
     // Use room type from assignment to determine layout
     if (hasJoinedRoom && roomAssignment) {
       const roomType = roomAssignment.roomType;
@@ -694,7 +698,7 @@ const GenerativeDialogueInner = ({
         const host = (base.participants || []).find(p => p.isHost) || null;
         const nonHosts = (base.participants || []).filter(p => !p.isHost);
         let center = selectedNames
-          .map(n => nonHosts.find(p => p.name === n))
+          .map(n => nonHosts.find(p => (p.name || '').toLowerCase().trim() === n.toLowerCase().trim()))
           .filter(Boolean)
           .map(p => p.id);
         if (center.length < 6) {
@@ -705,44 +709,11 @@ const GenerativeDialogueInner = ({
         }
         center = center.slice(0, 6);
 
-        // Ensure fishbowl room exists
-        let fishbowlRoom;
-        try {
-          const ts = Date.now().toString().slice(-6);
-          fishbowlRoom = await roomManager.createDailyRoom(`${sessionId}-fishbowl-1-${ts}`, 'fishbowl');
-        } catch (_) {
-          const fallbackId = `${sessionId}-fishbowl-1`;
-          fishbowlRoom = { id: fallbackId, name: fallbackId, url: roomManager.getRoomUrlFromName(fallbackId), type: 'fishbowl' };
-        }
-        assignments.rooms[fishbowlRoom.id] = { ...fishbowlRoom, participants: center, sessionId, assignedAt: new Date().toISOString() };
-
-        // Assign main for others incl. host
-        const main = assignments.rooms.main;
+        // Keep everyone in main; mark fishbowl center ids and set status
+        const main = assignments.rooms.main || await ensureMainRoom(sessionId);
         const everyone = (base.participants || []);
-        main.participants = everyone.filter(p => !center.includes(p.id)).map(p => p.id);
-
-        // Write participant assignments
-        for (const p of everyone) {
-          if (center.includes(p.id)) {
-            assignments.participants[p.id] = {
-              participantId: p.id,
-              roomId: fishbowlRoom.id,
-              roomUrl: fishbowlRoom.url,
-              roomName: fishbowlRoom.name,
-              assignedAt: new Date().toISOString()
-            };
-          } else {
-            assignments.participants[p.id] = {
-              participantId: p.id,
-              roomId: 'main',
-              roomUrl: main.url,
-              roomName: main.name,
-              assignedAt: new Date().toISOString()
-            };
-          }
-        }
-
-        const updatedSession = { ...base, roomAssignments: assignments, breakoutsActive: true, status: 'fishbowl-active' };
+        if (main) main.participants = everyone.map(p => p.id);
+        const updatedSession = { ...base, roomAssignments: assignments, breakoutsActive: false, status: 'fishbowl-active', fishbowlCenterIds: center };
         localStorage.setItem(storageKey, JSON.stringify(updatedSession));
         window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: sessionId, sessionData: updatedSession } }));
         try { window.dispatchEvent(new CustomEvent('gd-session-updated-local', { detail: { sessionId, sessionData: updatedSession } })); } catch (_) {}

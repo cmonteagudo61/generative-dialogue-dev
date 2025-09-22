@@ -267,13 +267,31 @@ class RoomManager {
 
   // Helper methods
   getRoomSize(roomType) {
-    switch (roomType) {
-      case ROOM_TYPES.DYAD: return 2;
-      case ROOM_TYPES.TRIAD: return 3;
-      case ROOM_TYPES.QUAD: return 4;
-      case ROOM_TYPES.KIVA: return 6;
-      case ROOM_TYPES.MAIN: return 50;
-      default: return 2;
+    // Support strings as well as ROOM_TYPES constants
+    const rt = (typeof roomType === 'string') ? roomType.toLowerCase() : roomType;
+    switch (rt) {
+      case ROOM_TYPES.DYAD:
+      case 'dyad':
+        return 2;
+      case ROOM_TYPES.TRIAD:
+      case 'triad':
+        return 3;
+      case ROOM_TYPES.QUAD:
+      case 'quad':
+        return 4;
+      case ROOM_TYPES.KIVA:
+      case 'kiva':
+        return 6;
+      case ROOM_TYPES.MAIN:
+      case 'main':
+        return 50;
+      case 'fishbowl':
+        return 6;
+      case 'self':
+      case 'individual':
+        return 1;
+      default:
+        return 2;
     }
   }
 
