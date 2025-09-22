@@ -61,7 +61,7 @@ const getMockParticipants = (count, startIndex = 1) => {
   }));
 };
 
-const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showLabels = false, useExperimentalView = true, selectedParticipants = [], onParticipantSelect, isLoopActive = false, suppressMockParticipants = false }) => {
+const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showLabels = false, useExperimentalView = true, selectedParticipants = [], fishbowlCenterNames = [], onParticipantSelect, isLoopActive = false, suppressMockParticipants = false }) => {
   const participants = React.useMemo(() => 
     Array.isArray(participantsProp) ? participantsProp : Object.values(participantsProp),
     [participantsProp]
@@ -391,6 +391,7 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
         <FishbowlView 
           participants={participants}
           selectedParticipants={selectedParticipants}
+          fishbowlCenterNames={fishbowlCenterNames}
           onParticipantSelect={onParticipantSelect}
         />
       </div>

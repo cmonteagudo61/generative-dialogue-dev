@@ -4,12 +4,14 @@ import CommunityViewExperimental from './CommunityViewExperimental';
 const FishbowlView = ({ 
   participants = [], 
   selectedParticipants = [], 
+  fishbowlCenterNames = [],
   onParticipantSelect = () => {} 
 }) => {
   // Get the first 6 selected participants for the fishbowl overlay
-  const fishbowlParticipants = participants
-    .filter(p => selectedParticipants.includes(p.session_id))
-    .slice(0, 6);
+  const nameFrom = (p) => (p.displayName || p.user_name || p.userName || p.name || '').split('_')[0].trim();
+  const byCenterNames = participants.filter(p => fishbowlCenterNames.includes(nameFrom(p))).slice(0, 6);
+  const bySelected = participants.filter(p => selectedParticipants.includes(p.session_id)).slice(0, 6 - byCenterNames.length);
+  const fishbowlParticipants = [...byCenterNames, ...bySelected].slice(0, 6);
 
   // Fill with mock participants if we don't have 6 selected
   const mockParticipants = [];
