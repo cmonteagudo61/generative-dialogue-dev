@@ -599,6 +599,49 @@ const GenerativeDialogueInner = ({
     console.log('🔬 Processed transcript data:', processedData);
     // This receives the processed AI insights from LiveAIInsights
   }, []);
+  // Ensure main room exists and everyone is assigned to it
+  const ensureMainRoom = useCallback(async (sessionIdInput) => {
+    try {
+      const sid = sessionIdInput || sessionData?.sessionId;
+      if (!sid) return null;
+      const storageKey = `session_${sid}`;
+      const base = JSON.parse(localStorage.getItem(storageKey) || 'null') || sessionData || {};
+      const assignments = base.roomAssignments || { rooms: {}, participants: {} };
+      if (assignments.rooms && assignments.rooms.main && assignments.rooms.main.url) return assignments.rooms.main; // already exists
+
+      // Create or reuse deterministic main
+      let main;
+      try {
+        main = await roomManager.createDailyRoom(`${sid}-community-main`, 'community');
+      } catch (_) {
+        const url = roomManager.getMainRoomUrl(sid);
+        main = { id: `${sid}-community-main`, name: `${sid}-community-main`, url, type: 'community' };
+      }
+      assignments.rooms = assignments.rooms || {};
+      assignments.rooms.main = { id: main.id, name: main.name, url: main.url, type: 'community', participants: [] };
+      const participantsList = Array.isArray(base.participants) ? base.participants : [];
+      participantsList.forEach(p => {
+        assignments.participants[p.id] = {
+          participantId: p.id,
+          roomId: 'main',
+          roomUrl: main.url,
+          roomName: main.name,
+          roomType: 'community',
+          assignedAt: new Date().toISOString()
+        };
+      });
+      assignments.rooms.main.participants = participantsList.map(p => p.id);
+      const updated = { ...base, roomAssignments: assignments, breakoutsActive: false, status: 'rooms-assigned' };
+      localStorage.setItem(storageKey, JSON.stringify(updated));
+      try { window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: sid, sessionData: updated } })); } catch (_) {}
+      try { window.dispatchEvent(new CustomEvent('gd-session-updated-local', { detail: { sessionId: sid, sessionData: updated } })); } catch (_) {}
+      setSessionData(updated);
+      return assignments.rooms.main;
+    } catch (e) {
+      console.warn('ensureMainRoom failed:', e);
+      return null;
+    }
+  }, [sessionData]);
   
   // Legacy function removed - AI insights now handled by LiveAIInsights component
   
@@ -631,28 +674,7 @@ const GenerativeDialogueInner = ({
       const assignments = base.roomAssignments || { rooms: {}, participants: {} };
 
       // Bootstrap main room if missing
-      if (!assignments.rooms || !assignments.rooms.main) {
-        assignments.rooms = assignments.rooms || {};
-        try {
-          const createdMain = await roomManager.createDailyRoom(`${sessionId}-community-main`, 'community');
-          assignments.rooms.main = { id: createdMain.id, name: createdMain.name, url: createdMain.url, type: 'community', participants: [] };
-        } catch (_) {
-          const url = roomManager.getMainRoomUrl(sessionId);
-          assignments.rooms.main = { id: `${sessionId}-community-main`, name: `${sessionId}-community-main`, url, type: 'community', participants: [] };
-        }
-        // Assign everyone to main as a baseline
-        (base.participants || []).forEach(p => {
-          assignments.participants[p.id] = {
-            participantId: p.id,
-            roomId: 'main',
-            roomUrl: assignments.rooms.main.url,
-            roomName: assignments.rooms.main.name,
-            roomType: 'community',
-            assignedAt: new Date().toISOString()
-          };
-        });
-        assignments.rooms.main.participants = (base.participants || []).map(p => p.id);
-      }
+      if (!assignments.rooms || !assignments.rooms.main) await ensureMainRoom(sessionId);
       const rt = String(roomType || '').toLowerCase();
 
       // PERMANENT FIX: Always create breakout rooms via Daily API on the configured domain.
@@ -776,7 +798,12 @@ const GenerativeDialogueInner = ({
       const storageKey = `session_${sessionId}`;
       const base = JSON.parse(localStorage.getItem(storageKey) || 'null') || sessionData;
       const assignments = base.roomAssignments || { rooms: {}, participants: {} };
-      const mainRoom = assignments.rooms['main'];
+      let mainRoom = assignments.rooms['main'];
+      if (!mainRoom) {
+        // Ensure main exists before pulling everyone back
+        ensureMainRoom(sessionId).then(() => {}).catch(() => {});
+        mainRoom = assignments.rooms['main'];
+      }
       if (!mainRoom) return;
       const host = (base.participants || []).find(p => p.isHost);
       const nonHosts = (base.participants || []).filter(p => !p.isHost);
