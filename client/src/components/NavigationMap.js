@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './NavigationMap.css';
 import {
   DialogueCommunityOff,
@@ -37,6 +37,8 @@ import {
 const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false }) => {
   // Internal state
   const [currentSize, setCurrentSize] = useState(activeSize);
+  const lastAppliedRef = useRef(null);
+  const debTsRef = useRef(0);
   const [hovered, setHovered] = useState(null);
   
   // Log activeSize (from props) and currentSize (internal state) on every render (for debugging)
@@ -56,22 +58,35 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false
     { id: '1', name: 'Self (1)', iconName: 'Individual' }
   ];
   
-  // Update active size when props change
+  // Initialize from localStorage once; thereafter, storage events drive state
   useEffect(() => {
-    if (!hostFlag) return; // Participants do not override highlight from props
-    if (activeSize !== currentSize) {
-      setCurrentSize(activeSize);
-    }
-  }, [activeSize, currentSize, hostFlag]);
+    try {
+      const v = localStorage.getItem('gd_active_size');
+      if (v) {
+        const parsed = (v === 'all' || v === 'fishbowl') ? v : parseInt(v);
+        setCurrentSize(parsed);
+        lastAppliedRef.current = parsed;
+      } else {
+        setCurrentSize(activeSize);
+        lastAppliedRef.current = activeSize;
+      }
+    } catch (_) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Listen for global nav highlight updates via localStorage key
+  // Listen for global nav highlight updates via localStorage key (debounced)
   useEffect(() => {
     const applyFromStorage = () => {
       try {
         const v = localStorage.getItem('gd_active_size') || '';
         if (!v) return;
         const parsed = (v === 'all' || v === 'fishbowl') ? v : parseInt(v);
-        if (parsed !== currentSize) setCurrentSize(parsed);
+        const now = Date.now();
+        if (lastAppliedRef.current === parsed) return;
+        if (now - debTsRef.current < 150) return; // debounce
+        debTsRef.current = now;
+        lastAppliedRef.current = parsed;
+        setCurrentSize(parsed);
       } catch (_) {}
     };
     applyFromStorage();
@@ -80,7 +95,7 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, [currentSize]);
+  }, []);
   
   // Get icon based on name and state
   const getIcon = (iconName, isActive, isHovered) => {
@@ -116,6 +131,11 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false
     // Keep string IDs as strings, convert numeric strings to numbers
     const newSize = (size === 'all' || size === 'fishbowl') ? size : parseInt(size);
     setCurrentSize(newSize);
+    try {
+      const prev = localStorage.getItem('gd_active_size');
+      const next = String(newSize);
+      if (prev !== next) localStorage.setItem('gd_active_size', next);
+    } catch (_) {}
     
     // Call onSizeChange callback if provided
     if (onSizeChange) {
