@@ -843,14 +843,17 @@ const GenerativeDialogueInner = ({
       }
       const host = hostCandidate;
       if (host && mainRoom) {
+        const keepHostInCommunity = true; // Host always remains in Community
         assignments.participants[host.id] = {
           participantId: host.id,
-          roomId: 'main',
-          roomUrl: mainRoom.url,
-          roomName: mainRoom.name,
+          roomId: keepHostInCommunity ? 'main' : roomsToUse[0]?.id || 'main',
+          roomUrl: keepHostInCommunity ? mainRoom.url : roomsToUse[0]?.url || mainRoom.url,
+          roomName: keepHostInCommunity ? mainRoom.name : roomsToUse[0]?.name || mainRoom.name,
           assignedAt: new Date().toISOString()
         };
-        mainRoom.participants = [host.id];
+        if (keepHostInCommunity) {
+          mainRoom.participants = [host.id];
+        }
       }
       const updatedSession = { ...base, roomAssignments: assignments, breakoutsActive: true, status: 'breakouts-active' };
       localStorage.setItem(storageKey, JSON.stringify(updatedSession));
