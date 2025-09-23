@@ -1,90 +1,112 @@
-// Netlify Function: Create a Daily.co room using server-side secret
-// Expects JSON body: { name: string, type?: string, properties?: object }
-// Returns: { id, name, url, type, maxParticipants, createdAt, expiresAt }
+/**
+ * Netlify Function: Daily.co Room Creation
+ * URL: /.netlify/functions/daily-create-room
+ */
 
-const DAILY_API_URL = 'https://api.daily.co/v1/rooms';
+exports.handler = async (event, context) => {
+  // CORS headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json'
+  };
 
-exports.handler = async (event) => {
-  try {
-    if (event.httpMethod !== 'POST') {
-      return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
-    }
-
-    const apiKey = process.env.DAILY_API_KEY;
-    if (!apiKey) {
-      return { statusCode: 500, body: JSON.stringify({ error: 'Missing DAILY_API_KEY' }) };
-    }
-
-    const input = JSON.parse(event.body || '{}');
-    const name = String(input.name || '').trim();
-    const roomType = String(input.type || input.roomType || 'community').toLowerCase();
-    const domain = process.env.DAILY_DOMAIN || 'generativedialogue.daily.co';
-
-    if (!name) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Missing room name' }) };
-    }
-
-    const maxParticipants = roomType === 'community' ? 50 : (roomType === 'kiva' ? 8 : 6);
-    const exp = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24h expiry
-
-    const body = {
-      name,
-      properties: {
-        max_participants: maxParticipants,
-        enable_chat: true,
-        enable_screenshare: true,
-        start_video_off: false,
-        start_audio_off: false,
-        exp,
-      },
+  // Handle preflight OPTIONS request
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: ''
     };
+  }
 
-    const resp = await fetch(DAILY_API_URL, {
+  // Only allow POST requests
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
+  }
+
+  try {
+    const { sessionCode, hostName, participantCount, roomName, roomType, maxParticipants } = JSON.parse(event.body);
+    
+    const DAILY_API_KEY = process.env.DAILY_API_KEY;
+    
+    if (!DAILY_API_KEY) {
+      console.warn('⚠️ DAILY_API_KEY not found, creating mock room');
+      const name = roomName || (sessionCode ? `session-${String(sessionCode).toLowerCase()}` : `session-${Date.now()}`);
+      const mockRoom = {
+        url: `https://generative-dialogue.daily.co/${name}`,
+        name,
+        id: `mock-${name}`,
+        created_at: new Date().toISOString(),
+        config: { max_participants: maxParticipants || participantCount || 6, roomType: roomType || 'community' }
+      };
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ success: true, room: mockRoom })
+      };
+    }
+
+    const response = await fetch('https://api.daily.co/v1/rooms', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${DAILY_API_KEY}`
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        name: roomName || (sessionCode ? `session-${sessionCode.toLowerCase()}` : undefined),
+        privacy: 'public',
+        properties: {
+          max_participants: maxParticipants || participantCount || 6,
+          enable_chat: true,
+          enable_screenshare: true,
+          start_video_off: false,
+          start_audio_off: false,
+          exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24h
+        }
+      })
     });
 
-    if (!resp.ok) {
-      // If room already exists (409), synthesize a response
-      if (resp.status === 409) {
-        const url = `https://${domain}/${name}`;
+    const roomData = await response.json();
+    
+    if (!response.ok) {
+      // If name conflict (409), treat as success with existing room
+      if (response.status === 409) {
+        console.warn('⚠️ Room already exists, returning existing details');
         return {
           statusCode: 200,
-          body: JSON.stringify({
-            id: name,
-            name,
-            url,
-            type: roomType,
-            maxParticipants,
-            createdAt: new Date().toISOString(),
-            expiresAt: new Date(exp * 1000).toISOString(),
-          }),
+          headers,
+          body: JSON.stringify({ success: true, room: roomData })
         };
       }
-      const text = await resp.text();
-      return { statusCode: resp.status, body: JSON.stringify({ error: text }) };
+      throw new Error(`Daily.co API error: ${roomData.error || roomData.message || response.status}`);
     }
 
-    const data = await resp.json();
+    console.log(`✅ Daily.co room created: ${roomData.url}`);
+    
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        id: data.name,
-        name: data.name,
-        url: data.url || `https://${domain}/${data.name}`,
-        type: roomType,
-        maxParticipants,
-        createdAt: new Date().toISOString(),
-        expiresAt: new Date(exp * 1000).toISOString(),
-      }),
+      headers,
+      body: JSON.stringify({ success: true, room: roomData })
     };
-  } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Server error', message: String(err && err.message || err) }) };
+    
+  } catch (error) {
+    console.error('❌ Daily.co room creation error:', error);
+    
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ 
+        error: error.message, 
+        success: false 
+      })
+    };
   }
 };
-
 
