@@ -1,0 +1,9 @@
+[build]
+command = "npm ci --prefix client && npm run build --prefix client"
+publish = "client/build"
+functions = "netlify/functions"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
