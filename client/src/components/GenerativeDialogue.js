@@ -540,7 +540,9 @@ const GenerativeDialogueInner = ({
       }
       
       // Join main room
-      await joinRoom(mainRoom.roomUrl, participantName);
+      const mainUrl = mainRoom?.url || mainRoom?.roomUrl;
+      if (!mainUrl) throw new Error('Main room URL missing');
+      await joinRoom(mainUrl, participantName);
       setCurrentRoom(mainRoom);
       setHasJoinedRoom(true);
       
