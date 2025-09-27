@@ -8,6 +8,43 @@ import { roomManager } from '../services/RoomManager';
 import { ROOM_POOL } from '../config/roomConfig';
 import '../App.css';
 
+// Deduplicate participant list by normalized name (primary) then by id (fallback)
+const dedupeParticipantsByName = (list = []) => {
+  try {
+    const seen = new Set();
+    const result = [];
+    for (const p of Array.isArray(list) ? list : []) {
+      const key = String((p?.name || '').toLowerCase().trim() || p?.id || Math.random());
+      if (!key) continue;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      result.push(p);
+    }
+    return result;
+  } catch (_) {
+    return Array.isArray(list) ? list : [];
+  }
+};
+
+// Normalize Daily participant name for identity matching
+const normalizeDailyName = (p) => {
+  const raw = p?.user_name || p?.displayName || p?.identity || '';
+  return String(raw).split('_')[0].trim().toLowerCase();
+};
+
+// Dedupe Daily participants by stable key: session_id → user_id → normalized name
+const dedupeDailyParticipants = (list = []) => {
+  const seen = new Set();
+  const out = [];
+  for (const p of Array.isArray(list) ? list : []) {
+    const key = p?.session_id || p?.user_id || normalizeDailyName(p) || Math.random().toString(36);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(p);
+  }
+  return out;
+};
+
 const getLayoutFromView = (activeView) => {
   switch (String(activeView)) {
     case 'all':
@@ -60,6 +97,29 @@ const GenerativeDialogueInner = ({
     'mock-1', 'mock-2', 'mock-3', 'mock-4', 'mock-5', 'mock-6'
   ]);
 
+  // Debug overlay visibility (host can toggle)
+  const [debugVisible, setDebugVisible] = useState(() => {
+    try { return localStorage.getItem('gd_debug_overlay') === '1'; } catch (_) { return false; }
+  });
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === 'gd_debug_overlay') {
+        setDebugVisible(e.newValue === '1');
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  // Names for fishbowl center speakers derived from sessionData ids
+  const fishbowlCenterNames = useMemo(() => {
+    try {
+      const ids = Array.isArray(sessionData?.fishbowlCenterIds) ? sessionData.fishbowlCenterIds : [];
+      const list = Array.isArray(sessionData?.participants) ? sessionData.participants : [];
+      return ids.map(id => (list.find(p => p.id === id)?.name)).filter(Boolean);
+    } catch (_) { return []; }
+  }, [sessionData?.fishbowlCenterIds, sessionData?.participants]);
+
   // AI Transcription state
   const [transcripts, setTranscripts] = useState([]);
   // eslint-disable-next-line no-unused-vars
@@ -83,6 +143,35 @@ const GenerativeDialogueInner = ({
       }
     } catch (_) {}
   }, []);
+
+  // Auto-claim host when visiting with ?name= that should be host and session hostName is unset/placeholder
+  useEffect(() => {
+    try {
+      if (!sessionData || !sessionData.sessionId) return;
+      const storageKey = `session_${sessionData.sessionId}`;
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      const params = new URLSearchParams(window.location.search);
+      const urlName = (params.get('name') || '').trim();
+      if (!urlName) return;
+      const urlNameLc = urlName.toLowerCase();
+      const currentHost = String(data?.hostName || '').trim();
+      const isPlaceholderHost = !currentHost || currentHost.toLowerCase() === 'host';
+      const urlParticipant = (data?.participants || []).find(p => (p.name || '').trim().toLowerCase() === urlNameLc);
+      if (!urlParticipant) return;
+      if (isPlaceholderHost || !data.participants.some(p => p.isHost)) {
+        // Promote this URL participant to host
+        const updatedParticipants = (data.participants || []).map(p => ({ ...p, isHost: (p.id === urlParticipant.id) }));
+        const updated = { ...data, hostName: urlParticipant.name, participants: updatedParticipants };
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+        try { window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: sessionData.sessionId, sessionData: updated } })); } catch (_) {}
+        try { sessionStorage.setItem('gd_is_host_tab', '1'); } catch (_) {}
+        setSessionData(updated);
+        console.log('👑 Auto-claimed host for this tab based on URL name:', urlParticipant.name);
+      }
+    } catch (_) {}
+  }, [sessionData?.sessionId]);
   // Determine layout based on room assignment and room type
   const layout = useMemo(() => {
     if (sessionData?.status === 'fishbowl-active') {
@@ -128,7 +217,8 @@ const GenerativeDialogueInner = ({
   useEffect(() => {
     if (propSessionData) {
       console.log('🎯 GenerativeDialogue: Received session data from props:', propSessionData);
-      setSessionData(propSessionData);
+      const deduped = { ...propSessionData, participants: dedupeParticipantsByName(propSessionData.participants || []) };
+      setSessionData(deduped);
     }
   }, [propSessionData]);
 
@@ -148,7 +238,10 @@ const GenerativeDialogueInner = ({
         if (storedSession) {
           try {
             const parsedSession = JSON.parse(storedSession);
-            setSessionData(parsedSession);
+            const cleaned = { ...parsedSession, participants: dedupeParticipantsByName(parsedSession.participants || []) };
+            // Persist cleanup to storage to keep all tabs consistent
+            localStorage.setItem(sessionKey, JSON.stringify(cleaned));
+            setSessionData(cleaned);
             console.log('🎯 GenerativeDialogue: Loaded session data:', parsedSession);
           } catch (error) {
             console.error('❌ Failed to parse session data:', error);
@@ -201,6 +294,30 @@ const GenerativeDialogueInner = ({
           }
           // Fallback to direct ID if name mapping not found
           if (!assignment) assignment = session.roomAssignments?.participants[currentParticipant.id] || null;
+
+          // Host override: if this tab is the host, always prefer MAIN assignment
+          try {
+            const urlNameLc = (sessionStorage.getItem('gd_current_participant_name') || '').trim().toLowerCase();
+            const isHostMe = !!(currentParticipant?.isHost) || (session?.hostName && urlNameLc && session.hostName.toLowerCase() === urlNameLc);
+            const main = session?.roomAssignments?.rooms?.main;
+            const assignmentIsMain = !!(assignment && (assignment.roomId === 'main' || (assignment.roomName && (assignment.roomName.includes('community') || assignment.roomName.includes('main')))));
+            if (isHostMe && main && !assignmentIsMain) {
+              const hostAssignment = {
+                participantId: currentParticipant.id,
+                participantName: currentParticipant.name,
+                roomId: 'main',
+                roomUrl: main.url,
+                roomName: main.name,
+                roomType: 'community',
+                assignedAt: new Date().toISOString()
+              };
+              setRoomAssignment(hostAssignment);
+              setJoinAttempted(false);
+              console.log('🛡️ Host override: Forcing host to main room assignment:', hostAssignment);
+              return;
+            }
+          } catch (_) {}
+
           if (assignment) {
             setRoomAssignment(assignment);
             setJoinAttempted(false);
@@ -234,7 +351,10 @@ const GenerativeDialogueInner = ({
       if (e.key === storageKey && e.newValue) {
         try {
           const parsed = JSON.parse(e.newValue);
-          if (parsed && parsed.sessionId) setSessionData(parsed);
+          if (parsed && parsed.sessionId) {
+            const cleaned = { ...parsed, participants: dedupeParticipantsByName(parsed.participants || []) };
+            setSessionData(cleaned);
+          }
         } catch (_) {}
       }
     };
@@ -244,6 +364,18 @@ const GenerativeDialogueInner = ({
       window.removeEventListener('storage', onStorage);
     };
   }, [sessionData?.sessionId]);
+
+  // Per-tab host flag for reliable UI gating (read by AppLayout)
+  useEffect(() => {
+    try {
+      const storedName = (sessionStorage.getItem('gd_current_participant_name') || '').trim();
+      const hostName = (sessionData?.hostName || (sessionData?.participants || []).find(p => p.isHost)?.name || '').trim();
+      const isHostTab = !!storedName && !!hostName && storedName.toLowerCase() === hostName.toLowerCase();
+      const prev = sessionStorage.getItem('gd_is_host_tab');
+      const next = isHostTab ? '1' : '0';
+      if (prev !== next) sessionStorage.setItem('gd_is_host_tab', next);
+    } catch (_) {}
+  }, [sessionData?.hostName, sessionData?.participants]);
 
   // Auto-join assigned room (ALL participants including host join main room initially)
   useEffect(() => {
@@ -270,10 +402,14 @@ const GenerativeDialogueInner = ({
           .catch(async (e) => {
             console.error('❌ Failed to join main room:', e);
             const msg = String(e?.errorMsg || e?.message || '');
-            if (msg.includes('does not exist') && typeof roomManager.createDailyRoom === 'function' && urlSessionId) {
+            if ((msg.includes('does not exist') || msg.includes('no longer available')) && typeof roomManager.createDailyRoom === 'function' && urlSessionId) {
               try {
-                // Deterministic main room name so all tabs converge on the same room
-                const created = await roomManager.createDailyRoom(`${urlSessionId}-community-main`, 'community');
+                // Prefer a fresh unique main if the previous room is expired
+                const ts = Date.now().toString().slice(-6);
+                const mainName = msg.includes('no longer available')
+                  ? `${urlSessionId}-community-main-${ts}`
+                  : `${urlSessionId}-community-main`;
+                const created = await roomManager.createDailyRoom(mainName, 'community');
                 const storageKey = `session_${urlSessionId}`;
                 const base = JSON.parse(localStorage.getItem(storageKey) || 'null') || sessionData || {};
                 const assignments = base.roomAssignments || { rooms: {}, participants: {} };
@@ -404,13 +540,8 @@ const GenerativeDialogueInner = ({
       return;
     }
     
-    // CRITICAL: Generate roomUrl from roomName if missing
-    let roomUrl = roomAssignment?.roomUrl;
-    if (!roomUrl && roomAssignment?.roomName) {
-      // Generate Daily.co URL from room name using configured domain
-      roomUrl = roomManager.getRoomUrlFromName(roomAssignment.roomName);
-      console.log('🔧 GenerativeDialogue: Generated roomUrl from roomName:', roomUrl);
-    }
+    // CRITICAL: Use only the API-provided roomUrl; do not synthesize from name
+    const roomUrl = roomAssignment?.roomUrl;
 
     // Host guard: never join a breakout; stay in community
     try {
@@ -510,7 +641,42 @@ const GenerativeDialogueInner = ({
       
     } catch (error) {
       console.error('❌ GenerativeDialogue: Failed to join room:', error);
-      
+      // If main room is expired or missing, re-create and retry once
+      try {
+        const msg = String(error?.errorMsg || error?.message || '').toLowerCase();
+        const isMainTarget = !!(roomAssignment?.roomId === 'main' || (roomAssignment?.roomName && (roomAssignment.roomName.includes('community') || roomAssignment.roomName.includes('main'))));
+        if (isMainTarget && (msg.includes('no longer available') || msg.includes('does not exist'))) {
+          const sid = sessionData?.sessionId || new URLSearchParams(window.location.search).get('session') || new URLSearchParams(window.location.search).get('sessionId');
+          if (sid && typeof roomManager.createDailyRoom === 'function') {
+            const storageKey = `session_${sid}`;
+            const base = JSON.parse(localStorage.getItem(storageKey) || 'null') || sessionData || {};
+            const assignments = base.roomAssignments || { rooms: {}, participants: {} };
+            // Create a new unique main room
+            const ts = Date.now().toString().slice(-6);
+            const created = await roomManager.createDailyRoom(`${sid}-community-main-${ts}`, 'community');
+            assignments.rooms = assignments.rooms || {};
+            assignments.rooms.main = { id: created.id, name: created.name, url: created.url, type: 'community', participants: [] };
+            const allParticipants = Array.isArray(base.participants) ? base.participants : [];
+            allParticipants.forEach(p => {
+              assignments.participants[p.id] = {
+                participantId: p.id,
+                roomId: 'main',
+                roomUrl: created.url,
+                roomName: created.name,
+                roomType: 'community',
+                assignedAt: new Date().toISOString()
+              };
+            });
+            assignments.rooms.main.participants = allParticipants.map(p => p.id);
+            const updated = { ...base, roomAssignments: assignments, breakoutsActive: false, status: 'rooms-assigned' };
+            localStorage.setItem(storageKey, JSON.stringify(updated));
+            try { window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: sid, sessionData: updated } })); } catch (_) {}
+            setSessionData(updated);
+            setJoinAttempted(false); // allow retry to run
+          }
+        }
+      } catch (_) {}
+
       // If it's a call object initialization error, allow retry
       if (error.message && error.message.includes('Call object not initialized')) {
         console.log('🔄 GenerativeDialogue: Will retry join when Daily.co is ready...');
@@ -570,13 +736,29 @@ const GenerativeDialogueInner = ({
     // If connected to Daily.co room, show real participants
     if (hasJoinedRoom && isConnected && realParticipants.length > 0) {
       console.log('🎯 Connected to Daily.co room: Using real participants');
-      return realParticipants;
+      return dedupeDailyParticipants(realParticipants);
     }
     
     // Otherwise show default mock participants (including for host in empty community view)
     console.log('🎯 Not connected or no real participants: Using mock participants');
     return participants;
   }, [hasJoinedRoom, isConnected, realParticipants, participants]);
+
+  // Broadcast deduped in-room count for layout badge consistency
+  useEffect(() => {
+    try {
+      if (isConnected) {
+        const nonLocal = realParticipants.filter(p => !p.local);
+        const deduped = dedupeDailyParticipants(nonLocal);
+        const count = deduped.length;
+        const prev = localStorage.getItem('gd_room_count_display');
+        const next = String(count);
+        if (prev !== next) localStorage.setItem('gd_room_count_display', next);
+      } else {
+        localStorage.removeItem('gd_room_count_display');
+      }
+    } catch (_) {}
+  }, [isConnected, realParticipants]);
   
   // AI Transcription event handlers
   // eslint-disable-next-line no-unused-vars
@@ -746,7 +928,7 @@ const GenerativeDialogueInner = ({
       const mainRoom = assignments.rooms['main'];
       const params = new URLSearchParams(window.location.search);
       const urlName = (params.get('name') || '').trim().toLowerCase();
-      const participantsList = (base.participants || []);
+      const participantsList = dedupeParticipantsByName(base.participants || []);
       const hostCandidate = participantsList.find(p => p.isHost)
         || participantsList.find(p => p.name && p.name.toLowerCase() === urlName)
         || (base.hostName ? participantsList.find(p => p.name && p.name.toLowerCase() === String(base.hostName).toLowerCase()) : null);
@@ -760,7 +942,8 @@ const GenerativeDialogueInner = ({
 
       // Ensure enough rooms exist (on-demand create via Daily API when available)
       try {
-        const roomsNeeded = Math.ceil(nonHosts.length / roomSize);
+        // Create only as many rooms as can be fully filled; leftovers stay in main
+        const roomsNeeded = Math.floor(nonHosts.length / roomSize);
         if (typeof roomManager.createDailyRoom === 'function') {
           const ts = Date.now().toString().slice(-6);
           for (let i = 0; i < roomsNeeded; i++) {
@@ -791,14 +974,14 @@ const GenerativeDialogueInner = ({
       }
       roomList.forEach(r => { r.participants = []; });
       const shuffled = [...nonHosts].sort(() => Math.random() - 0.5);
-      // Strictly cap number of rooms to Math.ceil(nonHosts/roomSize)
-      const groups = [];
-      for (let i = 0; i < shuffled.length; i += roomSize) {
-        groups.push(shuffled.slice(i, i + roomSize));
+      // Build fully filled groups only
+      const fullGroups = [];
+      for (let i = 0; i + roomSize <= shuffled.length; i += roomSize) {
+        fullGroups.push(shuffled.slice(i, i + roomSize));
       }
-      const roomsToUse = roomList.slice(0, groups.length);
-      for (let i = 0; i < groups.length; i++) {
-        const group = groups[i];
+      const roomsToUse = roomList.slice(0, fullGroups.length);
+      for (let i = 0; i < fullGroups.length; i++) {
+        const group = fullGroups[i];
         const room = roomsToUse[i];
         if (!room) break;
         const uniqueIds = Array.from(new Set(group.map(p => p.id)));
@@ -814,6 +997,33 @@ const GenerativeDialogueInner = ({
           };
         });
       }
+
+      // Any leftovers that do not fill a full room remain in main
+      const leftoverStart = fullGroups.length * roomSize;
+      const leftovers = shuffled.slice(leftoverStart);
+      if (leftovers.length > 0 && mainRoom) {
+        const mainIds = new Set(mainRoom.participants || []);
+        leftovers.forEach(p => {
+          mainIds.add(p.id);
+          assignments.participants[p.id] = {
+            participantId: p.id,
+            roomId: 'main',
+            roomUrl: mainRoom.url,
+            roomName: mainRoom.name,
+            roomType: 'community',
+            assignedAt: new Date().toISOString()
+          };
+        });
+        mainRoom.participants = Array.from(mainIds);
+      }
+
+      // If we created more rooms than used, prune empty rooms for cleanliness
+      Object.keys(assignments.rooms).forEach(id => {
+        const r = assignments.rooms[id];
+        if (id !== 'main' && Array.isArray(r.participants) && r.participants.length === 0) {
+          delete assignments.rooms[id];
+        }
+      });
       const host = hostCandidate;
       if (host && mainRoom) {
         const keepHostInCommunity = true; // Host always remains in Community
@@ -900,6 +1110,73 @@ const GenerativeDialogueInner = ({
       window.removeEventListener('host-end-breakouts', onEnd);
     };
   }, [hostCreateBreakouts, hostEndBreakouts]);
+
+  // Failsafe: if host tab updates gd_active_size in localStorage, trigger breakouts/end
+  useEffect(() => {
+    const onStorage = (e) => {
+      try {
+        if (e.key !== 'gd_active_size') return;
+        // Only host tab reacts
+        const ssHost = sessionStorage.getItem('gd_is_host_tab') === '1';
+        let urlHostMatch = false;
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const urlNameLc = (params.get('name') || '').trim().toLowerCase();
+          const hostNameLc = String(sessionData?.hostName || '').trim().toLowerCase();
+          urlHostMatch = !!urlNameLc && !!hostNameLc && urlNameLc === hostNameLc;
+        } catch (_) {}
+        if (!ssHost && !urlHostMatch) return;
+        const v = e.newValue;
+        if (!v) return;
+        const map = { '1': 'self', '2': 'dyad', '3': 'triad', '4': 'quad', '6': 'kiva', 'fishbowl': 'fishbowl', 'all': 'community' };
+        const now = Date.now();
+        const last = Number(localStorage.getItem('gd_last_breakouts_ts') || 0);
+        if (now - last < 1500) return; // debounce
+        localStorage.setItem('gd_last_breakouts_ts', String(now));
+        if (v === 'all') {
+          hostEndBreakouts();
+        } else if (map[v]) {
+          hostCreateBreakouts(map[v]);
+        }
+      } catch (_) {}
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [sessionData?.hostName, hostCreateBreakouts, hostEndBreakouts]);
+
+  // Same-tab polling fallback: detect gd_active_size changes even if storage event doesn't fire in this tab
+  useEffect(() => {
+    let rafId = null;
+    let lastValue = null;
+    const isHostTab = (() => {
+      try {
+        if (sessionStorage.getItem('gd_is_host_tab') === '1') return true;
+        const params = new URLSearchParams(window.location.search);
+        const urlNameLc = (params.get('name') || '').trim().toLowerCase();
+        const hostNameLc = String(sessionData?.hostName || '').trim().toLowerCase();
+        return !!urlNameLc && !!hostNameLc && urlNameLc === hostNameLc;
+      } catch (_) { return false; }
+    })();
+    if (!isHostTab) return;
+    const loop = () => {
+      try {
+        const v = localStorage.getItem('gd_active_size');
+        if (v && v !== lastValue) {
+          lastValue = v;
+          const now = Date.now();
+          const last = Number(localStorage.getItem('gd_last_breakouts_ts') || 0);
+          if (now - last >= 1500) {
+            localStorage.setItem('gd_last_breakouts_ts', String(now));
+            const map = { '1': 'self', '2': 'dyad', '3': 'triad', '4': 'quad', '6': 'kiva', 'fishbowl': 'fishbowl', 'all': 'community' };
+            if (v === 'all') hostEndBreakouts(); else if (map[v]) hostCreateBreakouts(map[v]);
+          }
+        }
+      } catch (_) {}
+      rafId = window.requestAnimationFrame(loop);
+    };
+    rafId = window.requestAnimationFrame(loop);
+    return () => { if (rafId) cancelAnimationFrame(rafId); };
+  }, [sessionData?.hostName, hostCreateBreakouts, hostEndBreakouts]);
   return (
     <React.Fragment>
       {/* Daily.co Video Integration - Show iframe when connected, fallback to VideoGrid */}
@@ -909,6 +1186,7 @@ const GenerativeDialogueInner = ({
         layout={layout} 
         showLabels={layout !== 'community'} 
         selectedParticipants={selectedParticipants}
+        fishbowlCenterNames={fishbowlCenterNames}
         onParticipantSelect={handleParticipantSelect}
         isLoopActive={isLoopActive}
         suppressMockParticipants={false} // Always allow mock participants for host community view
@@ -928,13 +1206,89 @@ const GenerativeDialogueInner = ({
           fontWeight: 'bold',
           zIndex: 1000
         }}>
-          {isConnected ? `🎥 Live Video (${realParticipants.filter(p=>!p.local).length} participants in room)` : hasJoinedRoom ? '🔄 Connecting to video...' : '⏳ Waiting for room assignment...'}
+          {(() => {
+            if (!isConnected) return hasJoinedRoom ? '🔄 Connecting to video...' : '⏳ Waiting for room assignment...';
+            // Connected: show connected/assigned for clarity
+            const nonLocal = realParticipants.filter(p => !p.local);
+            const connected = dedupeDailyParticipants(nonLocal).length;
+            let assigned = null;
+            try {
+              const rooms = sessionData?.roomAssignments?.rooms || {};
+              let target = null;
+              if (roomAssignment?.roomId && rooms[roomAssignment.roomId]) target = rooms[roomAssignment.roomId];
+              if (!target && roomAssignment?.roomName) target = Object.values(rooms).find(r => r.name === roomAssignment.roomName);
+              if (!target) target = rooms['main'];
+              if (target && Array.isArray(target.participants)) assigned = new Set(target.participants).size;
+            } catch (_) {}
+            return assigned != null
+              ? `🎥 Live Video (${connected}/${assigned} connected)`
+              : `🎥 Live Video (${connected} connected)`;
+          })()}
           <br />
           Session: {sessionData.sessionId}
           <br />
-          Total Participants: {sessionData.participants?.length || 0}
+          Total Participants: {(() => (dedupeParticipantsByName(sessionData.participants || []).length))()}
         </div>
       )}
+
+      {/* Debug Overlay: Connected / Assigned / Total (host-toggleable) */}
+      {(() => {
+        const isHostTab = (sessionStorage.getItem('gd_is_host_tab') === '1');
+        const toggleBtn = isHostTab ? (
+          <button
+            onClick={() => {
+              const next = !debugVisible;
+              setDebugVisible(next);
+              try { localStorage.setItem('gd_debug_overlay', next ? '1' : '0'); } catch (_) {}
+            }}
+            style={{
+              position: 'fixed', bottom: '18px', left: '18px', zIndex: 1100,
+              background: debugVisible ? '#3E4C71' : '#9aa4c0', color: 'white',
+              border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 11,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)', cursor: 'pointer'
+            }}
+            title={debugVisible ? 'Hide debug overlay' : 'Show debug overlay'}
+          >DBG</button>
+        ) : null;
+
+        if (!debugVisible) return toggleBtn;
+
+        // Compute counts
+        let connected = 0;
+        try {
+          if (isConnected) {
+            const nonLocal = realParticipants.filter(p => !p.local);
+            connected = dedupeDailyParticipants(nonLocal).length;
+          }
+        } catch (_) {}
+
+        let assigned = null;
+        try {
+          const rooms = sessionData?.roomAssignments?.rooms || {};
+          let target = null;
+          if (roomAssignment?.roomId && rooms[roomAssignment.roomId]) target = rooms[roomAssignment.roomId];
+          if (!target && roomAssignment?.roomName) target = Object.values(rooms).find(r => r.name === roomAssignment.roomName);
+          if (!target) target = rooms['main'];
+          if (target && Array.isArray(target.participants)) assigned = new Set(target.participants).size;
+        } catch (_) {}
+
+        const total = dedupeParticipantsByName(sessionData?.participants || []).length;
+
+        return (
+          <>
+            {toggleBtn}
+            <div style={{
+              position: 'fixed', bottom: '18px', left: '68px', zIndex: 1099,
+              background: 'rgba(0,0,0,0.75)', color: 'white', padding: '8px 12px',
+              borderRadius: 8, fontSize: 12, lineHeight: 1.4, boxShadow: '0 2px 10px rgba(0,0,0,0.25)'
+            }}>
+              <div><strong>Connected</strong>: {connected}</div>
+              <div><strong>Assigned</strong>: {assigned != null ? assigned : '—'}</div>
+              <div><strong>Total</strong>: {total}</div>
+            </div>
+          </>
+        );
+      })()}
 
       {/* Host Controls removed; handled via left navigation */}
 

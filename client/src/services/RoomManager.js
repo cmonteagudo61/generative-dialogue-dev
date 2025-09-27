@@ -4,330 +4,162 @@
 
 import { ROOM_POOL, ROOM_TYPES, USE_API_ROOMS } from '../config/roomConfig';
 
-// Daily.co / deployment configuration
+// Daily.co API configuration
+const DAILY_API_KEY = process.env.REACT_APP_DAILY_API_KEY;
 const DAILY_DOMAIN = process.env.REACT_APP_DAILY_DOMAIN || 'generativedialogue.daily.co';
-// Enable API mode when requested at build time
-const USE_DAILY_API = process.env.REACT_APP_USE_DAILY_API === 'true';
-const DEBUG_ROOMS = process.env.REACT_APP_DEBUG_ROOMS === 'true' || true; // verbose by default for diagnosis
+// Enable API mode if explicitly requested or if an API key is present
+const USE_DAILY_API = (process.env.REACT_APP_USE_DAILY_API === 'true') || !!DAILY_API_KEY;
+const DEBUG_ROOMS = process.env.REACT_APP_DEBUG_ROOMS === 'true' || true; // Enable debug logging
 
 class RoomManager {
   constructor() {
     this.activeRooms = new Map(); // sessionId -> room assignments
-    this.roomUsage = new Map();   // roomId -> usage info
+    this.roomUsage = new Map(); // roomId -> usage info
     this.initializeRoomUsage();
   }
 
   initializeRoomUsage() {
+    // Initialize usage tracking for all rooms
     Object.values(ROOM_POOL).flat().forEach(room => {
       this.roomUsage.set(room.id, {
         participants: [],
         sessionId: null,
         assignedAt: null,
-        status: 'available',
+        status: 'available'
       });
     });
   }
 
-  // Main entry: assign rooms for a session
+  // Main method to assign rooms for a session
   async assignRoomsForSession(sessionId, participants, roomConfiguration) {
     console.log(`🏠 Assigning rooms for session ${sessionId}:`, {
       participantCount: participants.length,
       configuration: roomConfiguration,
-      usingAPI: USE_DAILY_API,
+      usingAPI: USE_DAILY_API
     });
 
-    if (USE_DAILY_API) {
+    if (USE_DAILY_API && DAILY_API_KEY) {
       return await this.assignRoomsViaAPI(sessionId, participants, roomConfiguration);
     } else {
-      console.log('🏠 Using manual room pool (API disabled)');
+      console.log('🏠 Using manual room pool (API disabled or no API key)');
       return await this.assignRoomsFromPool(sessionId, participants, roomConfiguration);
     }
   }
 
-  // Manual room pool assignment (backup/MVP)
+  // Manual room pool assignment (MVP approach)
   async assignRoomsFromPool(sessionId, participants, roomConfiguration) {
     const assignments = {
       sessionId,
       rooms: {},
       participants: {},
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toISOString()
     };
 
-    // Main room always exists in manual mode
+    // Always assign main room for community phases
     const mainRoom = this.getAvailableRoom(ROOM_TYPES.MAIN);
     if (mainRoom) {
       assignments.rooms['main'] = {
         ...mainRoom,
-        participants: [],
+        participants: [], // Host-only during breakouts
         sessionId,
-        assignedAt: new Date().toISOString(),
+        assignedAt: new Date().toISOString()
       };
       this.markRoomAsUsed(mainRoom.id, sessionId);
     }
 
-    // Breakout distribution (host remains in main)
+    // Assign breakout rooms based on configuration
     const breakoutAssignments = this.createBreakoutAssignments(
-      participants,
-      roomConfiguration.roomType,
+      participants, 
+      roomConfiguration.roomType, 
       sessionId
     );
 
+    // Merge breakout assignments
     Object.assign(assignments.rooms, breakoutAssignments.rooms);
     Object.assign(assignments.participants, breakoutAssignments.participants);
 
+    // Store session assignments
     this.activeRooms.set(sessionId, assignments);
 
     console.log(`✅ Room assignment complete for session ${sessionId}:`, {
       totalRooms: Object.keys(assignments.rooms).length,
-      participantAssignments: Object.keys(assignments.participants).length,
+      participantAssignments: Object.keys(assignments.participants).length
     });
 
     return assignments;
   }
 
-  // Create breakout assignments (manual path)
+  // Create breakout room assignments
   createBreakoutAssignments(participants, roomType, sessionId) {
     const assignments = { rooms: {}, participants: {} };
-
+    
+    // CRITICAL: Separate host from other participants
     const hostParticipant = participants.find(p => p.isHost);
     const nonHostParticipants = participants.filter(p => !p.isHost);
-
+    
+    // Host stays in main room (community view) - no special assignment needed
+    // Host can optionally visit breakout rooms but isn't assigned by default
     if (hostParticipant) {
       console.log('🏠 Host will remain in community view (main room):', hostParticipant.name);
     }
+    
+    // If no non-host participants, return early
     if (nonHostParticipants.length === 0) {
       console.log('⚠️ No non-host participants for breakout rooms');
       return assignments;
     }
-
+    
+    // Determine room size based on type
     const roomSize = this.getRoomSize(roomType);
     const availableRooms = this.getAvailableRoomsByType(roomType);
-
-    // Maximize occupancy: only fully-filled rooms; leftovers remain in main
-    const roomsNeeded = Math.floor(nonHostParticipants.length / roomSize);
-
+    
+    // Calculate number of rooms needed (only for non-host participants)
+    const roomsNeeded = Math.ceil(nonHostParticipants.length / roomSize);
+    
     if (availableRooms.length < roomsNeeded) {
       throw new Error(`Not enough ${roomType} rooms available. Need ${roomsNeeded}, have ${availableRooms.length}`);
     }
 
-    const shuffled = [...nonHostParticipants].sort(() => Math.random() - 0.5);
-
+    // Shuffle non-host participants for random assignment
+    const shuffledParticipants = [...nonHostParticipants].sort(() => Math.random() - 0.5);
+    
+    // Assign participants to rooms
     for (let i = 0; i < roomsNeeded; i++) {
       const room = availableRooms[i];
-      const start = i * roomSize;
-      const end = start + roomSize;
-      const group = shuffled.slice(start, end);
+      const roomParticipants = shuffledParticipants.slice(
+        i * roomSize, 
+        Math.min((i + 1) * roomSize, shuffledParticipants.length)
+      );
 
-      assignments.rooms[room.id] = {
-        ...room,
-        participants: group.map(p => p.id),
-        sessionId,
-        assignedAt: new Date().toISOString(),
-      };
-      this.markRoomAsUsed(room.id, sessionId);
-
-      group.forEach(p => {
-        assignments.participants[p.id] = {
-          participantId: p.id,
-          roomId: room.id,
-          roomUrl: room.url,
-          roomName: room.name,
-          assignedAt: new Date().toISOString(),
+      if (roomParticipants.length > 0) {
+        // Assign room
+        assignments.rooms[room.id] = {
+          ...room,
+          participants: roomParticipants.map(p => p.id),
+          sessionId,
+          assignedAt: new Date().toISOString()
         };
-      });
-    }
 
-    // Leftovers + host → main
-    const leftovers = shuffled.slice(roomsNeeded * roomSize);
-    if (leftovers.length > 0 || hostParticipant) {
-      const mainId = 'main';
-      if (!assignments.rooms[mainId]) {
-        const mainRoom = this.getAvailableRoom(ROOM_TYPES.MAIN) || {
-          id: 'main',
-          name: `${sessionId}-community-main`,
-          url: this.getMainRoomUrl(sessionId),
-        };
-        assignments.rooms[mainId] = { ...mainRoom, participants: [], sessionId, assignedAt: new Date().toISOString() };
-      }
-      const mainRoom = assignments.rooms[mainId];
-      const toInclude = [hostParticipant, ...leftovers].filter(Boolean);
+        // Mark room as used
+        this.markRoomAsUsed(room.id, sessionId);
 
-      toInclude.forEach(p => {
-        if (!assignments.participants[p.id]) {
-          assignments.participants[p.id] = {
-            participantId: p.id,
-            roomId: mainRoom.id,
-            roomUrl: mainRoom.url,
-            roomName: mainRoom.name,
-            assignedAt: new Date().toISOString(),
+        // Assign participants to room
+        roomParticipants.forEach(participant => {
+          assignments.participants[participant.id] = {
+            participantId: participant.id,
+            roomId: room.id,
+            roomUrl: room.url,
+            roomName: room.name,
+            assignedAt: new Date().toISOString()
           };
-        }
-      });
-      mainRoom.participants = Array.from(new Set([...(mainRoom.participants || []), ...toInclude.map(p => p.id)]));
+        });
+      }
     }
 
     return assignments;
   }
 
-  // API-based room assignment using Netlify proxy
-  async assignRoomsViaAPI(sessionId, participants, roomConfiguration) {
-    if (DEBUG_ROOMS) {
-      console.log('🚨 assignRoomsViaAPI CALLED:', {
-        sessionId,
-        participantCount: participants.length,
-        roomType: roomConfiguration.roomType,
-        domain: DAILY_DOMAIN,
-        useApi: USE_DAILY_API,
-      });
-    }
-
-    const assignments = {
-      sessionId,
-      rooms: {},
-      participants: {},
-      createdAt: new Date().toISOString(),
-    };
-
-    try {
-      // Deterministic-but-unique suffix to avoid collisions
-      const ts = Date.now().toString().slice(-6);
-
-      // 1) Create main room for everyone
-      const mainRoomName = `${sessionId}-community-main-${ts}`;
-      const mainRoom = await this.createDailyRoom(mainRoomName, 'community');
-
-      assignments.rooms['main'] = {
-        ...mainRoom,
-        participants: participants.map(p => p.id),
-        sessionId,
-        assignedAt: new Date().toISOString(),
-      };
-
-      participants.forEach(p => {
-        assignments.participants[p.id] = {
-          participantId: p.id,
-          participantName: p.name,
-          roomId: 'main',
-          roomName: mainRoom.name,
-          roomUrl: mainRoom.url,
-          roomType: 'community',
-          assignedAt: new Date().toISOString(),
-        };
-      });
-
-      // 2) Create breakout rooms only if requested
-      if (roomConfiguration.roomType && roomConfiguration.roomType !== 'community') {
-        const nonHost = participants.filter(p => !p.isHost);
-        const roomSize = this.getRoomSize(roomConfiguration.roomType);
-        // Fully-filled rooms only
-        const roomsNeeded = Math.floor(nonHost.length / roomSize);
-
-        if (DEBUG_ROOMS) {
-          console.log(`🏠 Need ${roomsNeeded} ${roomConfiguration.roomType} rooms for ${nonHost.length} non-host participants`);
-        }
-
-        const createdRooms = [];
-        for (let i = 0; i < roomsNeeded; i++) {
-          const name = `${sessionId}-${roomConfiguration.roomType}-${i + 1}-${ts}`;
-          const room = await this.createDailyRoom(name, roomConfiguration.roomType);
-          createdRooms.push(room);
-        }
-
-        // Randomize and assign into full groups
-        const shuffled = [...nonHost].sort(() => Math.random() - 0.5);
-        for (let i = 0; i < roomsNeeded; i++) {
-          const room = createdRooms[i];
-          const start = i * roomSize;
-          const end = start + roomSize;
-          const group = shuffled.slice(start, end);
-
-          if (group.length === roomSize) {
-            assignments.rooms[room.id] = {
-              ...room,
-              participants: group.map(p => p.id),
-              sessionId,
-              assignedAt: new Date().toISOString(),
-            };
-
-            group.forEach(p => {
-              assignments.participants[p.id] = {
-                participantId: p.id,
-                participantName: p.name,
-                roomId: room.id,
-                roomName: room.name,
-                roomUrl: room.url,
-                roomType: roomConfiguration.roomType,
-                assignedAt: new Date().toISOString(),
-              };
-            });
-          }
-        }
-      } else if (DEBUG_ROOMS) {
-        console.log('🏛️ Only creating main community room (no breakout rooms)');
-      }
-
-      this.activeRooms.set(sessionId, assignments);
-
-      if (DEBUG_ROOMS) {
-        console.log('✅ API room assignment complete:', {
-          totalRooms: Object.keys(assignments.rooms).length,
-          participantAssignments: Object.keys(assignments.participants).length,
-        });
-      }
-
-      return assignments;
-    } catch (error) {
-      console.error('❌ Daily.co API room creation failed:', error);
-      throw new Error(`API room creation failed: ${error.message}`);
-    }
-  }
-
-  // Create a single room via Netlify Function proxy (protects API key)
-  async createDailyRoom(roomName, roomType) {
-    const maxParticipants = roomType === 'community' ? 50 : this.getRoomSize(roomType) + 2;
-
-    if (DEBUG_ROOMS) {
-      console.log(`🎥 CREATING Daily.co room via proxy: ${roomName}`, {
-        roomType,
-        maxParticipants,
-      });
-    }
-
-    const response = await fetch('/.netlify/functions/daily-create-room', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roomName, roomType, maxParticipants }),
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok || data.success === false) {
-      const errTxt = (data && (data.error || data.message)) || String(response.status);
-      console.error(`❌ Daily.co proxy error: ${errTxt}`);
-      throw new Error(`Daily.co proxy error: ${errTxt}`);
-    }
-
-    const real = data.room || data;
-
-    const room = {
-      id: real.name || real.id || roomName,
-      name: real.name || roomName,
-      url: real.url || this.getRoomUrlFromName(roomName),
-      type: roomType,
-      maxParticipants,
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    };
-
-    if (DEBUG_ROOMS) {
-      console.log(`✅ SUCCESSFULLY created Daily.co room: ${room.name} → ${room.url}`);
-    }
-
-    return room;
-  }
-
-  // ---- Helpers (pool + stats) ----
-
+  // Get available room by type
   getAvailableRoom(roomType) {
     const rooms = ROOM_POOL[roomType] || [];
     return rooms.find(room => {
@@ -336,20 +168,25 @@ class RoomManager {
     });
   }
 
+  // Get available rooms by type
   getAvailableRoomsByType(roomType) {
     const rooms = ROOM_POOL[roomType] || [];
-    const available = rooms.filter(room => {
+    const availableRooms = rooms.filter(room => {
       const usage = this.roomUsage.get(room.id);
       return usage && usage.status === 'available';
     });
+    
+    // Debug logging for room availability
     console.log(`🏠 Room availability check for ${roomType}:`, {
       totalRooms: rooms.length,
-      availableRooms: available.length,
-      roomIds: available.map(r => r.id),
+      availableRooms: availableRooms.length,
+      roomIds: availableRooms.map(r => r.id)
     });
-    return available;
+    
+    return availableRooms;
   }
 
+  // Mark room as used
   markRoomAsUsed(roomId, sessionId) {
     const usage = this.roomUsage.get(roomId);
     if (usage) {
@@ -359,6 +196,7 @@ class RoomManager {
     }
   }
 
+  // Release room
   releaseRoom(roomId) {
     const usage = this.roomUsage.get(roomId);
     if (usage) {
@@ -369,12 +207,18 @@ class RoomManager {
     }
   }
 
+  // Release all rooms for a session
   releaseSessionRooms(sessionId) {
     const assignments = this.activeRooms.get(sessionId);
     if (assignments) {
       const roomIds = Object.keys(assignments.rooms);
       console.log(`🏠 Releasing ${roomIds.length} rooms for session ${sessionId}:`, roomIds);
-      roomIds.forEach(roomId => this.releaseRoom(roomId));
+      
+      roomIds.forEach(roomId => {
+        this.releaseRoom(roomId);
+        console.log(`  ✅ Released room: ${roomId}`);
+      });
+      
       this.activeRooms.delete(sessionId);
       console.log(`🏠 All rooms released for session ${sessionId}`);
     } else {
@@ -382,10 +226,12 @@ class RoomManager {
     }
   }
 
+  // Get room assignments for a session
   getSessionRooms(sessionId) {
     return this.activeRooms.get(sessionId);
   }
 
+  // Get participant's current room assignment
   getParticipantRoom(sessionId, participantId) {
     const assignments = this.activeRooms.get(sessionId);
     if (assignments && assignments.participants[participantId]) {
@@ -394,26 +240,35 @@ class RoomManager {
     return null;
   }
 
+  // Reassign participant to different room (for room switching)
   async reassignParticipant(sessionId, participantId, newRoomType) {
     const assignments = this.activeRooms.get(sessionId);
-    if (!assignments) throw new Error(`Session ${sessionId} not found`);
+    if (!assignments) {
+      throw new Error(`Session ${sessionId} not found`);
+    }
 
+    // Find available room of the requested type
     const newRoom = this.getAvailableRoom(newRoomType);
-    if (!newRoom) throw new Error(`No available ${newRoomType} rooms`);
+    if (!newRoom) {
+      throw new Error(`No available ${newRoomType} rooms`);
+    }
 
+    // Update participant assignment
     assignments.participants[participantId] = {
       participantId,
       roomId: newRoom.id,
       roomUrl: newRoom.url,
       roomName: newRoom.name,
-      assignedAt: new Date().toISOString(),
+      assignedAt: new Date().toISOString()
     };
 
     return assignments.participants[participantId];
   }
 
+  // Helper methods
   getRoomSize(roomType) {
-    const rt = typeof roomType === 'string' ? roomType.toLowerCase() : roomType;
+    // Support strings as well as ROOM_TYPES constants
+    const rt = (typeof roomType === 'string') ? roomType.toLowerCase() : roomType;
     switch (rt) {
       case ROOM_TYPES.DYAD:
       case 'dyad':
@@ -440,15 +295,19 @@ class RoomManager {
     }
   }
 
+  // Get main room URL for host community view
   getMainRoomUrl(sessionId) {
+    // Deterministic community room name for this session
     return `https://${DAILY_DOMAIN}/${sessionId}-community-main`;
   }
 
+  // Build a room URL from a Daily room name using configured domain
   getRoomUrlFromName(roomName) {
     if (!roomName) return null;
     return `https://${DAILY_DOMAIN}/${roomName}`;
   }
 
+  // Get system capacity and usage stats
   getSystemStats() {
     const stats = {
       totalRooms: 0,
@@ -456,17 +315,28 @@ class RoomManager {
       usedRooms: 0,
       totalCapacity: 0,
       currentUsage: 0,
-      byType: {},
+      byType: {}
     };
 
     Object.entries(ROOM_POOL).forEach(([type, rooms]) => {
-      const typeStats = { total: rooms.length, available: 0, used: 0, capacity: 0 };
+      const typeStats = {
+        total: rooms.length,
+        available: 0,
+        used: 0,
+        capacity: 0
+      };
+
       rooms.forEach(room => {
         const usage = this.roomUsage.get(room.id);
         typeStats.capacity += room.maxParticipants;
-        if (usage && usage.status === 'available') typeStats.available++;
-        else typeStats.used++;
+        
+        if (usage && usage.status === 'available') {
+          typeStats.available++;
+        } else {
+          typeStats.used++;
+        }
       });
+
       stats.byType[type] = typeStats;
       stats.totalRooms += typeStats.total;
       stats.availableRooms += typeStats.available;
@@ -476,8 +346,134 @@ class RoomManager {
 
     return stats;
   }
+
+  // API-based room assignment using Daily.co API
+  async assignRoomsViaAPI(sessionId, participants, roomConfiguration) {
+    if (DEBUG_ROOMS) {
+      console.log('🎥 Creating rooms via Daily.co API:', {
+        sessionId,
+        participantCount: participants.length,
+        roomType: roomConfiguration.roomType,
+        domain: DAILY_DOMAIN
+      });
+    }
+
+    const assignments = {
+      sessionId,
+      rooms: {},
+      participants: {},
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      // CRITICAL: Create main Community View room for EVERYONE (including host)
+      const mainRoomName = `${sessionId}-community-main`;
+      const mainRoom = await this.createDailyRoom(mainRoomName, 'community');
+      
+      // Store main room
+      assignments.rooms['main'] = {
+        ...mainRoom,
+        participants: participants.map(p => p.id), // ALL participants including host
+        sessionId,
+        assignedAt: new Date().toISOString()
+      };
+      
+      // EVERYONE gets assigned to main room initially
+      participants.forEach(participant => {
+        assignments.participants[participant.id] = {
+          participantId: participant.id,
+          participantName: participant.name,
+          roomId: 'main',
+          roomName: mainRoom.name,
+          roomUrl: mainRoom.url,
+          roomType: 'community',
+          assignedAt: new Date().toISOString()
+        };
+      });
+      
+      if (DEBUG_ROOMS) {
+        console.log(`✅ Created main community room for ${participants.length} participants (including host)`);
+      }
+
+      // Prepare breakout rooms but DO NOT assign participants yet.
+      // Everyone stays in the main room until the host triggers breakouts.
+      const nonHostParticipants = participants.filter(p => !p.isHost);
+      const roomSize = this.getRoomSize(roomConfiguration.roomType);
+      const roomsNeeded = Math.ceil(nonHostParticipants.length / roomSize);
+      // Use a short timestamp to avoid name collisions when re-running in the same session
+      const ts = Date.now().toString().slice(-6);
+      if (DEBUG_ROOMS) {
+        console.log(`🏠 Preparing ${roomsNeeded} ${roomConfiguration.roomType} rooms for ${nonHostParticipants.length} non-hosts (no assignment yet)`);
+      }
+      for (let i = 0; i < roomsNeeded; i++) {
+        const roomName = `${sessionId}-${roomConfiguration.roomType}-${i + 1}-${ts}`;
+        const room = await this.createDailyRoom(roomName, roomConfiguration.roomType);
+        assignments.rooms[room.id] = {
+          ...room,
+          participants: [],
+          sessionId,
+          assignedAt: new Date().toISOString()
+        };
+      }
+
+      // Store assignments for session management
+      this.activeRooms.set(sessionId, assignments);
+      
+      if (DEBUG_ROOMS) {
+        console.log('✅ API room assignment complete:', {
+          totalRooms: Object.keys(assignments.rooms).length,
+          participantAssignments: Object.keys(assignments.participants).length
+        });
+      }
+
+      return assignments;
+
+    } catch (error) {
+      console.error('❌ Daily.co API room creation failed:', error);
+      throw new Error(`API room creation failed: ${error.message}`);
+    }
+  }
+
+  // Create a single room via Daily.co API
+  async createDailyRoom(roomName, roomType) {
+    const maxParticipants = roomType === 'community' ? 50 : this.getRoomSize(roomType) + 2;
+    try {
+      // Prefer Netlify serverless function to keep API key secret
+      const resp = await fetch('/.netlify/functions/daily-create-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Netlify function expects: roomName, roomType, maxParticipants
+        body: JSON.stringify({ roomName: roomName, roomType: roomType, maxParticipants: maxParticipants })
+      });
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(`Proxy error: ${resp.status} - ${text}`);
+      }
+      const data = await resp.json();
+      // Function returns shape: { success: boolean, room: { ... } }
+      if (!data?.success || !data?.room?.url) {
+        const errMsg = data?.error || 'Unknown proxy error';
+        throw new Error(`Daily.co API error: ${errMsg}`);
+      }
+      if (DEBUG_ROOMS) console.log('✅ Created Daily room via proxy:', data.room);
+      return data.room;
+    } catch (e) {
+      if (DEBUG_ROOMS) console.warn('Proxy create failed; falling back to deterministic URL', e.message);
+      // Fallback to deterministic URL (will still fail to join if room truly does not exist)
+      return {
+        id: roomName,
+        name: roomName,
+        url: this.getRoomUrlFromName(roomName),
+        type: roomType,
+        maxParticipants,
+        createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 24*60*60*1000).toISOString()
+      };
+    }
+  }
 }
 
 // Export singleton instance
 export const roomManager = new RoomManager();
 export default RoomManager;
+
