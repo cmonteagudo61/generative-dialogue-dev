@@ -1,3 +1,4 @@
+
 // Netlify Function: Server-authoritative session orchestration (CORS-free)
 // Endpoints (same-origin):
 //  - POST /.netlify/functions/session-orchestrator/start-main
@@ -67,7 +68,7 @@ exports.handler = async (event) => {
       const participants = Array.isArray(body.participants) ? body.participants : state.participants;
       const hostName = body.hostName || state.hostName;
       const ts = String(Date.now()).slice(-6);
-      const mainName = `${sessionId}-community-main`;
+      const mainName = `${slug}-community-main`;
       const main = await createDailyRoom(mainName, 'community', 50);
       state.participants = participants;
       state.hostName = hostName;
@@ -98,13 +99,13 @@ exports.handler = async (event) => {
       const ts = String(Date.now()).slice(-6);
 
       // Always fresh main to avoid expired rooms
-      const main = await createDailyRoom(`${sessionId}-community-main`, 'community', 50);
+      const main = await createDailyRoom(`${slug}-community-main`, 'community', 50);
       const rooms = { main: { ...main, participants: [] } };
       const assignments = {};
 
       const roomIds = [];
       for (let i = 0; i < roomsNeeded; i++) {
-        const r = await createDailyRoom(`${sessionId}-${roomType}-${i+1}-${ts}`, roomType, size + 2);
+        const r = await createDailyRoom(`${slug}-${roomType}-${i+1}-${ts}`, roomType, size + 2);
         rooms[r.id] = { ...r, participants: [] };
         roomIds.push(r.id);
       }
@@ -135,7 +136,7 @@ exports.handler = async (event) => {
     if (path.endsWith('/end-breakouts')) {
       const participants = state.participants || [];
       const ts = String(Date.now()).slice(-6);
-      const main = await createDailyRoom(`${sessionId}-community-main`, 'community', 50);
+      const main = await createDailyRoom(`${slug}-community-main`, 'community', 50);
       const rooms = { main: { ...main, participants: participants.map(p => p.id) } };
       const assignments = {};
       participants.forEach(p => {
