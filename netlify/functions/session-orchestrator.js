@@ -32,9 +32,9 @@ function roomSize(type) {
   }
 }
 
-async function createDailyRoom(roomName, roomType, maxParticipants) {
+async function createDailyRoom(roomName, roomType, maxParticipants, baseUrl) {
   // Proxy to our existing Daily function to keep API key server-side
-  const res = await fetch(`${process.env.URL || ''}/.netlify/functions/daily-create-room`, {
+  const res = await fetch(`${baseUrl}/.netlify/functions/daily-create-room`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ roomName, roomType, maxParticipants })
@@ -61,15 +61,24 @@ exports.handler = async (event) => {
     }
     const path = event.path || '';
     const body = event.body ? JSON.parse(event.body) : {};
-    const sessionId = body.sessionId || body.session || body.sid || 'OPUS-40';
+    // Build a Daily-safe slug and same-origin base URL
+    const rawSid = body.sessionId || body.session || body.sid || 'OPUS-40';
+    const slug = String(rawSid)
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/--+/g, '-')
+      .replace(/^-|-$/g, '');
+    const proto = event.headers['x-forwarded-proto'] || 'https';
+    const host = event.headers.host;
+    const baseUrl = `${proto}://${host}`;
+    const sessionId = rawSid;
     const state = getState(sessionId);
 
     if (path.endsWith('/start-main')) {
       const participants = Array.isArray(body.participants) ? body.participants : state.participants;
       const hostName = body.hostName || state.hostName;
-      const ts = String(Date.now()).slice(-6);
       const mainName = `${slug}-community-main`;
-      const main = await createDailyRoom(mainName, 'community', 50);
+      const main = await createDailyRoom(mainName, 'community', 50, baseUrl);
       state.participants = participants;
       state.hostName = hostName;
       state.rooms = { main: { ...main, participants: participants.map(p => p.id) } };
@@ -96,16 +105,16 @@ exports.handler = async (event) => {
       const host = participants.find(p => p.isHost) || null;
       const nonHost = participants.filter(p => !p.isHost);
       const roomsNeeded = Math.floor(nonHost.length / size);
-      const ts = String(Date.now()).slice(-6);
 
       // Always fresh main to avoid expired rooms
-      const main = await createDailyRoom(`${slug}-community-main`, 'community', 50);
+      const main = await createDailyRoom(`${slug}-community-main`, 'community', 50, baseUrl);
       const rooms = { main: { ...main, participants: [] } };
       const assignments = {};
 
       const roomIds = [];
       for (let i = 0; i < roomsNeeded; i++) {
-        const r = await createDailyRoom(`${slug}-${roomType}-${i+1}-${ts}`, roomType, size + 2);
+        const ts = String(Date.now()).slice(-6);
+        const r = await createDailyRoom(`${slug}-${roomType}-${i+1}-${ts}`, roomType, size + 2, baseUrl);
         rooms[r.id] = { ...r, participants: [] };
         roomIds.push(r.id);
       }
@@ -135,8 +144,7 @@ exports.handler = async (event) => {
 
     if (path.endsWith('/end-breakouts')) {
       const participants = state.participants || [];
-      const ts = String(Date.now()).slice(-6);
-      const main = await createDailyRoom(`${slug}-community-main`, 'community', 50);
+      const main = await createDailyRoom(`${slug}-community-main`, 'community', 50, baseUrl);
       const rooms = { main: { ...main, participants: participants.map(p => p.id) } };
       const assignments = {};
       participants.forEach(p => {
