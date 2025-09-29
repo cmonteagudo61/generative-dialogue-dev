@@ -127,6 +127,7 @@ const CommunityViewExperimental = React.memo(({
   const resizeObservers = useRef(new Map());
   const trackStates = useRef(new Map());
   const videoUpdateTimers = useRef(new Map()); // Throttle video updates
+  const mediaStreamsRef = useRef(new Map()); // Cache MediaStreams per track id to avoid churn
 
   // Accept both array and object - MOVED UP to fix dependency order
   const realParticipants = useMemo(() => (
@@ -183,14 +184,7 @@ const CommunityViewExperimental = React.memo(({
     const mockCount = Math.max(0, mockParticipantCount - realParticipants.length);
     const mockParticipants = generateMockParticipants(mockCount);
     
-    console.log('📜 Scroll Test - Participant Array:', {
-      realCount: realParticipants.length,
-      mockParticipantCount,
-      mockCount,
-      mockGenerated: mockParticipants.length,
-      totalParticipants: realParticipants.length + mockParticipants.length,
-      testingMode: 'SCROLL_TESTING_500_PARTICIPANTS'
-    });
+    // Quiet logs in production to reduce jank
     
     return [...realParticipants, ...mockParticipants];
   }, [participants, mockParticipantCount, generateMockParticipants]);
@@ -224,7 +218,7 @@ const CommunityViewExperimental = React.memo(({
       const currentTrackState = trackStates.current.get(sessionId);
       
       // More robust track comparison - check multiple properties
-      const trackChanged = !currentTrackState || 
+      const trackChanged = !currentTrackState ||
                           (track?.id !== currentTrackState.trackId) ||
                           (track?.enabled !== currentTrackState.enabled) ||
                           (track?.readyState !== currentTrackState.readyState);
@@ -236,31 +230,27 @@ const CommunityViewExperimental = React.memo(({
            clearTimeout(existingTimer);
          }
          
-         const timer = setTimeout(() => {
+        const timer = setTimeout(() => {
            // Only update if track actually changed and element still exists
            const currentEl = videoRefs.current.get(sessionId);
            if (currentEl && track) {
-             const newMediaStream = new window.MediaStream([track]);
-             if (currentEl.srcObject !== newMediaStream) {
-               currentEl.srcObject = newMediaStream;
-             }
-             
-             // Store enhanced track state
+            // Reuse a single MediaStream per track to avoid tearing
+            let ms = mediaStreamsRef.current.get(track.id);
+            if (!ms) {
+              ms = new window.MediaStream([track]);
+              mediaStreamsRef.current.set(track.id, ms);
+            }
+            if (currentEl.srcObject !== ms) {
+              currentEl.srcObject = ms;
+            }
+            // Store enhanced track state
              trackStates.current.set(sessionId, {
                trackId: track.id,
                enabled: track.enabled,
                readyState: track.readyState,
                lastUpdate: Date.now()
              });
-             
-                           // Reduced logging for performance (500 participants)
-              if (Math.random() < 0.02) { // Only log 2% of updates for 500 participants
-                console.log('🎥 Video track updated (throttled) for', sessionId, {
-                  trackId: track.id,
-                  enabled: track.enabled,
-                  readyState: track.readyState
-                });
-              }
+            // logging disabled for stability
            }
            videoUpdateTimers.current.delete(sessionId);
          }, 50); // 50ms throttle to prevent rapid fire updates
@@ -271,17 +261,13 @@ const CommunityViewExperimental = React.memo(({
          el.srcObject = null;
          trackStates.current.delete(sessionId);
          
-         // Clear any pending update
+        // Clear any pending update
          const existingTimer = videoUpdateTimers.current.get(sessionId);
          if (existingTimer) {
            clearTimeout(existingTimer);
            videoUpdateTimers.current.delete(sessionId);
          }
-         
-                   // Reduced logging for performance (500 participants)
-          if (Math.random() < 0.02) { // Only log 2% of removals for 500 participants
-            console.log('🎥 Video track removed for', sessionId);
-          }
+        // logging disabled for stability
        }
     };
   }, [participantArray]); // Include participantArray dependency
@@ -360,12 +346,7 @@ const CommunityViewExperimental = React.memo(({
     };
   }, []);
 
-  // Debug logging for centerMousePosition
-  useEffect(() => {
-    console.log('🔍 CommunityViewExperimental magnifier active:', {
-      isMagnifierActive,
-    });
-  }, [isMagnifierActive]);
+  useEffect(() => {}, [isMagnifierActive]);
 
   // Constants
   const MIN_SIZE = 60;
@@ -381,11 +362,7 @@ const CommunityViewExperimental = React.memo(({
   useEffect(() => {
     // Always show all participants to match the behavior of the first 12
     setVisibleRange({ start: 0, end: participantArray.length });
-    console.log('👁️ Full visible range (virtualization disabled):', {
-      start: 0,
-      end: participantArray.length,
-      totalParticipants: participantArray.length
-    });
+    // quiet
   }, [participantArray.length, isMagnifierActive]);
 
   // Calculate visible range based on scroll position
@@ -395,12 +372,7 @@ const CommunityViewExperimental = React.memo(({
     // FIXED: Always show all participants to match first 12 behavior
     // This eliminates the virtualization that was causing hover issues
     setVisibleRange({ start: 0, end: participantArray.length });
-    console.log('👁️ Full visible range (virtualization disabled):', {
-      start: 0,
-      end: participantArray.length,
-      totalParticipants: participantArray.length,
-      reason: 'disabled_virtualization_for_universal_hover'
-    });
+    // quiet
   }, [participantArray.length]);
 
   // Handle scroll events
@@ -424,7 +396,6 @@ const CommunityViewExperimental = React.memo(({
 
   useEffect(() => {
     if (isMagnifierActive) {
-      console.log('🔍 Magnifier activated - forcing full render');
       // Force immediate update of visible range when magnifier becomes active
       updateVisibleRange();
     }
@@ -446,16 +417,7 @@ const CommunityViewExperimental = React.memo(({
       const totalRows = Math.ceil(participantArray.length / feedsPerRow);
       const totalHeight = totalRows * MIN_SIZE;
 
-      console.log('📏 Grid resize (responsive):', {
-        availableWidth,
-        width,
-        height,
-        feedsPerRow,
-        totalRows,
-        totalHeight,
-        participantCount: participantArray.length,
-        magnifierActive: isMagnifierActive
-      });
+      // quiet
 
       setGridStyle({
         width: '100%',
@@ -577,6 +539,15 @@ const CommunityViewExperimental = React.memo(({
       feedSize={MIN_SIZE}
     >
       <style>{`
+        /* Scoped anti-flicker: disable transitions/animations and stabilize video */
+        .experimental-community-container,
+        .experimental-community-container *,
+        .experimental-community-container *::before,
+        .experimental-community-container *::after {
+          animation: none !important;
+          transition: none !important;
+          backface-visibility: hidden !important;
+        }
         .experimental-community-container {
           position: relative !important;
           box-sizing: border-box !important;
@@ -696,7 +667,7 @@ const CommunityViewExperimental = React.memo(({
           border-radius: 0px; /* square corners */
           border: 1px solid #333;
           pointer-events: none;
-          transition: opacity 0.2s ease, visibility 0.2s ease;
+          /* no transitions to avoid flicker */
         }
         
         /* JAVASCRIPT-BACKED SOLUTION: Ensure hover works for ALL participants */
@@ -714,7 +685,7 @@ const CommunityViewExperimental = React.memo(({
         /* Force all name labels to be hoverable */
         .experimental-name-label {
           pointer-events: none !important;
-          transition: opacity 0.2s ease !important;
+          /* no transitions to avoid flicker */
         }
         
         .experimental-name-label {
@@ -733,6 +704,9 @@ const CommunityViewExperimental = React.memo(({
           box-shadow: none !important;
           margin: 0 !important;
           padding: 0 !important;
+          transform: none !important;
+          will-change: auto !important;
+          backface-visibility: hidden !important;
         }
       `}</style>
       
@@ -758,9 +732,7 @@ const CommunityViewExperimental = React.memo(({
           style={gridStyle}
           className="experimental-community-container"
           data-magnifier-active={isMagnifierActive ? "true" : "false"}
-          onMouseEnter={() => {
-            console.log('🖱️ Container mouse enter - data-magnifier-active:', isMagnifierActive ? "true" : "false");
-          }}
+          onMouseEnter={() => {}}
         >
           {renderParticipants()}
         </div>
