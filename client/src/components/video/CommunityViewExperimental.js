@@ -121,6 +121,7 @@ const CommunityViewExperimental = React.memo(({
   const [gridStyle, setGridStyle] = useState({});
   const [debugInfo, setDebugInfo] = useState({});
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 50 });
+  const feedsPerRowRef = useRef(Math.max(1, Math.floor(((typeof window !== 'undefined' ? window.innerWidth : 960) ) / 60)));
 
   // FLICKERING FIX: Create stable refs for video elements with throttling
   const videoRefs = useRef(new Map());
@@ -375,24 +376,8 @@ const CommunityViewExperimental = React.memo(({
     // quiet
   }, [participantArray.length]);
 
-  // Handle scroll events
-  useEffect(() => {
-    const scrollContainer = scrollWrapperRef.current;
-    if (!scrollContainer) return;
-
-    const handleScroll = () => {
-      requestAnimationFrame(updateVisibleRange);
-    };
-
-    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-    
-    // Initial calculation
-    updateVisibleRange();
-
-    return () => {
-      scrollContainer.removeEventListener('scroll', handleScroll);
-    };
-  }, [updateVisibleRange]);
+  // Handle scroll events (disabled to prevent heartbeat reflows)
+  useEffect(() => { updateVisibleRange(); }, [updateVisibleRange]);
 
   useEffect(() => {
     if (isMagnifierActive) {
@@ -401,78 +386,22 @@ const CommunityViewExperimental = React.memo(({
     }
   }, [isMagnifierActive, updateVisibleRange]);
 
-  // Grid resize handler with improved responsiveness
+  // Static grid sizing to avoid continuous resize-induced reflows
   useEffect(() => {
-    function handleResize() {
-      if (!gridRef.current) return;
-
-      const container = gridRef.current;
-      const scrollWrapper = scrollWrapperRef.current;
-      
-      const availableWidth = scrollWrapper ? scrollWrapper.clientWidth : container.offsetWidth;
-      const width = Math.max(availableWidth, MIN_SIZE);
-      const height = container.offsetHeight || 800;
-
-      const feedsPerRow = Math.max(1, Math.floor(width / MIN_SIZE));
-      const totalRows = Math.ceil(participantArray.length / feedsPerRow);
-      const totalHeight = totalRows * MIN_SIZE;
-
-      // quiet
-
-      setGridStyle({
-        width: '100%',
-        height: `${totalHeight}px`,
-        position: 'relative',
-        backgroundColor: '#000',
-        overflow: 'visible'
-      });
-
-      setDebugInfo({
-        gridAreaWidth: width,
-        gridAreaHeight: height,
-        feedsPerRow,
-        totalRows,
-        totalHeight,
-        participantCount: participantArray.length,
-        magnifierActive: isMagnifierActive
-      });
-
-      requestAnimationFrame(() => {
-        updateVisibleRange();
-      });
-    }
-
-    const initialTimer = setTimeout(handleResize, 10);
-
-    let resizeTimeout;
-    const throttledResize = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(handleResize, 50);
-    };
-    
-    window.addEventListener('resize', throttledResize);
-    
-    let resizeObserver;
-    if (scrollWrapperRef.current && typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver((entries) => {
-        for (let _entry of entries) {
-          throttledResize();
-        }
-      });
-      resizeObserver.observe(scrollWrapperRef.current);
-    }
-    
-
-    return () => {
-      window.removeEventListener('resize', throttledResize);
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-      }
-      clearTimeout(initialTimer);
-      
-      clearTimeout(resizeTimeout);
-    };
-  }, [participantArray.length, isMagnifierActive, updateVisibleRange]);
+    const feedsPerRow = feedsPerRowRef.current;
+    const totalRows = Math.ceil(participantArray.length / feedsPerRow);
+    const totalHeight = totalRows * MIN_SIZE;
+    setGridStyle({
+      width: '100%',
+      height: `${totalHeight}px`,
+      position: 'relative',
+      backgroundColor: '#000',
+      overflow: 'visible'
+    });
+    setDebugInfo({ feedsPerRow, totalRows, totalHeight, participantCount: participantArray.length });
+    updateVisibleRange();
+    // No listeners attached on purpose
+  }, [participantArray.length, updateVisibleRange]);
 
   // Participant status helper
   const getParticipantIcon = (participant) => {
@@ -495,7 +424,7 @@ const CommunityViewExperimental = React.memo(({
     return participantsToRender.map((participant, renderIndex) => {
       const i = visibleRange.start + renderIndex;
       const feedSize = MIN_SIZE;
-      const feedsPerRow = debugInfo.feedsPerRow || 1;
+      const feedsPerRow = debugInfo.feedsPerRow || feedsPerRowRef.current || 10;
       const col = i % feedsPerRow;
       const row = Math.floor(i / feedsPerRow);
       const x = col * feedSize;
