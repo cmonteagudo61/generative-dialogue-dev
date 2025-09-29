@@ -437,39 +437,67 @@ class RoomManager {
   // Create a single room via Daily.co API
   async createDailyRoom(roomName, roomType) {
     const maxParticipants = roomType === 'community' ? 50 : this.getRoomSize(roomType) + 2;
-    try {
-      // Prefer Netlify serverless function to keep API key secret
-      const resp = await fetch('/.netlify/functions/daily-create-room', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // Netlify function expects: roomName, roomType, maxParticipants
-        body: JSON.stringify({ roomName: roomName, roomType: roomType, maxParticipants: maxParticipants })
-      });
-      if (!resp.ok) {
-        const text = await resp.text();
-        throw new Error(`Proxy error: ${resp.status} - ${text}`);
+    
+    const roomConfig = {
+      name: roomName,
+      properties: {
+        max_participants: maxParticipants,
+        enable_chat: true,
+        enable_screenshare: true,
+        start_video_off: false,
+        start_audio_off: false,
+        exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hour expiry
       }
-      const data = await resp.json();
-      // Function returns shape: { success: boolean, room: { ... } }
-      if (!data?.success || !data?.room?.url) {
-        const errMsg = data?.error || 'Unknown proxy error';
-        throw new Error(`Daily.co API error: ${errMsg}`);
-      }
-      if (DEBUG_ROOMS) console.log('✅ Created Daily room via proxy:', data.room);
-      return data.room;
-    } catch (e) {
-      if (DEBUG_ROOMS) console.warn('Proxy create failed; falling back to deterministic URL', e.message);
-      // Fallback to deterministic URL (will still fail to join if room truly does not exist)
-      return {
-        id: roomName,
-        name: roomName,
-        url: this.getRoomUrlFromName(roomName),
-        type: roomType,
-        maxParticipants,
-        createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 24*60*60*1000).toISOString()
-      };
+    };
+
+    if (DEBUG_ROOMS) {
+      console.log(`🎥 Creating Daily.co room: ${roomName}`, roomConfig);
     }
+
+    const response = await fetch('https://api.daily.co/v1/rooms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${DAILY_API_KEY}`
+      },
+      body: JSON.stringify(roomConfig)
+    });
+
+    if (!response.ok) {
+      // If room already exists (409), return deterministic room metadata
+      if (response.status === 409) {
+        const url = this.getRoomUrlFromName(roomName);
+        return {
+          id: roomName,
+          name: roomName,
+          url,
+          type: roomType,
+          maxParticipants: roomType === 'community' ? 50 : this.getRoomSize(roomType) + 2,
+          createdAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 24*60*60*1000).toISOString()
+        };
+      }
+      const error = await response.text();
+      throw new Error(`Daily.co API error: ${response.status} - ${error}`);
+    }
+
+    const roomData = await response.json();
+    
+    const room = {
+      id: roomData.name,
+      name: roomData.name,
+      url: roomData.url,
+      type: roomType,
+      maxParticipants: roomConfig.properties.max_participants,
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(roomConfig.properties.exp * 1000).toISOString()
+    };
+
+    if (DEBUG_ROOMS) {
+      console.log(`✅ Created Daily.co room: ${room.name} → ${room.url}`);
+    }
+
+    return room;
   }
 }
 

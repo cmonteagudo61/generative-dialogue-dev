@@ -470,18 +470,19 @@ button {
   flex-direction: column;
   flex-grow: 1;
   overflow: hidden;
+  height: 100%;
 }
 
 /* Grid wrapper */
 .grid-wrapper {
   display: flex;
-  height: 45vh;
-  min-height: 300px;
+  height: 100%;
+  min-height: 0;
 }
 
 @media (min-width: 768px) {
   .grid-wrapper {
-    height: 50vh;
+    height: 100%;
   }
 }
 

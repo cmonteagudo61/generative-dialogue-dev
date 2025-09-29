@@ -144,8 +144,8 @@
   border: 1px solid rgba(99, 179, 237, 0.3);
 }
 
-/* Main Content */
-.main-content {
+/* Main Content (scoped to orchestrator only) */
+.scalable-session-orchestrator .main-content {
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
@@ -442,7 +442,7 @@
     text-align: center;
   }
   
-  .main-content {
+  .scalable-session-orchestrator .main-content {
     padding: 1rem;
   }
   

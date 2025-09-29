@@ -42,7 +42,7 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false
   const [hovered, setHovered] = useState(null);
   
   // Log activeSize (from props) and currentSize (internal state) on every render (for debugging)
-  const hostFlag = isHost || localStorage.getItem('gd_is_host') === 'true';
+  const hostFlag = !!isHost;
   if (localStorage.getItem('gd_debug_nav') === '1') {
     console.log("[NavigationMap] activeSize (prop):", activeSize, "currentSize (internal):", currentSize);
   }
@@ -128,6 +128,8 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false
   
   // Handle click on nav item
   const handleNavItemClick = (size) => {
+    // Only the host can trigger navigation actions
+    if (!hostFlag) return;
     // Keep string IDs as strings, convert numeric strings to numbers
     const newSize = (size === 'all' || size === 'fishbowl') ? size : parseInt(size);
     setCurrentSize(newSize);
@@ -144,7 +146,7 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false
   };
   
   return (
-    <div className="nav-map">
+    <div className="nav-map" style={{ pointerEvents: hostFlag ? 'auto' : 'none', opacity: hostFlag ? 1 : 0.95 }}>
       {SIZES.map((size) => {
         const isActive = currentSize === size.id || (typeof currentSize === 'number' && currentSize === parseInt(size.id));
         const isHovered = hovered === size.id;
@@ -159,12 +161,14 @@ const NavigationMap = React.memo(({ activeSize = 3, onSizeChange, isHost = false
         return (
           <div
             key={size.id}
-            className={`nav-item${isActive ? ' active' : ''}${isHovered ? ' hovered' : ''}`}
+            className={`nav-item${isActive ? ' active' : ''}${isHovered ? ' hovered' : ''}${hostFlag ? '' : ' disabled'}`}
             data-size={size.id}
             data-icon-name={size.iconName}
+            title={hostFlag ? size.name : 'Host controls only'}
+            style={{ cursor: hostFlag ? 'pointer' : 'default' }}
             onClick={() => handleNavItemClick(size.id)}
-            onMouseEnter={() => setHovered(size.id)}
-            onMouseLeave={() => setHovered(null)}
+            onMouseEnter={() => { if (hostFlag) setHovered(size.id); }}
+            onMouseLeave={() => { if (hostFlag) setHovered(null); }}
           >
             <img
               src={icon}

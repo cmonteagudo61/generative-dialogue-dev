@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import NavigationMap from './NavigationMap';
 import BottomContentArea from './BottomContentArea';
 import FooterNavigation from './FooterNavigation';
@@ -84,6 +84,28 @@ const AppLayout = ({
 }) => {
   const isNarrow = useMediaQuery('(max-width: 1100px)');
   const isMobile = useMediaQuery('(max-width: 480px)');
+
+  // Robust host detection fallback (derives from URL & stored session if prop not reliable)
+  const isHostEffective = useMemo(() => {
+    try {
+      if (isHost) return true;
+      // Primary: per-tab flag set by GenerativeDialogue
+      const ssFlag = sessionStorage.getItem('gd_is_host_tab');
+      if (ssFlag === '1') return true;
+      // Fallback: URL + stored session hostName
+      const params = new URLSearchParams(window.location.search);
+      const urlName = (params.get('name') || '').trim().toLowerCase();
+      const sid = params.get('session') || params.get('sessionId') || '';
+      if (!sid || !urlName) return false;
+      const storedRaw = localStorage.getItem(`session_${sid}`);
+      if (!storedRaw) return false;
+      const stored = JSON.parse(storedRaw);
+      const hostName = String(stored?.hostName || '').trim().toLowerCase();
+      return !!hostName && hostName === urlName;
+    } catch (_) {
+      return !!isHost;
+    }
+  }, [isHost]);
   // console.log('isNarrow:', isNarrow, 'isMobile:', isMobile, 'participantCount:', participantCount);
 
   const getCurrentStage = () => {
@@ -135,6 +157,18 @@ const AppLayout = ({
         )}
       </div>
       <div className="participant-counter-fixed">
+        {/* Build tag for cache-busting verification (host-only) */}
+        {isHostEffective && (
+          <span style={{
+            marginRight: 8,
+            background: '#3E4C71',
+            color: 'white',
+            padding: '2px 8px',
+            borderRadius: 10,
+            fontSize: 10,
+            fontWeight: 700
+          }}>GD v: nav-gate+fullgroups</span>
+        )}
         {participantCount != null && (
           <span className="participant-badge">
             {isMobile ? participantCount : `${participantCount} ${participantCount === 1 ? 'participant' : 'participants'}`}
@@ -162,7 +196,7 @@ const AppLayout = ({
               </div>
             ))}
           </nav>
-          {isHost && (localStorage.getItem('gd_show_dev_controls') === '1') && (
+          {isHostEffective && (localStorage.getItem('gd_show_dev_controls') === '1') && (
             <div className="host-controls" style={{ marginRight: 8 }}>
               <button className="control-button" onClick={() => onHostNavigateStage('connect')}>Go CONNECT</button>
               <button className="control-button" onClick={() => onHostNavigateStage('explore')}>Go EXPLORE</button>
@@ -175,19 +209,19 @@ const AppLayout = ({
         </div>
       </header>
       
-      <div className="main-content">
+      <div className="main-content" style={{ padding: 0 }}>
         {isNarrow && <div className="secondary-header">{headerInfo}</div>}
         <div className="grid-wrapper">
           <NavigationMap
             activeSize={activeSize}
-            isHost={isHost}
+            isHost={isHostEffective}
             onSizeChange={(newSize) => {
               // Preserve existing behavior
               if (onSizeChange) onSizeChange(newSize);
               // Host-triggered breakout actions via nav
               try {
                 // Only the host may trigger breakout actions
-                const hostFlag = (isHost || localStorage.getItem('gd_is_host') === 'true');
+                const hostFlag = !!isHostEffective;
                 const map = { 1: 'self', 2: 'dyad', 3: 'triad', 4: 'quad', 6: 'kiva', fishbowl: 'fishbowl' };
                 if (hostFlag) {
                   if (newSize === 'all') {
@@ -197,18 +231,18 @@ const AppLayout = ({
                     console.log('[HostNav] Create breakouts via nav:', map[newSize]);
                     window.dispatchEvent(new CustomEvent('host-create-breakouts', { detail: { roomType: map[newSize] } }));
                   }
+                  // Host writes the active icon for all tabs to highlight
+                  const prev = localStorage.getItem('gd_active_size');
+                  const next = String(newSize);
+                  if (prev !== next) localStorage.setItem('gd_active_size', next);
                 }
-                // Broadcast active icon for participants to highlight
-                const prev = localStorage.getItem('gd_active_size');
-                const next = String(newSize);
-                if (prev !== next) localStorage.setItem('gd_active_size', next);
               } catch (_) {}
             }}
           />
           <div className="viewing-area">
             <div className="view-content">
               {children}
-              {!isHost && (!participantName || participantName.trim().length === 0) && (
+              {!isHostEffective && (!participantName || participantName.trim().length === 0) && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
                   <div style={{ background: 'white', padding: 16, borderRadius: 8, width: 320 }}>
                     <h4 style={{ marginTop: 0, marginBottom: 8, color: '#3E4C71' }}>Enter your name</h4>
