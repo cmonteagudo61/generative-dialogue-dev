@@ -31,7 +31,7 @@ const ParticipantJoin = ({ sessionCode, onJoinSession, onBackToMain }) => {
             participants: [], // Empty initially
             createdAt: new Date().toISOString(),
             status: 'waiting',
-            maxParticipants: 6,
+            maxParticipants: 16,
             duration: 90,
             roomConfiguration: null,
             roomAssignments: null
@@ -83,7 +83,7 @@ const ParticipantJoin = ({ sessionCode, onJoinSession, onBackToMain }) => {
           participants: [],
           createdAt: new Date().toISOString(),
           status: 'waiting',
-          maxParticipants: 6,
+          maxParticipants: 16,
           duration: 90,
           roomConfiguration: null,
           roomAssignments: null

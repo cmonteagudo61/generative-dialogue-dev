@@ -35,7 +35,7 @@ const SessionJoin = ({ onJoinSession, sessionId = null }) => {
         }],
         createdAt: new Date().toISOString(),
         status: 'waiting',
-        maxParticipants: 6,
+        maxParticipants: 16,
         duration: 90, // Fixed 90 minutes
         breakoutRooms: {}
       };
@@ -80,7 +80,7 @@ const SessionJoin = ({ onJoinSession, sessionId = null }) => {
       const session = JSON.parse(sessionData);
       
       if (session.participants.length >= session.maxParticipants) {
-        setError('Session is full (6 participants maximum)');
+        setError(`Session is full (${session.participants.length}/${session.maxParticipants}). Please contact your host.`);
         return;
       }
 
@@ -183,7 +183,7 @@ const SessionJoin = ({ onJoinSession, sessionId = null }) => {
           <h3>Session Format</h3>
           <ul>
             <li>📅 <strong>Duration:</strong> 90 minutes</li>
-            <li>👥 <strong>Participants:</strong> Up to 6 people</li>
+            <li>👥 <strong>Participants:</strong> Up to 16 people</li>
             <li>🎯 <strong>Structure:</strong> Connect → Explore → Discover</li>
             <li>💬 <strong>Features:</strong> Breakout rooms + AI transcription</li>
           </ul>

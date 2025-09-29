@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 
 const VideoTileWithFit = ({ participant, getObjectFit, isMock }) => {
   const ref = useRef(null);
+  const streamCache = useRef(new Map());
 
   useEffect(() => {
     if (!ref.current) return;
@@ -12,7 +13,10 @@ const VideoTileWithFit = ({ participant, getObjectFit, isMock }) => {
 
   useEffect(() => {
     if (!isMock && ref.current && participant.tracks?.video?.persistentTrack) {
-      ref.current.srcObject = new MediaStream([participant.tracks.video.persistentTrack]);
+      const t = participant.tracks.video.persistentTrack;
+      let ms = streamCache.current.get(t.id);
+      if (!ms) { ms = new MediaStream([t]); streamCache.current.set(t.id, ms); }
+      if (ref.current.srcObject !== ms) ref.current.srcObject = ms;
     }
   }, [participant, isMock]);
 
@@ -43,6 +47,10 @@ const VideoTileWithFit = ({ participant, getObjectFit, isMock }) => {
         objectPosition: 'center',
         background: '#000',
         display: 'block',
+        animation: 'none',
+        transition: 'none',
+        backfaceVisibility: 'hidden',
+        willChange: 'auto',
       }}
     />
   );
