@@ -113,7 +113,7 @@ const CommunityViewExperimental = React.memo(({
   forceUpdate = 0,
   onCenterParticipantChange = null,
   onParticipantArrayReady = null,
-  mockParticipantCount = 500
+  mockParticipantCount = 0
 }) => {
   // State declarations must come first
   const gridRef = useRef(null);
@@ -172,6 +172,15 @@ const CommunityViewExperimental = React.memo(({
     });
   }, [realParticipants]);
 
+  // Resolve mock count (prefer localStorage override when available)
+  const resolvedMockCount = useMemo(() => {
+    try {
+      const v = Number(localStorage.getItem('gd_mock_count'));
+      if (Number.isFinite(v)) return v;
+    } catch (_) {}
+    return mockParticipantCount || 0;
+  }, [mockParticipantCount]);
+
   // FIXED: Properly memoize participantArray to prevent infinite re-renders
   const participantArray = useMemo(() => {
     const realParticipants = participants.map((p, index) => ({
@@ -182,13 +191,13 @@ const CommunityViewExperimental = React.memo(({
     }));
 
     // For demo/testing: add mock participants based on controlled count
-    const mockCount = Math.max(0, mockParticipantCount - realParticipants.length);
+    const mockCount = Math.max(0, resolvedMockCount - realParticipants.length);
     const mockParticipants = generateMockParticipants(mockCount);
     
     // Quiet logs in production to reduce jank
     
     return [...realParticipants, ...mockParticipants];
-  }, [participants, mockParticipantCount, generateMockParticipants]);
+  }, [participants, resolvedMockCount, generateMockParticipants]);
 
   // FLICKERING FIX: Enhanced stable video ref handler with Daily.co specific optimizations
   const createVideoRef = useCallback((sessionId) => {
