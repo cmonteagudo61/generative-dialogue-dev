@@ -96,8 +96,9 @@ export const VideoProvider = ({ children }) => {
     if (!dailyLoaded || !window.DailyIframe) return;
     if (callObjectRef.current) return;
 
-    // Create call object without invalid properties for call object mode
-    const call = window.DailyIframe.createCallObject();
+    // Prefer adopting an existing call object if one was created elsewhere
+    const existing = window.dailyCallObject;
+    const call = existing || window.DailyIframe.createCallObject();
     callObjectRef.current = call;
     setCallObject(call);
     window.dailyCallObject = call;
@@ -155,6 +156,21 @@ export const VideoProvider = ({ children }) => {
     call.on('participant-left', handleParticipantLeft);
     call.on('track-started', handleParticipantUpdated);
     call.on('error', handleError);
+
+    // If already joined (e.g., joined by a console script), seed state immediately
+    try {
+      const state = typeof call.meetingState === 'function' ? call.meetingState() : undefined;
+      if (state === 'joined-meeting') {
+        setIsConnected(true);
+        const currentParticipants = call.participants() || {};
+        const withCleanNames = {};
+        Object.keys(currentParticipants).forEach(id => {
+          const p = currentParticipants[id] || {};
+          withCleanNames[id] = { ...p, displayName: getCleanDisplayName(p.user_name) };
+        });
+        setParticipants(withCleanNames);
+      }
+    } catch (_) {}
 
     return () => {
       clearTimeout(throttleTimeoutRef.current);
@@ -280,20 +296,25 @@ export const VideoProvider = ({ children }) => {
   const participantArray = useMemo(() => Object.values(participants), [participants]);
 
   const composedParticipants = useMemo(() => {
-    const count = 12; // Fixed count for fishbowl demo
+    // Read desired mock count from localStorage; default to 0 (no mocks)
+    let desiredMocks = 0;
+    try {
+      const v = Number(localStorage.getItem('gd_mock_count'));
+      if (Number.isFinite(v) && v >= 0) desiredMocks = v;
+    } catch (_) {}
+
     const realParticipants = participantArray;
     const local = realParticipants.find(p => p.local);
     const remotes = realParticipants.filter(p => !p.local);
     
     let providedParticipants = local ? [local, ...remotes] : remotes;
 
-    if (providedParticipants.length < count) {
+    // Only add mocks when explicitly requested
+    if (desiredMocks > 0) {
       providedParticipants = [
         ...providedParticipants,
-        ...getMockParticipants(count - providedParticipants.length, providedParticipants.length + 1)
+        ...getMockParticipants(desiredMocks, providedParticipants.length + 1)
       ];
-    } else if (providedParticipants.length > count) {
-      providedParticipants = providedParticipants.slice(0, count);
     }
     return { providedParticipants, realParticipants, local };
   }, [participantArray]);
