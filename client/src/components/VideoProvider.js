@@ -88,50 +88,12 @@ export const VideoProvider = ({ children }) => {
   // --- Main useEffect for Daily.co setup ---
   useEffect(() => {
     if (!dailyLoaded || !window.DailyIframe) return;
-    if (callObjectRef.current) return;
 
-    // Event handlers attachment function
-    const attachEventHandlers = (call) => {
-      call.on('joined-meeting', handleJoinedMeeting);
-      call.on('left-meeting', handleLeftMeeting);
-      call.on('participant-joined', handleParticipantJoined);
-      call.on('participant-updated', handleParticipantUpdated);
-      call.on('participant-left', handleParticipantLeft);
-      call.on('track-started', handleParticipantUpdated);
-      call.on('error', handleError);
-    };
-
-    // More aggressive initialization with multiple retry attempts
-    const initializeCallObject = (attempt = 1) => {
-      try {
-        if (callObjectRef.current) return; // Already initialized
-        
-        console.log(`🔄 Daily.co initialization attempt ${attempt}`);
-        
-        // Create call object without invalid properties for call object mode
-        const call = window.DailyIframe.createCallObject();
-        callObjectRef.current = call;
-        setCallObject(call);
-        window.dailyCallObject = call;
-        
-        // Attach event handlers
-        attachEventHandlers(call);
-        
-        console.log('✅ Daily.co call object initialized successfully');
-      } catch (error) {
-        console.error(`❌ Daily.co initialization attempt ${attempt} failed:`, error);
-        
-        // Retry up to 5 times with increasing delays
-        if (attempt < 5) {
-          setTimeout(() => initializeCallObject(attempt + 1), attempt * 200);
-        } else {
-          console.error('❌ Daily.co initialization failed after 5 attempts');
-        }
-      }
-    };
-
-    // Start initialization with a small delay
-    setTimeout(() => initializeCallObject(), 100);
+    // Adopt existing call object or create one if missing
+    const call = callObjectRef.current || window.dailyCallObject || window.DailyIframe.createCallObject();
+    callObjectRef.current = call;
+    setCallObject(call);
+    window.dailyCallObject = call;
 
     const handleError = (e) => {
       console.error('📞 Daily.co error:', e);
@@ -141,13 +103,13 @@ export const VideoProvider = ({ children }) => {
     const handleJoinedMeeting = () => {
       console.log('📞 Daily.co: Joined meeting successfully');
       setIsConnected(true);
-      const currentParticipants = callObjectRef.current?.participants() || {};
+      const currentParticipants = call.participants();
       
       // Enhanced debugging for video feed issues
       console.log('🔍 VideoProvider: DETAILED ROOM ANALYSIS:');
-      console.log('🔍 VideoProvider: Room URL:', callObjectRef.current?.meetingState()?.roomUrl);
-      console.log('🔍 VideoProvider: Meeting ID:', callObjectRef.current?.meetingState()?.meetingId);
-      console.log('🔍 VideoProvider: Domain:', callObjectRef.current?.meetingState()?.domainName);
+      console.log('🔍 VideoProvider: Room URL:', call.meetingState()?.roomUrl);
+      console.log('🔍 VideoProvider: Meeting ID:', call.meetingState()?.meetingId);
+      console.log('🔍 VideoProvider: Domain:', call.meetingState()?.domainName);
       console.log('🔍 VideoProvider: Total participants in room:', Object.keys(currentParticipants).length);
       
       Object.keys(currentParticipants).forEach(id => {
@@ -179,22 +141,43 @@ export const VideoProvider = ({ children }) => {
       setParticipants({});
     };
 
-    // Event handlers will be attached during initialization
+    call.on('joined-meeting', handleJoinedMeeting);
+    call.on('left-meeting', handleLeftMeeting);
+    call.on('participant-joined', handleParticipantJoined);
+    call.on('participant-updated', handleParticipantUpdated);
+    call.on('participant-left', handleParticipantLeft);
+    call.on('track-started', handleParticipantUpdated);
+    call.on('error', handleError);
+
+    // If the call object is already joined (e.g., joined via a console script), seed state immediately
+    try {
+      const state = typeof call.meetingState === 'function' ? call.meetingState() : undefined;
+      if (state === 'joined-meeting') {
+        setIsConnected(true);
+        const currentParticipants = call.participants();
+        const participantsWithCleanNames = {};
+        Object.keys(currentParticipants || {}).forEach(id => {
+          participantsWithCleanNames[id] = {
+            ...currentParticipants[id],
+            displayName: getCleanDisplayName(currentParticipants[id]?.user_name)
+          };
+        });
+        setParticipants(participantsWithCleanNames);
+      }
+    } catch (_) {}
 
     return () => {
       clearTimeout(throttleTimeoutRef.current);
-      if (callObjectRef.current) {
-        callObjectRef.current.off('joined-meeting', handleJoinedMeeting);
-        callObjectRef.current.off('left-meeting', handleLeftMeeting);
-        callObjectRef.current.off('participant-joined', handleParticipantJoined);
-        callObjectRef.current.off('participant-updated', handleParticipantUpdated);
-        callObjectRef.current.off('participant-left', handleParticipantLeft);
-        callObjectRef.current.off('track-started', handleParticipantUpdated);
-        callObjectRef.current.off('error', handleError);
+      call.off('joined-meeting', handleJoinedMeeting);
+      call.off('left-meeting', handleLeftMeeting);
+      call.off('participant-joined', handleParticipantJoined);
+      call.off('participant-updated', handleParticipantUpdated);
+      call.off('participant-left', handleParticipantLeft);
+      call.off('track-started', handleParticipantUpdated);
+      call.off('error', handleError);
 
-        if (callObjectRef.current !== window.dailyCallObject) {
-          callObjectRef.current.destroy();
-        }
+      if (call !== window.dailyCallObject) {
+        call.destroy();
       }
       callObjectRef.current = null;
     };
@@ -202,59 +185,23 @@ export const VideoProvider = ({ children }) => {
 
   // --- Join Room Function ---
   const joinRoom = useCallback(async (roomUrl, userName = null) => {
-    // Ultra-robust readiness check with multiple strategies
+    // Ensure Daily script and call object are ready
+    if (!window.DailyIframe) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = DAILY_JS_URL;
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Failed to load Daily.co script'));
+        document.head.appendChild(script);
+      });
+    }
     if (!callObjectRef.current) {
-      console.log('🔄 Call object not ready, attempting comprehensive initialization...');
-      
-      // Strategy 1: Wait for existing initialization
-      for (let i = 0; i < 50; i++) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        if (callObjectRef.current) {
-          console.log('✅ Call object ready after waiting');
-          break;
-        }
-      }
-      
-      // Strategy 2: Force re-initialization if still not ready
-      if (!callObjectRef.current && window.DailyIframe) {
-        console.log('🔧 Force re-initializing Daily.co call object...');
-        try {
-          const call = window.DailyIframe.createCallObject();
-          callObjectRef.current = call;
-          setCallObject(call);
-          window.dailyCallObject = call;
-          
-          // Attach event handlers to the force-initialized call object
-          call.on('joined-meeting', () => {
-            console.log('📞 Daily.co: Joined meeting successfully');
-            setIsConnected(true);
-            const currentParticipants = callObjectRef.current?.participants() || {};
-            setParticipants(currentParticipants);
-          });
-          call.on('left-meeting', () => {
-            console.log('📞 Daily.co: Left meeting');
-            setIsConnected(false);
-            setParticipants({});
-          });
-          call.on('participant-joined', handleParticipantJoined);
-          call.on('participant-updated', handleParticipantUpdated);
-          call.on('participant-left', handleParticipantLeft);
-          call.on('track-started', handleParticipantUpdated);
-          call.on('error', (e) => {
-            console.error('📞 Daily.co error:', e);
-            setError(e.errorMsg || 'Unknown error');
-          });
-          
-          console.log('✅ Force re-initialization successful');
-        } catch (error) {
-          console.error('❌ Force re-initialization failed:', error);
-        }
-      }
-      
-      // Strategy 3: Final check
-      if (!callObjectRef.current) {
-        throw new Error('Call object not initialized after comprehensive attempts');
-      }
+      const call = window.dailyCallObject || (window.DailyIframe && window.DailyIframe.createCallObject());
+      if (!call) throw new Error('Call object not initialized');
+      callObjectRef.current = call;
+      setCallObject(call);
+      window.dailyCallObject = call;
     }
     
     // CRITICAL: Log exactly what room we're trying to join
