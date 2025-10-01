@@ -92,6 +92,47 @@ const GenerativeDialogueInner = ({
   const [roomAssignment, setRoomAssignment] = useState(null);
   const videoContainerRef = useRef(null);
 
+  // Lightweight progress overlay
+  const [progressVisible, setProgressVisible] = useState(false);
+  const [progressText, setProgressText] = useState('');
+  const [progressValue, setProgressValue] = useState(0);
+  useEffect(() => {
+    const onProgress = (e) => {
+      const d = (e && e.detail) || {};
+      setProgressText(String(d.text || 'Working...'));
+      const v = Math.max(0, Math.min(100, Number(d.value ?? 0)));
+      setProgressValue(v);
+      setProgressVisible(true);
+      if (v >= 100 || d.done) {
+        setTimeout(() => setProgressVisible(false), 400);
+      }
+    };
+    window.addEventListener('gd-progress', onProgress);
+    return () => window.removeEventListener('gd-progress', onProgress);
+  }, []);
+
+  // Show progress when host triggers breakouts/end; hide on session update
+  useEffect(() => {
+    const onCreate = (e) => {
+      const rt = (e && e.detail && e.detail.roomType) || '';
+      try { window.dispatchEvent(new CustomEvent('gd-progress', { detail:{ text:`Creating ${rt||'breakouts'}`, value:20 } })); } catch(_) {}
+    };
+    const onEnd = () => {
+      try { window.dispatchEvent(new CustomEvent('gd-progress', { detail:{ text:'Ending breakouts', value:20 } })); } catch(_) {}
+    };
+    const onUpdated = () => {
+      try { window.dispatchEvent(new CustomEvent('gd-progress', { detail:{ text:'Update applied', value:100, done:true } })); } catch(_) {}
+    };
+    window.addEventListener('host-create-breakouts', onCreate);
+    window.addEventListener('host-end-breakouts', onEnd);
+    window.addEventListener('session-updated', onUpdated);
+    return () => {
+      window.removeEventListener('host-create-breakouts', onCreate);
+      window.removeEventListener('host-end-breakouts', onEnd);
+      window.removeEventListener('session-updated', onUpdated);
+    };
+  }, []);
+
   // Use activeSize from props instead of internal state
   const [selectedParticipants, setSelectedParticipants] = useState([
     'mock-1', 'mock-2', 'mock-3', 'mock-4', 'mock-5', 'mock-6'
@@ -1033,6 +1074,14 @@ const GenerativeDialogueInner = ({
   }, [hostCreateBreakouts, hostEndBreakouts]);
   return (
     <React.Fragment>
+      {progressVisible && (
+        <div style={{position:'fixed', top:12, left:'50%', transform:'translateX(-50%)', zIndex:1100, background:'rgba(30,41,59,0.92)', color:'#fff', padding:'8px 12px', borderRadius:12, minWidth:220, boxShadow:'0 4px 12px rgba(0,0,0,0.25)'}}>
+          <div style={{fontSize:12, fontWeight:700, marginBottom:4}}>{progressText || 'Working...'}</div>
+          <div style={{width:220, height:6, background:'rgba(255,255,255,0.15)', borderRadius:4, overflow:'hidden'}}>
+            <div style={{width:`${progressValue}%`, height:'100%', background:'#22c55e', transition:'width 180ms linear'}} />
+          </div>
+        </div>
+      )}
       {/* Daily.co Video Integration - Show iframe when connected, fallback to VideoGrid */}
       {/* Video Grid with integrated Daily.co participants */}
       <VideoGrid 
