@@ -1,158 +1,125 @@
-// Netlify Function: Server-authoritative session orchestration (CORS-free)
-// Endpoints (same-origin):
-//  - POST /.netlify/functions/session-orchestrator/start-main
-//  - POST /.netlify/functions/session-orchestrator/create-breakouts
-//  - POST /.netlify/functions/session-orchestrator/end-breakouts
-
-const store = Object.create(null); // { [sessionId]: { version, status, currentPhase, participants, hostName, rooms, assignments } }
-
-function getState(sessionId) {
-  if (!store[sessionId]) {
-    store[sessionId] = {
-      version: 0,
-      status: 'waiting',
-      currentPhase: 'waiting',
-      participants: [],
-      hostName: 'Host',
-      rooms: {},
-      assignments: {}
-    };
-  }
-  return store[sessionId];
-}
-
-function roomSize(type) {
-  switch (type) {
-    case 'dyad': return 2;
-    case 'triad': return 3;
-    case 'quad': return 4;
-    case 'kiva': return 6;
-    default: return 2;
-  }
-}
-
-async function createDailyRoom(roomName, roomType, maxParticipants) {
-  // Proxy to our existing Daily function to keep API key server-side
-  const res = await fetch(`${process.env.URL || ''}/.netlify/functions/daily-create-room`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ roomName, roomType, maxParticipants })
-  });
-  const j = await res.json().catch(() => ({}));
-  if (!res.ok || j.success === false) {
-    const err = j?.error || String(res.status);
-    throw new Error(`Daily proxy error: ${err}`);
-  }
-  const real = j.room || j;
-  return {
-    id: real.name || real.id || roomName,
-    name: real.name || roomName,
-    url: real.url,
-    type: roomType,
-    maxParticipants: maxParticipants || roomSize(roomType) + 2
-  };
-}
+/*
+  Server-authoritative session orchestrator
+  Action implemented: normalize-dyads
+  - Creates a fresh MAIN room
+  - Assigns everyone to MAIN, then creates only full dyads (Math.floor) for non-hosts
+  - Host and leftovers stay in MAIN
+  Returns canonical sessionData with roomAssignments and status.
+*/
 
 exports.handler = async (event) => {
   try {
     if (event.httpMethod !== 'POST') {
       return { statusCode: 405, body: 'Method Not Allowed' };
     }
-    const path = event.path || '';
     const body = event.body ? JSON.parse(event.body) : {};
-    const sessionId = body.sessionId || body.session || body.sid || 'OPUS-40';
-    const state = getState(sessionId);
+    const action = body.action;
+    const sessionId = body.sessionId || body.session || 'SESSION';
+    const participants = Array.isArray(body.participants) ? body.participants : [];
 
-    if (path.endsWith('/start-main')) {
-      const participants = Array.isArray(body.participants) ? body.participants : state.participants;
-      const hostName = body.hostName || state.hostName;
-      const ts = String(Date.now()).slice(-6);
-      const mainName = `${sessionId}-community-main-${ts}`;
-      const main = await createDailyRoom(mainName, 'community', 50);
-      state.participants = participants;
-      state.hostName = hostName;
-      state.rooms = { main: { ...main, participants: participants.map(p => p.id) } };
-      state.assignments = {};
-      participants.forEach(p => {
-        state.assignments[p.id] = {
+    if (action !== 'normalize-dyads') {
+      return { statusCode: 400, body: JSON.stringify({ ok: false, error: 'Unsupported action' }) };
+    }
+
+    function roomSize(type) {
+      if (type === 'dyad') return 2;
+      if (type === 'triad') return 3;
+      if (type === 'quad') return 4;
+      if (type === 'kiva') return 6;
+      return 8;
+    }
+
+    const origin = (event.headers && ((event.headers['x-forwarded-proto'] && event.headers['host'])
+      ? (event.headers['x-forwarded-proto'] + '://' + event.headers['host'])
+      : null)) || process.env.URL || process.env.DEPLOY_URL || '';
+
+    async function createDailyRoom(roomType, maxParticipants) {
+      const res = await fetch(`${origin}/.netlify/functions/daily-create-room`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomType, maxParticipants, sessionCode: `${sessionId}-${roomType}-${Date.now().toString(36)}` })
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || j.success === false) {
+        throw new Error(j?.error || `Daily proxy error: ${res.status}`);
+      }
+      const real = j.room || j;
+      return {
+        id: real.name || real.id,
+        name: real.name,
+        url: real.url,
+        type: roomType,
+        maxParticipants: maxParticipants || roomSize(roomType) + 2
+      };
+    }
+
+    // Deduplicate participants by id and sort by name for stable pairing
+    const seen = new Set();
+    const stableParticipants = (participants || []).filter(p => p && p.id && !seen.has(p.id) && seen.add(p.id))
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+    const host = stableParticipants.find(p => p.isHost) || stableParticipants[0] || null;
+    const nonHost = stableParticipants.filter(p => !p.isHost);
+
+    // Create fresh main room
+    const main = await createDailyRoom('community', 16);
+
+    // Build dyads with Math.floor (full pairs only)
+    const pairs = [];
+    for (let i = 0; i + 1 < nonHost.length; i += 2) pairs.push([nonHost[i], nonHost[i + 1]]);
+
+    const rooms = { main: { id: 'main', name: main.name, url: main.url, type: 'community', participants: [] } };
+    const assignments = {};
+
+    // Create dyad rooms and assign pairs
+    for (let i = 0; i < pairs.length; i++) {
+      const [a, b] = pairs[i];
+      const r = await createDailyRoom('dyad', 4);
+      const id = `dyad-${i + 1}`;
+      rooms[id] = { id, name: r.name, url: r.url, type: 'dyad', participants: [a.id, b.id] };
+      [a, b].forEach(p => {
+        assignments[p.id] = {
           participantId: p.id,
           participantName: p.name,
-          roomId: 'main', roomName: main.name, roomUrl: main.url, roomType: 'community',
+          roomId: id,
+          roomName: r.name,
+          roomUrl: r.url,
+          roomType: 'dyad',
           assignedAt: new Date().toISOString()
         };
       });
-      state.status = 'main-room-active';
-      state.currentPhase = 'main-room';
-      state.version += 1;
-      return { statusCode: 200, body: JSON.stringify({ ok: true, version: state.version, sessionData: state }) };
     }
 
-    if (path.endsWith('/create-breakouts')) {
-      const roomType = body.roomType || 'dyad';
-      const participants = Array.isArray(body.participants) && body.participants.length ? body.participants : state.participants;
-      if (!participants || !participants.length) return { statusCode: 400, body: JSON.stringify({ error: 'participants required' }) };
-      const size = roomSize(roomType);
-      const host = participants.find(p => p.isHost) || null;
-      const nonHost = participants.filter(p => !p.isHost);
-      const roomsNeeded = Math.floor(nonHost.length / size);
-      const ts = String(Date.now()).slice(-6);
+    // Host + leftovers stay in main
+    const used = new Set(pairs.flat().map(p => p.id));
+    const leftovers = [host, ...nonHost.filter(p => !used.has(p.id))].filter(Boolean);
+    leftovers.forEach(p => {
+      rooms.main.participants.push(p.id);
+      assignments[p.id] = {
+        participantId: p.id,
+        participantName: p.name,
+        roomId: 'main',
+        roomName: main.name,
+        roomUrl: main.url,
+        roomType: 'community',
+        assignedAt: new Date().toISOString()
+      };
+    });
 
-      // Always fresh main to avoid expired rooms
-      const main = await createDailyRoom(`${sessionId}-community-main-${ts}`, 'community', 50);
-      const rooms = { main: { ...main, participants: [] } };
-      const assignments = {};
+    const sessionData = {
+      sessionId,
+      participants: stableParticipants,
+      roomAssignments: { rooms, participants: assignments },
+      status: 'rooms-assigned',
+      currentPhase: 'breakout-rooms',
+      version: Date.now()
+    };
 
-      const roomIds = [];
-      for (let i = 0; i < roomsNeeded; i++) {
-        const r = await createDailyRoom(`${sessionId}-${roomType}-${i+1}-${ts}`, roomType, size + 2);
-        rooms[r.id] = { ...r, participants: [] };
-        roomIds.push(r.id);
-      }
-      nonHost.forEach((p, idx) => {
-        const gi = Math.floor(idx / size);
-        if (gi < roomIds.length) {
-          const rk = roomIds[gi];
-          rooms[rk].participants.push(p.id);
-          assignments[p.id] = { participantId: p.id, participantName: p.name, roomId: rk, roomName: rooms[rk].name, roomUrl: rooms[rk].url, roomType, assignedAt: new Date().toISOString() };
-        } else {
-          rooms.main.participants.push(p.id);
-          assignments[p.id] = { participantId: p.id, participantName: p.name, roomId: 'main', roomName: rooms.main.name, roomUrl: rooms.main.url, roomType: 'community', assignedAt: new Date().toISOString() };
-        }
-      });
-      if (host) {
-        rooms.main.participants.unshift(host.id);
-        assignments[host.id] = { participantId: host.id, participantName: host.name, roomId: 'main', roomName: rooms.main.name, roomUrl: rooms.main.url, roomType: 'community', assignedAt: new Date().toISOString() };
-      }
-      state.rooms = rooms;
-      state.assignments = assignments;
-      state.status = 'rooms-assigned';
-      state.currentPhase = 'breakout-rooms';
-      state.participants = participants;
-      state.version += 1;
-      return { statusCode: 200, body: JSON.stringify({ ok: true, version: state.version, sessionData: state }) };
-    }
-
-    if (path.endsWith('/end-breakouts')) {
-      const participants = state.participants || [];
-      const ts = String(Date.now()).slice(-6);
-      const main = await createDailyRoom(`${sessionId}-community-main-${ts}`, 'community', 50);
-      const rooms = { main: { ...main, participants: participants.map(p => p.id) } };
-      const assignments = {};
-      participants.forEach(p => {
-        assignments[p.id] = { participantId: p.id, participantName: p.name, roomId: 'main', roomName: main.name, roomUrl: main.url, roomType: 'community', assignedAt: new Date().toISOString() };
-      });
-      state.rooms = rooms;
-      state.assignments = assignments;
-      state.status = 'main-room-active';
-      state.currentPhase = 'main-room';
-      state.version += 1;
-      return { statusCode: 200, body: JSON.stringify({ ok: true, version: state.version, sessionData: state }) };
-    }
-
-    return { statusCode: 404, body: 'Not Found' };
+    return { statusCode: 200, body: JSON.stringify({ ok: true, sessionData }) };
   } catch (e) {
-    return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
+    return { statusCode: 500, body: JSON.stringify({ ok: false, error: e.message }) };
   }
 };
+
+
 
 
