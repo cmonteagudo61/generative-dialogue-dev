@@ -33,13 +33,7 @@ exports.handler = async (event, context) => {
   try {
     const { sessionCode, hostName, participantCount, roomType, maxParticipants } = JSON.parse(event.body);
     
-    if (!sessionCode) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Session code is required' })
-      };
-    }
+    // sessionCode is optional; when missing, we auto-generate a unique room name below
     
     console.log(`🎥 Creating Daily.co room: ${sessionCode || '(auto)'}`);
     const DAILY_API_KEY = process.env.DAILY_API_KEY;
