@@ -1,11 +1,4 @@
-/*
-  Server-authoritative session orchestrator
-  Action implemented: normalize-dyads
-  - Creates a fresh MAIN room
-  - Assigns everyone to MAIN, then creates only full dyads (Math.floor) for non-hosts
-  - Host and leftovers stay in MAIN
-  Returns canonical sessionData with roomAssignments and status.
-*/
+/* Server-authoritative session orchestrator: normalize-dyads */
 
 exports.handler = async (event) => {
   try {
@@ -19,14 +12,6 @@ exports.handler = async (event) => {
 
     if (action !== 'normalize-dyads') {
       return { statusCode: 400, body: JSON.stringify({ ok: false, error: 'Unsupported action' }) };
-    }
-
-    function roomSize(type) {
-      if (type === 'dyad') return 2;
-      if (type === 'triad') return 3;
-      if (type === 'quad') return 4;
-      if (type === 'kiva') return 6;
-      return 8;
     }
 
     const origin = (event.headers && ((event.headers['x-forwarded-proto'] && event.headers['host'])
@@ -49,28 +34,24 @@ exports.handler = async (event) => {
         name: real.name,
         url: real.url,
         type: roomType,
-        maxParticipants: maxParticipants || roomSize(roomType) + 2
+        maxParticipants: maxParticipants || 8
       };
     }
 
-    // Deduplicate participants by id and sort by name for stable pairing
     const seen = new Set();
     const stableParticipants = (participants || []).filter(p => p && p.id && !seen.has(p.id) && seen.add(p.id))
       .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
     const host = stableParticipants.find(p => p.isHost) || stableParticipants[0] || null;
     const nonHost = stableParticipants.filter(p => !p.isHost);
 
-    // Create fresh main room
     const main = await createDailyRoom('community', 16);
 
-    // Build dyads with Math.floor (full pairs only)
     const pairs = [];
     for (let i = 0; i + 1 < nonHost.length; i += 2) pairs.push([nonHost[i], nonHost[i + 1]]);
 
     const rooms = { main: { id: 'main', name: main.name, url: main.url, type: 'community', participants: [] } };
     const assignments = {};
 
-    // Create dyad rooms and assign pairs
     for (let i = 0; i < pairs.length; i++) {
       const [a, b] = pairs[i];
       const r = await createDailyRoom('dyad', 4);
@@ -89,7 +70,6 @@ exports.handler = async (event) => {
       });
     }
 
-    // Host + leftovers stay in main
     const used = new Set(pairs.flat().map(p => p.id));
     const leftovers = [host, ...nonHost.filter(p => !used.has(p.id))].filter(Boolean);
     leftovers.forEach(p => {
@@ -119,7 +99,5 @@ exports.handler = async (event) => {
     return { statusCode: 500, body: JSON.stringify({ ok: false, error: e.message }) };
   }
 };
-
-
 
 
