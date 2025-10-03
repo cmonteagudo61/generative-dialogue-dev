@@ -292,24 +292,56 @@ const GenerativeDialogueInner = ({
       }
     } catch (_) {}
     
-    console.log('🏛️ Creating main room via Daily.co API for session:', sessionData.sessionId);
+    console.log('🏛️ Creating main room via Netlify function for session:', sessionData.sessionId);
     
     try {
-      // Import RoomManager
-      const { roomManager } = await import('../services/RoomManager');
-      
-      // Create a main room assignment for all participants
       const allParticipants = sessionData.participants || [];
-      const roomConfiguration = {
-        roomType: 'community',
-        allowRoomSwitching: true
+      const resp = await fetch('/.netlify/functions/daily-create-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionCode: `${sessionData.sessionId}-main-${Date.now()}`,
+          participantCount: allParticipants.length || 16
+        })
+      });
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => '');
+        throw new Error(`Netlify daily-create-room failed: ${resp.status} ${text}`);
+      }
+      const data = await resp.json();
+      const created = data.room || data;
+      const mainRoomName = created.name || created.id;
+      const mainRoomUrl = created.url;
+      if (!mainRoomUrl) throw new Error('Netlify daily-create-room returned no URL');
+
+      // Build roomAssignments for MAIN for all participants
+      const assignments = {
+        sessionId: sessionData.sessionId,
+        rooms: {
+          main: {
+            id: 'main',
+            name: mainRoomName,
+            url: mainRoomUrl,
+            type: 'community',
+            participants: allParticipants.map(p => p.id),
+            sessionId: sessionData.sessionId,
+            assignedAt: new Date().toISOString()
+          }
+        },
+        participants: {}
       };
 
-      const assignments = await roomManager.assignRoomsViaAPI(
-        sessionData.sessionId,
-        allParticipants,
-        roomConfiguration
-      );
+      allParticipants.forEach(p => {
+        assignments.participants[p.id] = {
+          participantId: p.id,
+          participantName: p.name,
+          roomId: 'main',
+          roomName: mainRoomName,
+          roomUrl: mainRoomUrl,
+          roomType: 'community',
+          assignedAt: new Date().toISOString()
+        };
+      });
 
       // Update session data with the main room assignment
       const updatedSession = {
@@ -326,24 +358,11 @@ const GenerativeDialogueInner = ({
         detail: { sessionCode: sessionData.sessionId, sessionData: updatedSession }
       }));
 
-      console.log('✅ Main room created successfully:', assignments.rooms?.main);
+      console.log('✅ Main room created successfully via Netlify:', assignments.rooms?.main);
       
     } catch (error) {
-      console.error('❌ Failed to create main room:', error);
-      // Fallback to hardcoded room if API fails
-      const fallbackAssignment = {
-        participantId: sessionData.participants?.find(p => 
-          p.name === sessionStorage.getItem('gd_current_participant_name')
-        )?.id || 'unknown',
-        participantName: sessionStorage.getItem('gd_current_participant_name'),
-        roomId: 'main',
-        roomName: 'Main Room (Fallback)',
-        roomUrl: 'https://generativedialogue.daily.co/MainRoom',
-        roomType: 'community',
-        assignedAt: new Date().toISOString()
-      };
-      setRoomAssignment(fallbackAssignment);
-      setJoinAttempted(true);
+      console.error('❌ Failed to create main room via Netlify:', error);
+      // Do not join any fallback room; wait for a valid assignment
     }
   }, [sessionData]);
 
@@ -912,6 +931,29 @@ const GenerativeDialogueInner = ({
     console.log('🎛️ AI Control action:', action);
     // Could execute control actions like enabling turn-taking
   }, []);
+
+  // Host nav integration: listen for global events and route to server orchestrator
+  useEffect(() => {
+    const onHostCreate = (e) => {
+      const rt = (e && e.detail && e.detail.roomType) ? String(e.detail.roomType) : 'dyad';
+      console.log('[HostNav] create-breakouts event →', rt);
+      if (rt === 'dyad') {
+        handleNormalizeDyads();
+      } else {
+        handleCreateBreakoutRooms(rt);
+      }
+    };
+    const onHostEnd = () => {
+      console.log('[HostNav] end-breakouts event');
+      handleEndBreakouts();
+    };
+    window.addEventListener('host-create-breakouts', onHostCreate);
+    window.addEventListener('host-end-breakouts', onHostEnd);
+    return () => {
+      window.removeEventListener('host-create-breakouts', onHostCreate);
+      window.removeEventListener('host-end-breakouts', onHostEnd);
+    };
+  }, [handleNormalizeDyads, handleCreateBreakoutRooms, handleEndBreakouts]);
 
   return (
     <React.Fragment>
