@@ -88,9 +88,10 @@ export const VideoProvider = ({ children }) => {
   // --- Main useEffect for Daily.co setup ---
   useEffect(() => {
     if (!dailyLoaded || !window.DailyIframe) return;
+    if (callObjectRef.current) return;
 
-    // Adopt existing call object or create one if missing
-    const call = callObjectRef.current || window.dailyCallObject || window.DailyIframe.createCallObject();
+    // Create call object without invalid properties for call object mode
+    const call = window.DailyIframe.createCallObject();
     callObjectRef.current = call;
     setCallObject(call);
     window.dailyCallObject = call;
@@ -102,6 +103,8 @@ export const VideoProvider = ({ children }) => {
 
     const handleJoinedMeeting = () => {
       console.log('📞 Daily.co: Joined meeting successfully');
+      // Clear any prior error banner once we are in the room
+      setError(null);
       setIsConnected(true);
       const currentParticipants = call.participants();
       
@@ -137,6 +140,8 @@ export const VideoProvider = ({ children }) => {
     
     const handleLeftMeeting = () => {
       console.log('📞 Daily.co: Left meeting');
+      // Clear errors on leave
+      setError(null);
       setIsConnected(false);
       setParticipants({});
     };
@@ -148,23 +153,6 @@ export const VideoProvider = ({ children }) => {
     call.on('participant-left', handleParticipantLeft);
     call.on('track-started', handleParticipantUpdated);
     call.on('error', handleError);
-
-    // If the call object is already joined (e.g., joined via a console script), seed state immediately
-    try {
-      const state = typeof call.meetingState === 'function' ? call.meetingState() : undefined;
-      if (state === 'joined-meeting') {
-        setIsConnected(true);
-        const currentParticipants = call.participants();
-        const participantsWithCleanNames = {};
-        Object.keys(currentParticipants || {}).forEach(id => {
-          participantsWithCleanNames[id] = {
-            ...currentParticipants[id],
-            displayName: getCleanDisplayName(currentParticipants[id]?.user_name)
-          };
-        });
-        setParticipants(participantsWithCleanNames);
-      }
-    } catch (_) {}
 
     return () => {
       clearTimeout(throttleTimeoutRef.current);
@@ -185,24 +173,7 @@ export const VideoProvider = ({ children }) => {
 
   // --- Join Room Function ---
   const joinRoom = useCallback(async (roomUrl, userName = null) => {
-    // Ensure Daily script and call object are ready
-    if (!window.DailyIframe) {
-      await new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = DAILY_JS_URL;
-        script.async = true;
-        script.onload = resolve;
-        script.onerror = () => reject(new Error('Failed to load Daily.co script'));
-        document.head.appendChild(script);
-      });
-    }
-    if (!callObjectRef.current) {
-      const call = window.dailyCallObject || (window.DailyIframe && window.DailyIframe.createCallObject());
-      if (!call) throw new Error('Call object not initialized');
-      callObjectRef.current = call;
-      setCallObject(call);
-      window.dailyCallObject = call;
-    }
+    if (!callObjectRef.current) throw new Error('Call object not initialized');
     
     // CRITICAL: Log exactly what room we're trying to join
     console.log('🚨 ATTEMPTING TO JOIN ROOM:', {
@@ -231,25 +202,24 @@ export const VideoProvider = ({ children }) => {
         displayName = participantName || `User ${Math.floor(Math.random() * 1000)}`;
       }
       
-      // SIMPLE BUT EFFECTIVE IDENTITY OVERRIDE: Unique name with session info
-      const timestamp = Date.now().toString().slice(-6); // Last 6 digits
-      const sessionId = Math.random().toString(36).substring(2, 6); // 4 char random
-      const uniqueDisplayName = `${displayName}_${timestamp}_${sessionId}`;
+      // Always present a CLEAN user name to Daily; keep uniqueness only in userData
+      const timestamp = Date.now().toString().slice(-6); // for diagnostics only
+      const sessionId = Math.random().toString(36).substring(2, 6);
+      const uniqueDisplayName = displayName;
       
-      console.log('🎥 Joining Daily.co with unique identity:', displayName, '→', uniqueDisplayName);
+      console.log('🎥 Joining Daily.co with clean identity:', uniqueDisplayName);
       
       // CRITICAL: Join directly with userName to suppress name prompt
       // preAuth doesn't suppress the name prompt - we need to provide userName in join()
       console.log('🚨 CALLING join() directly with userName to suppress name prompt');
       await callObjectRef.current.join({ 
         url: roomUrl, 
-        userName: uniqueDisplayName,  // This suppresses the name prompt!
-        // Additional user data for identification
+        userName: uniqueDisplayName,  // Clean name visible to everyone
         userData: { 
           displayName: displayName,
-          originalName: displayName, 
+          originalName: displayName,
           joinTime: Date.now(),
-          sessionId: sessionId 
+          uid: `${timestamp}-${sessionId}`
         }
       });
       console.log('🚨 join() COMPLETED successfully');
