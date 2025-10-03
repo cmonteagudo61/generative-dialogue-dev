@@ -173,6 +173,8 @@ export const VideoProvider = ({ children }) => {
 
   // --- Join Room Function ---
   const joinRoom = useCallback(async (roomUrl, userName = null) => {
+    // Clear any stale errors before a fresh join attempt
+    try { setError(null); } catch (_) {}
     if (!callObjectRef.current) throw new Error('Call object not initialized');
     
     // CRITICAL: Log exactly what room we're trying to join
