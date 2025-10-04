@@ -1037,6 +1037,47 @@ const SimpleDashboard = ({ sessionData = null }) => {
                 >
                   🚀 Start 90-Minute Dialogue
                 </button>
+                  {/* New: One-click create main room and join (host) */}
+                  <button
+                    className="start-session-btn"
+                    style={{ marginLeft: '10px', background: '#2b6cb0' }}
+                    onClick={async () => {
+                      try {
+                        if (!sessionCode) return;
+                        const sessionKey = `session_${sessionCode}`;
+                        const currentSession = JSON.parse(localStorage.getItem(sessionKey) || '{}');
+                        // Ensure we include current participants
+                        const allParticipants = currentSession.participants || participants || [];
+                        console.log('🏛️ Only creating main community room (dashboard quick start)');
+                        const assignments = await roomManager.assignRoomsViaAPI(
+                          sessionCode,
+                          allParticipants,
+                          { roomType: 'community', allowRoomSwitching: true }
+                        );
+                        const updatedSession = {
+                          ...currentSession,
+                          participants: allParticipants,
+                          roomAssignments: assignments,
+                          status: 'main-room-active',
+                          currentPhase: 'main-room'
+                        };
+                        localStorage.setItem(sessionKey, JSON.stringify(updatedSession));
+                        // Notify all tabs
+                        window.dispatchEvent(new CustomEvent('session-updated', {
+                          detail: { sessionCode, sessionData: updatedSession }
+                        }));
+                        // Navigate host to participant session
+                        const hostParticipant = allParticipants.find(p => p.isHost) || { id: 'host', name: currentSession.hostName || 'Host', isHost: true };
+                        localStorage.setItem('gd_participant_name', hostParticipant.name);
+                        window.location.href = `/?page=participant-session&session=${sessionCode}&name=${encodeURIComponent(hostParticipant.name)}`;
+                      } catch (e) {
+                        console.error('❌ Quick Start Main Room failed:', e);
+                        alert('Failed to start main room. Please try again.');
+                      }
+                    }}
+                  >
+                    🎥 Start Main Room Now
+                  </button>
               </div>
             )}
             

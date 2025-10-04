@@ -340,7 +340,15 @@ const MagnifierContent = React.memo(({
               const isCentered = mouseX >= pX && mouseX <= pEndX && mouseY >= pY && mouseY <= pEndY;
 
               if (isCentered) {
-                const displayName = p.user_name || (p.local ? 'You' : `User ${i}`);
+                // Helper to extract clean display name from Daily.co unique username
+                const getCleanDisplayName = (userName) => {
+                  if (!userName) return 'Participant';
+                  // Extract original name from format: "OriginalName_timestamp_sessionId"
+                  const parts = userName.split('_');
+                  return parts.length >= 3 ? parts[0] : userName;
+                };
+                
+                const displayName = p.displayName || getCleanDisplayName(p.user_name) || (p.local ? 'You' : `User ${i}`);
                 return (
                   <div style={{
                     position: 'absolute',

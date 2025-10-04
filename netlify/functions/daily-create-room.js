@@ -31,18 +31,33 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { sessionCode, hostName, participantCount, roomType, maxParticipants } = JSON.parse(event.body);
+    const { sessionCode, hostName, participantCount } = JSON.parse(event.body);
     
-    // sessionCode is optional; when missing, we auto-generate a unique room name below
+    if (!sessionCode) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Session code is required' })
+      };
+    }
     
-    console.log(`🎥 Creating Daily.co room: ${sessionCode || '(auto)'}`);
+    console.log(`🎥 Creating Daily.co room: ${sessionCode}`);
     const DAILY_API_KEY = process.env.DAILY_API_KEY;
     
     if (!DAILY_API_KEY) {
+      console.warn('⚠️ DAILY_API_KEY not found, creating mock room');
+      const mockRoom = {
+        url: `https://generative-dialogue.daily.co/${sessionCode.toLowerCase()}`,
+        name: `session-${sessionCode.toLowerCase()}`,
+        id: `mock-${sessionCode}`,
+        created_at: new Date().toISOString(),
+        config: { max_participants: participantCount || 6 }
+      };
+      
       return {
-        statusCode: 500,
+        statusCode: 200,
         headers,
-        body: JSON.stringify({ success: false, error: 'DAILY_API_KEY is not configured on Netlify' })
+        body: JSON.stringify({ success: true, room: mockRoom })
       };
     }
 
@@ -53,10 +68,10 @@ exports.handler = async (event, context) => {
         'Authorization': `Bearer ${DAILY_API_KEY}`
       },
       body: JSON.stringify({
-        name: (sessionCode ? `session-${String(sessionCode).toLowerCase()}` : `room-${Date.now().toString(36)}`),
+        name: `session-${sessionCode.toLowerCase()}`,
         privacy: 'public',
         properties: {
-          max_participants: maxParticipants || participantCount || 6,
+          max_participants: participantCount || 6,
           enable_chat: true,
           enable_screenshare: true,
           exp: Math.floor(Date.now() / 1000) + (90 * 60) // 90 minutes from now

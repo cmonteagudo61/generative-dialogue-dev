@@ -5,9 +5,9 @@ const config = {
     WS_BASE_URL: 'ws://localhost:5680'
   },
   production: {
-    // Use localhost for testing (both frontend and backend on same machine)
-    API_BASE_URL: 'http://localhost:5680',
-    WS_BASE_URL: 'ws://localhost:5680'
+    // Production backend on Render
+    API_BASE_URL: 'https://generative-dialogue-dev.onrender.com',
+    WS_BASE_URL: 'wss://generative-dialogue-dev.onrender.com'
   }
 };
 

@@ -44,6 +44,8 @@ import SessionLobby from './components/SessionLobby';
 import SimpleDashboard from './components/SimpleDashboard';
 import EnhancedVideoSession from './components/EnhancedVideoSession';
 import { VideoProvider, useVideo } from './components/VideoProvider';
+import ErrorBoundary from './components/ErrorBoundary';
+import { initializeErrorSuppression } from './utils/errorSuppression';
 import AppLayout from './components/AppLayout';
 
 const formatTime = (seconds) => {
@@ -143,8 +145,10 @@ function AppContent() {
       localStorage.setItem('gd_breakout_id', bidParam);
       setBreakoutId(bidParam);
     }
-    const storedName = nameParam || localStorage.getItem('gd_participant_name') || '';
+    const storedName = nameParam || sessionStorage.getItem('gd_current_participant_name') || '';
     if (storedName) {
+      // Persist URL-provided name to sessionStorage so join logic uses it
+      try { sessionStorage.setItem('gd_current_participant_name', storedName); } catch (_) {}
       setParticipantName(storedName);
       // Check if we have full participant data
       const storedParticipantId = localStorage.getItem('gd_participant_id');
@@ -641,6 +645,31 @@ function AppContent() {
     }
   }, [currentPage, sessionId, participantData]);
 
+  // Navigation guard: if someone hits participant-session directly but session isn't active,
+  // route them to the lobby so the flow can start the main room cleanly
+  useEffect(() => {
+    if (currentPage !== 'participant-session' || !sessionId) return;
+    try {
+      const raw = localStorage.getItem(`session_${sessionId}`);
+      if (!raw) {
+        console.log('🛑 Guard: No session found, routing to participant-lobby');
+        setCurrentPage('participant-lobby');
+        return;
+      }
+      const data = JSON.parse(raw);
+      const status = data?.status;
+      const isActive = status === 'main-room-active' || status === 'rooms-assigned' || status === 'dialogue-active';
+      if (!isActive) {
+        console.log('🛑 Guard: Session not active (status =', status, ') → routing to participant-lobby');
+        setParticipantData(data);
+        setCurrentPage('participant-lobby');
+      }
+    } catch (_) {
+      // Fail-safe route to lobby
+      setCurrentPage('participant-lobby');
+    }
+  }, [currentPage, sessionId]);
+
   // Listen for session updates (e.g., when rooms are created)
   useEffect(() => {
     if (currentPage === 'participant-session' && sessionId) {
@@ -660,6 +689,66 @@ function AppContent() {
 
   let pageElement;
   switch (currentPage) {
+    case 'session-lobby': {
+      // Direct host lobby via URL: ?page=session-lobby&session=CODE&name=HOST
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionCodeParam = urlParams.get('session');
+      const hostNameParam = urlParams.get('name') || sessionStorage.getItem('gd_current_participant_name') || 'Host';
+
+      let sessionDataForLobby = null;
+      if (sessionCodeParam) {
+        try {
+          const stored = localStorage.getItem(`session_${sessionCodeParam}`);
+          if (stored) {
+            sessionDataForLobby = JSON.parse(stored);
+          }
+        } catch (_) {}
+        // Bootstrap session if missing
+        if (!sessionDataForLobby) {
+          sessionDataForLobby = {
+            sessionId: sessionCodeParam,
+            hostName: hostNameParam,
+            participants: [{ id: 'host', name: hostNameParam, isHost: true, joinedAt: new Date().toISOString() }],
+            createdAt: new Date().toISOString(),
+            status: 'waiting',
+            maxParticipants: 6,
+            duration: 90,
+            roomAssignments: null
+          };
+          try { localStorage.setItem(`session_${sessionCodeParam}`, JSON.stringify(sessionDataForLobby)); } catch (_) {}
+        } else {
+          // Ensure host participant exists
+          const hasHost = (sessionDataForLobby.participants || []).some(p => p.isHost);
+          if (!hasHost) {
+            sessionDataForLobby.participants = [
+              { id: 'host', name: hostNameParam, isHost: true, joinedAt: new Date().toISOString() },
+              ...(sessionDataForLobby.participants || [])
+            ];
+            sessionDataForLobby.hostName = hostNameParam;
+            try { localStorage.setItem(`session_${sessionCodeParam}`, JSON.stringify(sessionDataForLobby)); } catch (_) {}
+          }
+        }
+      }
+
+      pageElement = (
+        <SessionLobby
+          sessionData={sessionDataForLobby || { sessionId: sessionCodeParam || 'UNKNOWN', participants: [] }}
+          onStartSession={(updatedSession) => {
+            console.log('🎯 Host starting session from session-lobby:', updatedSession);
+            setParticipantData(updatedSession);
+            setSessionId(updatedSession.sessionId);
+            setCurrentPage('participant-session');
+          }}
+          onLeaveSession={() => {
+            setCurrentPage('landing');
+            setParticipantData(null);
+            setSessionId(null);
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }}
+        />
+      );
+      break;
+    }
     case 'landing':
       pageElement = <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
       break;
@@ -968,7 +1057,7 @@ function AppContent() {
       pageElement = <LandingPage onContinue={handleContinueToInput} {...navigationProps} />;
   }
 
-  const useAppLayout = !['landing', 'input', 'permissions', 'harvest-outro', 'buildingcommunity', 'dashboard', 'signin', 'participant-join', 'participant-lobby', 'room-manager', 'session-join'].includes(currentPage);
+  const useAppLayout = !['landing', 'input', 'permissions', 'harvest-outro', 'buildingcommunity', 'dashboard', 'signin', 'participant-join', 'participant-lobby', 'room-manager', 'session-join', 'session-lobby'].includes(currentPage);
 
   // DISABLED: DEBUG: Log current page and routing decision - causing infinite render loop
   // console.log('🔍 App render debug:', {
@@ -993,10 +1082,17 @@ function AppContent() {
 }
 
 function App() {
+  // Initialize error suppression on app start
+  React.useEffect(() => {
+    initializeErrorSuppression();
+  }, []);
+
   return (
-    <VideoProvider>
-      <AppContent />
-    </VideoProvider>
+    <ErrorBoundary>
+      <VideoProvider>
+        <AppContent />
+      </VideoProvider>
+    </ErrorBoundary>
   );
 }
 

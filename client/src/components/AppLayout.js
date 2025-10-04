@@ -187,10 +187,10 @@ const AppLayout = ({
                   <div style={{ background: 'white', padding: 16, borderRadius: 8, width: 320 }}>
                     <h4 style={{ marginTop: 0, marginBottom: 8, color: '#3E4C71' }}>Enter your name</h4>
                     <input type="text" placeholder="Your display name" style={{ width: '100%', padding: 8, border: '1px solid #e0e0e0', borderRadius: 6 }}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { const v = e.currentTarget.value.trim(); if (v) { onSetParticipantName(v); localStorage.setItem('gd_participant_name', v); } } }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { const v = e.currentTarget.value.trim(); if (v) { onSetParticipantName(v); try { sessionStorage.setItem('gd_current_participant_name', v); } catch (_) {} } } }}
                     />
                     <div style={{ marginTop: 10, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                      <button className="control-button" onClick={() => { const inputEl = document.querySelector('input[placeholder="Your display name"]'); const v = inputEl ? inputEl.value.trim() : ''; if (v) { onSetParticipantName(v); localStorage.setItem('gd_participant_name', v); } }}>Continue</button>
+                      <button className="control-button" onClick={() => { const inputEl = document.querySelector('input[placeholder="Your display name"]'); const v = inputEl ? inputEl.value.trim() : ''; if (v) { onSetParticipantName(v); try { sessionStorage.setItem('gd_current_participant_name', v); } catch (_) {} } }}>Continue</button>
                     </div>
                   </div>
                 </div>

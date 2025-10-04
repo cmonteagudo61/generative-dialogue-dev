@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import './ParticipantJoin.css';
 
 const ParticipantJoin = ({ sessionCode, onJoinSession, onBackToMain }) => {
-  const [participantName, setParticipantName] = useState('');
+  const [participantName, setParticipantName] = useState(() => {
+    const urlName = new URLSearchParams(window.location.search).get('name');
+    return urlName || sessionStorage.getItem('gd_current_participant_name') || '';
+  });
   const [sessionInfo, setSessionInfo] = useState(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -133,14 +136,20 @@ const ParticipantJoin = ({ sessionCode, onJoinSession, onBackToMain }) => {
         participants: [...currentSession.participants, newParticipant]
       };
 
-      // Store participant name in localStorage for GenerativeDialogue to find
-      localStorage.setItem('gd_participant_name', participantName.trim());
-      console.log('💾 ParticipantJoin: Stored participant name in localStorage:', participantName.trim());
+      // Store participant name (tab-scoped and device-scoped)
+      try {
+        sessionStorage.setItem('gd_current_participant_name', participantName.trim());
+        console.log('💾 ParticipantJoin: Stored participant name (session only):', participantName.trim());
+      } catch (e) {}
 
       // Update localStorage
       const storageKey = `session_${urlSessionCode}`;
       localStorage.setItem(storageKey, JSON.stringify(updatedSession));
       console.log('💾 Participant: Saved session data to key:', storageKey, 'with', updatedSession.participants.length, 'participants');
+      // Store participant id for this tab
+      try {
+        sessionStorage.setItem('gd_current_participant_id', newParticipant.id);
+      } catch (e) {}
       
       // Trigger storage event for cross-tab communication
       window.dispatchEvent(new StorageEvent('storage', {

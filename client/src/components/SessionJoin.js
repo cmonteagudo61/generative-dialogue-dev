@@ -4,7 +4,9 @@ import './SessionJoin.css';
 const SessionJoin = ({ onJoinSession, sessionId = null }) => {
   const [participantName, setParticipantName] = useState('');
   const [sessionCode, setSessionCode] = useState(sessionId || '');
+  const [customSessionCode, setCustomSessionCode] = useState('');
   const [isHost, setIsHost] = useState(false);
+  const [useCustomCode, setUseCustomCode] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,11 +21,29 @@ const SessionJoin = ({ onJoinSession, sessionId = null }) => {
       return;
     }
 
+    // Validate custom session code if provided
+    if (useCustomCode) {
+      if (!customSessionCode.trim()) {
+        setError('Please enter a custom session code');
+        return;
+      }
+      if (customSessionCode.length < 3 || customSessionCode.length > 8) {
+        setError('Session code must be 3-8 characters');
+        return;
+      }
+      // Check if session code already exists
+      const existingSession = localStorage.getItem(`session_${customSessionCode.toUpperCase()}`);
+      if (existingSession) {
+        setError('This session code already exists. Please choose a different one.');
+        return;
+      }
+    }
+
     setIsLoading(true);
     setError('');
 
     try {
-      const newSessionCode = generateSessionCode();
+      const newSessionCode = useCustomCode ? customSessionCode.toUpperCase() : generateSessionCode();
       const sessionData = {
         sessionId: newSessionCode,
         hostName: participantName.trim(),
@@ -37,11 +57,16 @@ const SessionJoin = ({ onJoinSession, sessionId = null }) => {
         status: 'waiting',
         maxParticipants: 6,
         duration: 90, // Fixed 90 minutes
-        breakoutRooms: {}
+        breakoutRooms: {},
+        // Track participant count separately (excluding host)
+        participantCount: 0 // Host is not counted as a participant
       };
 
       // Store in localStorage for now (will move to Firebase later)
       localStorage.setItem(`session_${newSessionCode}`, JSON.stringify(sessionData));
+      
+      // Store participant name for host detection
+      localStorage.setItem('gd_participant_name', participantName.trim());
       
       onJoinSession({
         ...sessionData,
@@ -84,12 +109,8 @@ const SessionJoin = ({ onJoinSession, sessionId = null }) => {
         return;
       }
 
-      // REMOVED: Allow duplicate names for testing
-      // Note: Daily.co handles unique identities with suffixes
-      // if (session.participants.some(p => p.name.toLowerCase() === participantName.trim().toLowerCase())) {
-      //   setError('Name already taken. Please choose a different name.');
-      //   return;
-      // }
+      // DEVELOPMENT: Allow duplicate names for easier testing
+      // Daily.co handles unique identities with suffixes automatically
 
       // Add participant to session
       const newParticipant = {
@@ -102,6 +123,9 @@ const SessionJoin = ({ onJoinSession, sessionId = null }) => {
       session.participants.push(newParticipant);
       localStorage.setItem(`session_${sessionCode.toUpperCase()}`, JSON.stringify(session));
 
+      // Store participant name for host detection
+      localStorage.setItem('gd_participant_name', participantName.trim());
+
       onJoinSession({
         ...session,
         currentParticipant: newParticipant
@@ -113,6 +137,8 @@ const SessionJoin = ({ onJoinSession, sessionId = null }) => {
     }
   };
 
+  console.log('🎯 SessionJoin component rendering, isHost:', isHost, 'useCustomCode:', useCustomCode);
+  
   return (
     <div className="session-join">
       <div className="join-container">
@@ -139,10 +165,39 @@ const SessionJoin = ({ onJoinSession, sessionId = null }) => {
                 type="text"
                 value={sessionCode}
                 onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
-                placeholder="Enter 6-character code"
-                maxLength={6}
+                placeholder="Enter session code (e.g., LOGOS-1)"
+                maxLength={8}
                 disabled={isLoading}
               />
+            </div>
+          )}
+
+          {isHost && (
+            <div className="form-group">
+              <div className="custom-code-option">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={useCustomCode}
+                    onChange={(e) => setUseCustomCode(e.target.checked)}
+                    disabled={isLoading}
+                  />
+                  Use custom session code
+                </label>
+              </div>
+              {useCustomCode && (
+                <div className="form-group">
+                  <label>Custom Session Code</label>
+                  <input
+                    type="text"
+                    value={customSessionCode}
+                    onChange={(e) => setCustomSessionCode(e.target.value.toUpperCase())}
+                    placeholder="Enter your custom code (3-8 chars)"
+                    maxLength={8}
+                    disabled={isLoading}
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -171,10 +226,16 @@ const SessionJoin = ({ onJoinSession, sessionId = null }) => {
           <div className="join-toggle">
             <button 
               className="toggle-btn"
-              onClick={() => setIsHost(!isHost)}
+              onClick={() => {
+                console.log('🎯 Toggle clicked! Current isHost:', isHost, 'Setting to:', !isHost);
+                setIsHost(!isHost);
+                setError(''); // Clear any errors when switching modes
+                setUseCustomCode(false); // Reset custom code option
+                setCustomSessionCode(''); // Clear custom code
+              }}
               disabled={isLoading}
             >
-              {isHost ? 'Join existing session instead' : 'Create new session instead'}
+              {isHost ? 'Join existing session instead' : '🎯 CREATE NEW SESSION INSTEAD'}
             </button>
           </div>
         </div>

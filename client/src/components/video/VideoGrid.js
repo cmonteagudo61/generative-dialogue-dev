@@ -68,7 +68,6 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
   );
   // ALL HOOKS MUST BE AT THE TOP - before any conditional returns
   const [experimentalMode] = useState(useExperimentalView);
-  const [labelsVisible] = useState(showLabels);
   const quadWrapperRef = useRef(null);
   const [quadGridWidth, setQuadGridWidth] = useState('100%');
   const [magnifierParticipantArray, setMagnifierParticipantArray] = useState([]);
@@ -92,11 +91,11 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
       layout, 
       participantCount: participants.length, 
       experimentalMode, 
-      labelsVisible,
+      labelsVisible: showLabels,
       suppressMockParticipants,
       participantNames: participants.map(p => p.user_name || p.name || 'Unknown')
     });
-  }, [layout, participants.length, experimentalMode, labelsVisible, suppressMockParticipants]);
+  }, [layout, participants.length, experimentalMode, showLabels, suppressMockParticipants]);
 
   // Dynamic sizing for quad view (2:1 grid)
   useEffect(() => {
@@ -185,7 +184,30 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
               )}
               {showLabels && (
                 <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4, color: '#fff', background: 'rgba(0,0,0,0.5)', fontSize: 14, borderRadius: 4, padding: '2px 6px', textAlign: 'center' }}>
-                  {p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
+                  {(() => {
+                    // Enhanced helper to extract clean display name - prioritize actual session participant names
+                    const getCleanDisplayName = (participant) => {
+                      // PRIORITY 1: Map by session participants if available on the tile
+                      if (participant.sessionName) return participant.sessionName;
+                      // PRIORITY 2: Use the actual session participant name stored in userData (injected on join)
+                      if (participant.userData?.originalName) return participant.userData.originalName;
+                      if (participant.userData?.displayName) return participant.userData.displayName;
+                      // Per-tab name takes precedence if present
+                      const tabName = sessionStorage.getItem('gd_current_participant_name');
+                      if (participant.local && tabName) return tabName;
+                      // PRIORITY 3: Use displayName if it's already clean
+                      if (participant.displayName && !participant.displayName.includes('_')) return participant.displayName;
+                      // PRIORITY 4: Fallback to base Daily name
+                      if (participant.user_name) {
+                        const parts = participant.user_name.split('_');
+                        if (parts.length >= 3) return parts[0];
+                        return participant.user_name;
+                      }
+                      return participant.local ? 'You' : 'Participant';
+                    };
+                    
+                    return getCleanDisplayName(p);
+                  })()}
                 </div>
               )}
             </div>
@@ -246,7 +268,30 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
               )}
               {showLabels && (
                 <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4, color: '#fff', background: 'rgba(0,0,0,0.5)', fontSize: 14, borderRadius: 4, padding: '2px 6px', textAlign: 'center' }}>
-                  {p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
+                  {(() => {
+                    // Enhanced helper to extract clean display name - prioritize actual session participant names
+                    const getCleanDisplayName = (participant) => {
+                      // PRIORITY 1: Use the actual session participant name stored in userData
+                      if (participant.userData?.originalName) return participant.userData.originalName;
+                      if (participant.userData?.displayName) return participant.userData.displayName;
+                      
+                      // PRIORITY 2: Use displayName if it's already clean (set by GenerativeDialogue)
+                      if (participant.displayName && !participant.displayName.includes('_')) return participant.displayName;
+                      
+                      // PRIORITY 3: Extract base name from Daily.co username (Carlos, Ruth, Test1, Test2)
+                      if (participant.user_name) {
+                        const parts = participant.user_name.split('_');
+                        if (parts.length >= 3) {
+                          return parts[0]; // Return the original name (Carlos, Ruth, Test1, Test2)
+                        }
+                        return participant.user_name;
+                      }
+                      
+                      return participant.local ? 'You' : 'Participant';
+                    };
+                    
+                    return getCleanDisplayName(p);
+                  })()}
                 </div>
               )}
             </div>
@@ -307,7 +352,30 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
               )}
               {showLabels && (
                 <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4, color: '#fff', background: 'rgba(0,0,0,0.5)', fontSize: 14, borderRadius: 4, padding: '2px 6px', textAlign: 'center' }}>
-                  {p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
+                  {(() => {
+                    // Enhanced helper to extract clean display name - prioritize actual session participant names
+                    const getCleanDisplayName = (participant) => {
+                      // PRIORITY 1: Use the actual session participant name stored in userData
+                      if (participant.userData?.originalName) return participant.userData.originalName;
+                      if (participant.userData?.displayName) return participant.userData.displayName;
+                      
+                      // PRIORITY 2: Use displayName if it's already clean (set by GenerativeDialogue)
+                      if (participant.displayName && !participant.displayName.includes('_')) return participant.displayName;
+                      
+                      // PRIORITY 3: Extract base name from Daily.co username (Carlos, Ruth, Test1, Test2)
+                      if (participant.user_name) {
+                        const parts = participant.user_name.split('_');
+                        if (parts.length >= 3) {
+                          return parts[0]; // Return the original name (Carlos, Ruth, Test1, Test2)
+                        }
+                        return participant.user_name;
+                      }
+                      
+                      return participant.local ? 'You' : 'Participant';
+                    };
+                    
+                    return getCleanDisplayName(p);
+                  })()}
                 </div>
               )}
             </div>
@@ -343,7 +411,26 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
           )}
           {showLabels && (
             <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4, color: '#fff', background: 'rgba(0,0,0,0.5)', fontSize: 14, borderRadius: 4, padding: '2px 6px', textAlign: 'center' }}>
-              {p.displayName || p.user_name || p.userName || (p.local ? 'You' : 'Participant')}
+              {(() => {
+                // Enhanced helper to extract clean display name from Daily.co unique username
+                const getCleanDisplayName = (participant) => {
+                  // Priority order: userData.originalName > userData.displayName > displayName > extracted from userName
+                  if (participant.userData?.originalName) return participant.userData.originalName;
+                  if (participant.userData?.displayName) return participant.userData.displayName;
+                  if (participant.displayName && !participant.displayName.includes('_')) return participant.displayName;
+                  
+                  // Fallback: extract from userName format "OriginalName_timestamp_sessionId"
+                  if (participant.user_name) {
+                    const parts = participant.user_name.split('_');
+                    if (parts.length >= 3) return parts[0];
+                    return participant.user_name;
+                  }
+                  
+                  return participant.local ? 'You' : 'Participant';
+                };
+                
+                return getCleanDisplayName(p);
+              })()}
             </div>
           )}
         </div>
@@ -367,7 +454,7 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
               <CommunityViewExperimental 
                 participants={participants} 
                 viewMode={layout}
-                showLabels={labelsVisible}
+                showLabels={showLabels}
                 isMagnifierActive={isLoopActive}
                 onParticipantArrayReady={handleParticipantArrayReady}
               />
@@ -375,7 +462,7 @@ const VideoGrid = ({ participants: participantsProp = [], layout = 'self', showL
               <CommunityViewDebug 
                 participants={participants} 
                 viewMode={layout}
-                showLabels={labelsVisible}
+                showLabels={showLabels}
               />
             )
           )}

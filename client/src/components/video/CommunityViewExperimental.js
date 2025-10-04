@@ -7,6 +7,14 @@ import {
 import './CommunityViewExperimental.css';
 import LoopMagnifier from './LoopMagnifier';
 
+// Helper to extract clean display name from Daily.co unique username
+const getCleanDisplayName = (userName) => {
+  if (!userName) return 'Participant';
+  // Extract original name from format: "OriginalName_timestamp_sessionId"
+  const parts = userName.split('_');
+  return parts.length >= 3 ? parts[0] : userName;
+};
+
 // Constants moved to inside component to avoid duplication
 
 // Helper to generate a deterministic "random" avatar based on index - ONLY human photos from randomuser.me
@@ -30,9 +38,28 @@ const CommunityViewTile = React.memo(({
   onCenterChange
 }) => {
   const hasVideo = participant.tracks?.video?.state === 'playable' && participant.tracks?.video?.persistentTrack;
-  const displayName = participant.local
-    ? (participant.displayName || participant.user_name || 'You')
-    : (participant.displayName || participant.user_name || 'Participant');
+  // Enhanced helper to extract clean display name - prioritize actual session participant names
+  const getCleanDisplayName = (participant) => {
+    // PRIORITY 1: Use the actual session participant name stored in userData
+    if (participant.userData?.originalName) return participant.userData.originalName;
+    if (participant.userData?.displayName) return participant.userData.displayName;
+    
+    // PRIORITY 2: Use displayName if it's already clean (set by GenerativeDialogue)
+    if (participant.displayName && !participant.displayName.includes('_')) return participant.displayName;
+    
+    // PRIORITY 3: Extract base name from Daily.co username (Carlos, Ruth, Test1, Test2)
+    if (participant.user_name) {
+      const parts = participant.user_name.split('_');
+      if (parts.length >= 3) {
+        return parts[0]; // Return the original name (Carlos, Ruth, Test1, Test2)
+      }
+      return participant.user_name;
+    }
+    
+    return participant.local ? 'You' : 'Participant';
+  };
+
+  const displayName = getCleanDisplayName(participant);
 
   // Notify parent if this tile is the center participant
   useEffect(() => {
@@ -170,26 +197,28 @@ const CommunityViewExperimental = React.memo(({
     });
   }, [realParticipants]);
 
-  // FIXED: Properly memoize participantArray to prevent infinite re-renders
+  // ENHANCED: Better participant array management with real participant prioritization
   const participantArray = useMemo(() => {
     const realParticipants = participants.map((p, index) => ({
       ...p,
       session_id: p.session_id || `real-${index}`,
-      identity: p.identity || `User ${index + 1}`,
+      identity: p.displayName || p.identity || getCleanDisplayName(p.user_name) || `User ${index + 1}`,
       type: 'real'
     }));
 
-    // For demo/testing: add mock participants based on controlled count
+    // Keep mocks: always fill remaining slots with mocks
     const mockCount = Math.max(0, mockParticipantCount - realParticipants.length);
+    
     const mockParticipants = generateMockParticipants(mockCount);
     
-    console.log('📜 Scroll Test - Participant Array:', {
+    console.log('📜 Participant Array (Enhanced):', {
       realCount: realParticipants.length,
       mockParticipantCount,
       mockCount,
       mockGenerated: mockParticipants.length,
       totalParticipants: realParticipants.length + mockParticipants.length,
-      testingMode: 'SCROLL_TESTING_500_PARTICIPANTS'
+      realParticipantNames: realParticipants.map(p => p.identity),
+      testingMode: realParticipants.length > 0 ? 'REAL_PARTICIPANTS_ACTIVE' : 'MOCK_PARTICIPANTS_ONLY'
     });
     
     return [...realParticipants, ...mockParticipants];
@@ -679,10 +708,10 @@ const CommunityViewExperimental = React.memo(({
           box-shadow: none !important;
         }
         
-        /* Default state: hide name labels */
+        /* Default state: show name labels for real participants, hide for mock */
         .experimental-name-label {
-          opacity: 0;
-          visibility: hidden;
+          opacity: 1;
+          visibility: visible;
           display: block;
           background: rgba(0,0,0,0.95);
           color: white;

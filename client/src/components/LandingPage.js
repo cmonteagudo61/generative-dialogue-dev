@@ -111,8 +111,8 @@ const LandingPage = ({
                       value={sessionCode}
                       onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
                       onKeyPress={handleKeyPress}
-                      placeholder="Enter session code (e.g., ABC123)"
-                      maxLength={6}
+                      placeholder="Enter session code (e.g., CARLOS-A)"
+                      maxLength={8}
                       className="session-code-input"
                     />
                     <button 
