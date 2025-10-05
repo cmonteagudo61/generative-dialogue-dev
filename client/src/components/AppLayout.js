@@ -178,7 +178,7 @@ const AppLayout = ({
       <div className="main-content">
         {isNarrow && <div className="secondary-header">{headerInfo}</div>}
         <div className="grid-wrapper">
-          <NavigationMap activeSize={activeSize} onSizeChange={onSizeChange} />
+          <NavigationMap activeSize={activeSize} onSizeChange={isHost ? onSizeChange : undefined} />
           <div className="viewing-area">
             <div className="view-content">
               {children}

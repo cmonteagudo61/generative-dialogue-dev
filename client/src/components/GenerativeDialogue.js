@@ -117,16 +117,16 @@ const GenerativeDialogueInner = ({
       if (roomType === 'community') {
         console.log('🏛️ In Community View room: Using community layout');
         return 'community';
-      } else if (roomType === 'dyad' || roomAssignment.roomName?.includes('dyad')) {
+      } else if (roomType === 'dyad') {
         console.log('🎯 In dyad breakout room: Using dyad layout');
         return 'dyad';
-      } else if (roomType === 'triad' || roomAssignment.roomName?.includes('triad')) {
+      } else if (roomType === 'triad') {
         console.log('🎯 In triad breakout room: Using triad layout');
         return 'triad';
-      } else if (roomType === 'quad' || roomAssignment.roomName?.includes('quad')) {
+      } else if (roomType === 'quad') {
         console.log('🎯 In quad breakout room: Using quad layout');
         return 'quad';
-      } else if (roomType === 'kiva' || roomAssignment.roomName?.includes('kiva')) {
+      } else if (roomType === 'kiva') {
         console.log('🎯 In kiva breakout room: Using kiva layout');
         return 'kiva';
       }
@@ -792,6 +792,88 @@ const GenerativeDialogueInner = ({
     }
   }, [sessionData]);
 
+  // Host helper: visit a dyad as a triad by creating a temporary triad room (capacity 3)
+  const visitDyadAsTriad = useCallback(async (dyadRoomId = 'dyad-1') => {
+    if (!sessionData) return;
+    try {
+      const participantName = sessionStorage.getItem('gd_current_participant_name') || '';
+      const currentParticipant = sessionData.participants?.find(p => p.name === participantName);
+      const isHost = !!(currentParticipant?.isHost || isThisTabHost(sessionData));
+      if (!isHost) return;
+
+      const currentAssignments = JSON.parse(localStorage.getItem(`session_${sessionData.sessionId}`) || 'null') || sessionData;
+      const dyadRoom = currentAssignments?.roomAssignments?.rooms?.[dyadRoomId];
+      if (!dyadRoom) {
+        console.log('No dyad room found to visit');
+        return;
+      }
+
+      // Determine the two participants currently assigned to the dyad
+      const dyadParticipantIds = (dyadRoom.participants && dyadRoom.participants.length)
+        ? dyadRoom.participants
+        : Object.entries(currentAssignments.roomAssignments?.participants || {})
+            .filter(([_, a]) => a.roomId === dyadRoomId)
+            .map(([id]) => id)
+            .filter(id => id !== (currentParticipant?.id || 'host'))
+            .slice(0, 2);
+      if (dyadParticipantIds.length < 2) {
+        console.log('Need two participants in dyad to visit');
+        return;
+      }
+
+      // Create a temporary triad room via Netlify function
+      const code = `${sessionData.sessionId}-triad-visit-${Date.now()}`;
+      const resp = await fetch('/.netlify/functions/daily-create-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionCode: code, participantCount: 3 })
+      });
+      const data = await resp.json().catch(() => ({}));
+      const triadUrl = data?.room?.url || data?.url;
+      if (!triadUrl) {
+        console.log('Failed to create triad visit room');
+        return;
+      }
+      const triadName = `${sessionData.sessionId}-triad-visit-${String(Date.now()).slice(-4)}`; // Avoid the word "dyad"
+
+      // Build new assignments with host added to the dyad as triad
+      const updated = { ...currentAssignments };
+      updated.roomAssignments = updated.roomAssignments || { sessionId: sessionData.sessionId, rooms: {}, participants: {} };
+      updated.roomAssignments.rooms[dyadRoomId] = {
+        ...dyadRoom,
+        type: 'triad',
+        name: triadName,
+        url: triadUrl,
+        participants: [dyadParticipantIds[0], dyadParticipantIds[1], currentParticipant?.id || 'host']
+      };
+
+      const idToName = (pid) => (sessionData.participants?.find(p => p.id === pid)?.name) || (pid === 'host' ? 'Carlos' : 'Participant');
+      [dyadParticipantIds[0], dyadParticipantIds[1], (currentParticipant?.id || 'host')].forEach(pid => {
+        updated.roomAssignments.participants[pid] = {
+          participantId: pid,
+          participantName: idToName(pid),
+          roomId: dyadRoomId,
+          roomName: triadName,
+          roomUrl: triadUrl,
+          roomType: 'triad',
+          assignedAt: new Date().toISOString()
+        };
+      });
+
+      updated.status = 'rooms-assigned';
+      updated.currentPhase = 'breakout-rooms';
+      localStorage.setItem(`session_${sessionData.sessionId}`, JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: sessionData.sessionId, sessionData: updated } }));
+
+      // Join the triad room
+      const hostAssignment = updated.roomAssignments.participants[currentParticipant?.id || 'host'];
+      setRoomAssignment(hostAssignment);
+      setJoinAttempted(false);
+    } catch (e) {
+      console.log('visitDyadAsTriad failed', e);
+    }
+  }, [sessionData, isThisTabHost]);
+
   // Host action: end breakouts and return everyone to main room
   const handleEndBreakouts = useCallback(() => {
     if (!sessionData) return;
@@ -937,11 +1019,8 @@ const GenerativeDialogueInner = ({
     const onHostCreate = (e) => {
       const rt = (e && e.detail && e.detail.roomType) ? String(e.detail.roomType) : 'dyad';
       console.log('[HostNav] create-breakouts event →', rt);
-      if (rt === 'dyad') {
-        handleNormalizeDyads();
-      } else {
-        handleCreateBreakoutRooms(rt);
-      }
+      // Always route to breakout creator so rooms/assignments are created consistently
+      handleCreateBreakoutRooms(rt);
     };
     const onHostEnd = () => {
       console.log('[HostNav] end-breakouts event');
@@ -1046,6 +1125,22 @@ const GenerativeDialogueInner = ({
             }}
           >
             🎯 Create Dyad Rooms (2 people)
+          </button>
+          <button
+            onClick={() => visitDyadAsTriad('dyad-1')}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '8px 12px',
+              margin: '5px 0',
+              backgroundColor: '#9C27B0',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            🧭 Visit Dyad-1 (as Triad)
           </button>
           <button
             onClick={() => handleCreateBreakoutRooms('triad')}
