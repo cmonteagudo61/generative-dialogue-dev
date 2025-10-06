@@ -821,20 +821,23 @@ const GenerativeDialogueInner = ({
         return;
       }
 
-      // Create a temporary triad room via Netlify function
-      const code = `${sessionData.sessionId}-triad-visit-${Date.now()}`;
-      const resp = await fetch('/.netlify/functions/daily-create-room', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionCode: code, participantCount: 3 })
-      });
-      const data = await resp.json().catch(() => ({}));
-      const triadUrl = data?.room?.url || data?.url;
+      // Stable triad visit URL: reuse if present, otherwise create once
+      let triadUrl = currentAssignments?.triadVisitUrl;
       if (!triadUrl) {
-        console.log('Failed to create triad visit room');
-        return;
+        const code = `${sessionData.sessionId}-triad-visit`;
+        const resp = await fetch('/.netlify/functions/daily-create-room', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionCode: code, participantCount: 3 })
+        });
+        const data = await resp.json().catch(() => ({}));
+        triadUrl = data?.room?.url || data?.url;
+        if (!triadUrl) {
+          console.log('Failed to create triad visit room');
+          return;
+        }
       }
-      const triadName = `${sessionData.sessionId}-triad-visit-${String(Date.now()).slice(-4)}`; // Avoid the word "dyad"
+      const triadName = `${sessionData.sessionId}-triad-visit`;
 
       // Build new assignments with host added to the dyad as triad
       const updated = { ...currentAssignments };
@@ -859,6 +862,9 @@ const GenerativeDialogueInner = ({
           assignedAt: new Date().toISOString()
         };
       });
+
+      // Persist the stable triad visit URL for future visits
+      updated.triadVisitUrl = triadUrl;
 
       updated.status = 'rooms-assigned';
       updated.currentPhase = 'breakout-rooms';
