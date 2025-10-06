@@ -512,14 +512,8 @@ const GenerativeDialogueInner = ({
       return;
     }
     
-    // CRITICAL: Generate roomUrl from roomName if missing
-    let roomUrl = assignment?.roomUrl;
-    if (!roomUrl && assignment?.roomName) {
-      // Generate Daily.co URL from room name
-      roomUrl = `https://generativedialogue.daily.co/${assignment.roomName}`;
-      console.log('🔧 GenerativeDialogue: Generated roomUrl from roomName:', roomUrl);
-    }
-    
+    // CRITICAL: Only use server-created roomUrl; do NOT synthesize domain from roomName
+    const roomUrl = assignment?.roomUrl;
     if (!roomUrl) {
       console.log('🏠 GenerativeDialogue: No room assignment available yet');
       console.log('🔍 GenerativeDialogue: roomAssignment keys:', Object.keys(assignment || {}));
