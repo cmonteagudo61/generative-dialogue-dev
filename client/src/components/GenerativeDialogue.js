@@ -875,20 +875,82 @@ const GenerativeDialogueInner = ({
   }, [sessionData, isThisTabHost]);
 
   // Host action: end breakouts and return everyone to main room
-  const handleEndBreakouts = useCallback(() => {
+  const handleEndBreakouts = useCallback(async () => {
     if (!sessionData) return;
     try {
-      const latestSessionData = JSON.parse(localStorage.getItem(`session_${sessionData.sessionId}`) || 'null') || sessionData;
+      const sessionKey = `session_${sessionData.sessionId}`;
+      const latestSessionData = JSON.parse(localStorage.getItem(sessionKey) || 'null') || sessionData;
+
+      // Ensure there is a MAIN room with a valid URL
+      const allParticipants = latestSessionData.participants || sessionData.participants || [];
+      let mainRoom = latestSessionData?.roomAssignments?.rooms?.main;
+
+      if (!mainRoom || !mainRoom.url) {
+        console.log('🏛️ No MAIN found. Creating a fresh Community room via Netlify...');
+        const resp = await fetch('/.netlify/functions/daily-create-room', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionCode: `${sessionData.sessionId}-community-main`,
+            participantCount: Math.max(10, allParticipants.length + 2)
+          })
+        });
+        const data = await resp.json().catch(() => ({}));
+        const url = data?.room?.url || data?.url;
+        const name = data?.room?.name || `${sessionData.sessionId}-community-main`;
+        if (!url) throw new Error('Failed to create MAIN room URL');
+        mainRoom = {
+          id: 'main',
+          name,
+          url,
+          type: 'community',
+          participants: allParticipants.map(p => p.id),
+          sessionId: sessionData.sessionId,
+          assignedAt: new Date().toISOString()
+        };
+      } else {
+        // Normalize MAIN details
+        mainRoom = {
+          ...mainRoom,
+          id: 'main',
+          type: 'community',
+          participants: allParticipants.map(p => p.id),
+          sessionId: sessionData.sessionId,
+          assignedAt: new Date().toISOString()
+        };
+      }
+
+      // Rebuild participant assignments back to MAIN
+      const participantAssignments = {};
+      allParticipants.forEach(p => {
+        participantAssignments[p.id] = {
+          participantId: p.id,
+          participantName: p.name,
+          roomId: 'main',
+          roomName: mainRoom.name,
+          roomUrl: mainRoom.url,
+          roomType: 'community',
+          assignedAt: new Date().toISOString()
+        };
+      });
+
       const updatedSession = {
         ...latestSessionData,
+        roomAssignments: {
+          sessionId: sessionData.sessionId,
+          rooms: { main: mainRoom },
+          participants: participantAssignments
+        },
+        triadVisitUrl: '',
         status: 'main-room-active',
         currentPhase: 'main-room'
       };
-      localStorage.setItem(`session_${sessionData.sessionId}`, JSON.stringify(updatedSession));
+
+      localStorage.setItem(sessionKey, JSON.stringify(updatedSession));
       window.dispatchEvent(new CustomEvent('session-updated', {
         detail: { sessionCode: sessionData.sessionId, sessionData: updatedSession }
       }));
-      console.log('🏛️ Breakouts ended. Returning everyone to main room.');
+      console.log('🏛️ Breakouts ended. MAIN restored:', mainRoom.url);
     } catch (e) {
       console.error('❌ Failed to end breakouts:', e);
     }

@@ -449,60 +449,43 @@ class RoomManager {
     }
   }
 
-  // Create a single room via Daily.co API
+  // Create a single room via Netlify function (server-side Daily.co API)
   async createDailyRoom(roomName, roomType) {
-    const maxParticipants = roomType === 'community' ? 50 : this.getRoomSize(roomType) + 2;
-    
-    const roomConfig = {
-      name: roomName,
-      properties: {
-        max_participants: maxParticipants,
-        enable_chat: true,
-        enable_screenshare: true,
-        start_video_off: false,
-        start_audio_off: false,
-        exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hour expiry
-      }
-    };
+    // Choose safe capacities; breakouts include +1 for potential host visit
+    const baseSize = this.getRoomSize(roomType);
+    const participantCount = roomType === 'community' ? 16 : Math.min(6, baseSize + 1);
 
-    console.log(`🎥 CREATING Daily.co room: ${roomName}`, {
-      roomConfig,
-      apiKey: DAILY_API_KEY ? `${DAILY_API_KEY.substring(0, 8)}...` : 'MISSING',
-      domain: DAILY_DOMAIN
-    });
+    console.log(`🎥 Creating room via Netlify: ${roomName}`, { roomType, participantCount });
 
-    const response = await fetch('https://api.daily.co/v1/rooms', {
+    const response = await fetch('/.netlify/functions/daily-create-room', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DAILY_API_KEY}`
-      },
-      body: JSON.stringify(roomConfig)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionCode: roomName, participantCount })
     });
-
-    console.log(`🎥 Daily.co API response status: ${response.status}`);
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error(`❌ Daily.co API error: ${response.status} - ${error}`);
-      throw new Error(`Daily.co API error: ${response.status} - ${error}`);
+      const text = await response.text().catch(() => '');
+      console.error('❌ Netlify daily-create-room failed:', response.status, text);
+      throw new Error(`Netlify daily-create-room failed: ${response.status}`);
     }
 
-    const roomData = await response.json();
-    console.log(`🎥 Daily.co API response data:`, roomData);
-    
+    const data = await response.json().catch(() => ({}));
+    const url = data?.room?.url || data?.url;
+    const name = data?.room?.name || roomName;
+    if (!url) {
+      throw new Error('Netlify daily-create-room returned no URL');
+    }
+
     const room = {
-      id: roomData.name,
-      name: roomData.name,
-      url: roomData.url,
+      id: name,
+      name,
+      url,
       type: roomType,
-      maxParticipants: roomConfig.properties.max_participants,
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date(roomConfig.properties.exp * 1000).toISOString()
+      maxParticipants: participantCount,
+      createdAt: new Date().toISOString()
     };
 
-    console.log(`✅ SUCCESSFULLY created Daily.co room: ${room.name} → ${room.url}`);
-
+    console.log(`✅ Created room via Netlify: ${room.name} → ${room.url}`);
     return room;
   }
 }
