@@ -117,16 +117,16 @@ const GenerativeDialogueInner = ({
       if (roomType === 'community') {
         console.log('🏛️ In Community View room: Using community layout');
         return 'community';
-      } else if (roomType === 'dyad') {
+      } else if (roomType === 'dyad' || roomAssignment.roomName?.includes('dyad')) {
         console.log('🎯 In dyad breakout room: Using dyad layout');
         return 'dyad';
-      } else if (roomType === 'triad') {
+      } else if (roomType === 'triad' || roomAssignment.roomName?.includes('triad')) {
         console.log('🎯 In triad breakout room: Using triad layout');
         return 'triad';
-      } else if (roomType === 'quad') {
+      } else if (roomType === 'quad' || roomAssignment.roomName?.includes('quad')) {
         console.log('🎯 In quad breakout room: Using quad layout');
         return 'quad';
-      } else if (roomType === 'kiva') {
+      } else if (roomType === 'kiva' || roomAssignment.roomName?.includes('kiva')) {
         console.log('🎯 In kiva breakout room: Using kiva layout');
         return 'kiva';
       }
@@ -400,21 +400,31 @@ const GenerativeDialogueInner = ({
     }
     // PHASE 2a (HOST): When breakouts are assigned, host stays in main and should join it
     else if (sessionData?.status === 'rooms-assigned' && thisTabIsHost && !hasJoinedRoom && !isJoining && !joinAttempted) {
-      const existingMainRoom = sessionData?.roomAssignments?.rooms?.['main'];
+      // If host has been assigned to a breakout (e.g., visiting a dyad as triad), join that assignment
       const hostAssignment = sessionData?.roomAssignments?.participants?.[currentParticipant?.id];
-      const mainAssignment = hostAssignment || (existingMainRoom ? {
-        participantId: currentParticipant?.id || 'host',
-        participantName: currentParticipant?.name || sessionStorage.getItem('gd_current_participant_name'),
-        roomId: 'main',
-        roomName: existingMainRoom.name,
-        roomUrl: existingMainRoom.url,
-        roomType: 'community',
-        assignedAt: new Date().toISOString()
-      } : null);
-      if (mainAssignment) {
-        console.log('🏛️ Host during breakouts: joining/staying in main room');
-        setRoomAssignment(mainAssignment);
+      const hostAssignedToBreakout = hostAssignment && hostAssignment.roomId !== 'main' && hostAssignment.roomType !== 'community';
+
+      if (hostAssignedToBreakout) {
+        console.log('🧭 Host assigned to breakout during rooms-assigned → joining breakout instead of MAIN', hostAssignment);
+        setRoomAssignment(hostAssignment);
         setJoinAttempted(true);
+      } else {
+        // Default behavior: host remains in main room during breakouts
+        const existingMainRoom = sessionData?.roomAssignments?.rooms?.['main'];
+        const mainAssignment = hostAssignment || (existingMainRoom ? {
+          participantId: currentParticipant?.id || 'host',
+          participantName: currentParticipant?.name || sessionStorage.getItem('gd_current_participant_name'),
+          roomId: 'main',
+          roomName: existingMainRoom.name,
+          roomUrl: existingMainRoom.url,
+          roomType: 'community',
+          assignedAt: new Date().toISOString()
+        } : null);
+        if (mainAssignment) {
+          console.log('🏛️ Host during breakouts: joining/staying in main room');
+          setRoomAssignment(mainAssignment);
+          setJoinAttempted(true);
+        }
       }
     }
     // PHASE 2: Join assigned breakout room (when host creates breakout rooms)
@@ -512,8 +522,14 @@ const GenerativeDialogueInner = ({
       return;
     }
     
-    // CRITICAL: Only use server-created roomUrl; do NOT synthesize domain from roomName
-    const roomUrl = assignment?.roomUrl;
+    // CRITICAL: Generate roomUrl from roomName if missing
+    let roomUrl = assignment?.roomUrl;
+    if (!roomUrl && assignment?.roomName) {
+      // Generate Daily.co URL from room name
+      roomUrl = `https://generativedialogue.daily.co/${assignment.roomName}`;
+      console.log('🔧 GenerativeDialogue: Generated roomUrl from roomName:', roomUrl);
+    }
+    
     if (!roomUrl) {
       console.log('🏠 GenerativeDialogue: No room assignment available yet');
       console.log('🔍 GenerativeDialogue: roomAssignment keys:', Object.keys(assignment || {}));
@@ -786,171 +802,21 @@ const GenerativeDialogueInner = ({
     }
   }, [sessionData]);
 
-  // Host helper: visit a dyad as a triad by creating a temporary triad room (capacity 3)
-  const visitDyadAsTriad = useCallback(async (dyadRoomId = 'dyad-1') => {
-    if (!sessionData) return;
-    try {
-      const participantName = sessionStorage.getItem('gd_current_participant_name') || '';
-      const currentParticipant = sessionData.participants?.find(p => p.name === participantName);
-      const isHost = !!(currentParticipant?.isHost || isThisTabHost(sessionData));
-      if (!isHost) return;
-
-      const currentAssignments = JSON.parse(localStorage.getItem(`session_${sessionData.sessionId}`) || 'null') || sessionData;
-      const dyadRoom = currentAssignments?.roomAssignments?.rooms?.[dyadRoomId];
-      if (!dyadRoom) {
-        console.log('No dyad room found to visit');
-        return;
-      }
-
-      // Determine the two participants currently assigned to the dyad
-      const dyadParticipantIds = (dyadRoom.participants && dyadRoom.participants.length)
-        ? dyadRoom.participants
-        : Object.entries(currentAssignments.roomAssignments?.participants || {})
-            .filter(([_, a]) => a.roomId === dyadRoomId)
-            .map(([id]) => id)
-            .filter(id => id !== (currentParticipant?.id || 'host'))
-            .slice(0, 2);
-      if (dyadParticipantIds.length < 2) {
-        console.log('Need two participants in dyad to visit');
-        return;
-      }
-
-      // Stable triad visit URL: reuse if present, otherwise create once
-      let triadUrl = currentAssignments?.triadVisitUrl;
-      if (!triadUrl) {
-        const code = `${sessionData.sessionId}-triad-visit`;
-        const resp = await fetch('/.netlify/functions/daily-create-room', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionCode: code, participantCount: 3 })
-        });
-        const data = await resp.json().catch(() => ({}));
-        triadUrl = data?.room?.url || data?.url;
-        if (!triadUrl) {
-          console.log('Failed to create triad visit room');
-          return;
-        }
-      }
-      const triadName = `${sessionData.sessionId}-triad-visit`;
-
-      // Build new assignments with host added to the dyad as triad
-      const updated = { ...currentAssignments };
-      updated.roomAssignments = updated.roomAssignments || { sessionId: sessionData.sessionId, rooms: {}, participants: {} };
-      updated.roomAssignments.rooms[dyadRoomId] = {
-        ...dyadRoom,
-        type: 'triad',
-        name: triadName,
-        url: triadUrl,
-        participants: [dyadParticipantIds[0], dyadParticipantIds[1], currentParticipant?.id || 'host']
-      };
-
-      const idToName = (pid) => (sessionData.participants?.find(p => p.id === pid)?.name) || (pid === 'host' ? 'Carlos' : 'Participant');
-      [dyadParticipantIds[0], dyadParticipantIds[1], (currentParticipant?.id || 'host')].forEach(pid => {
-        updated.roomAssignments.participants[pid] = {
-          participantId: pid,
-          participantName: idToName(pid),
-          roomId: dyadRoomId,
-          roomName: triadName,
-          roomUrl: triadUrl,
-          roomType: 'triad',
-          assignedAt: new Date().toISOString()
-        };
-      });
-
-      // Persist the stable triad visit URL for future visits
-      updated.triadVisitUrl = triadUrl;
-
-      updated.status = 'rooms-assigned';
-      updated.currentPhase = 'breakout-rooms';
-      localStorage.setItem(`session_${sessionData.sessionId}`, JSON.stringify(updated));
-      window.dispatchEvent(new CustomEvent('session-updated', { detail: { sessionCode: sessionData.sessionId, sessionData: updated } }));
-
-      // Join the triad room
-      const hostAssignment = updated.roomAssignments.participants[currentParticipant?.id || 'host'];
-      setRoomAssignment(hostAssignment);
-      setJoinAttempted(false);
-    } catch (e) {
-      console.log('visitDyadAsTriad failed', e);
-    }
-  }, [sessionData, isThisTabHost]);
-
   // Host action: end breakouts and return everyone to main room
-  const handleEndBreakouts = useCallback(async () => {
+  const handleEndBreakouts = useCallback(() => {
     if (!sessionData) return;
     try {
-      const sessionKey = `session_${sessionData.sessionId}`;
-      const latestSessionData = JSON.parse(localStorage.getItem(sessionKey) || 'null') || sessionData;
-
-      // Ensure there is a MAIN room with a valid URL
-      const allParticipants = latestSessionData.participants || sessionData.participants || [];
-      let mainRoom = latestSessionData?.roomAssignments?.rooms?.main;
-
-      if (!mainRoom || !mainRoom.url) {
-        console.log('🏛️ No MAIN found. Creating a fresh Community room via Netlify...');
-        const resp = await fetch('/.netlify/functions/daily-create-room', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionCode: `${sessionData.sessionId}-community-main`,
-            participantCount: Math.max(10, allParticipants.length + 2)
-          })
-        });
-        const data = await resp.json().catch(() => ({}));
-        const url = data?.room?.url || data?.url;
-        const name = data?.room?.name || `${sessionData.sessionId}-community-main`;
-        if (!url) throw new Error('Failed to create MAIN room URL');
-        mainRoom = {
-          id: 'main',
-          name,
-          url,
-          type: 'community',
-          participants: allParticipants.map(p => p.id),
-          sessionId: sessionData.sessionId,
-          assignedAt: new Date().toISOString()
-        };
-      } else {
-        // Normalize MAIN details
-        mainRoom = {
-          ...mainRoom,
-          id: 'main',
-          type: 'community',
-          participants: allParticipants.map(p => p.id),
-          sessionId: sessionData.sessionId,
-          assignedAt: new Date().toISOString()
-        };
-      }
-
-      // Rebuild participant assignments back to MAIN
-      const participantAssignments = {};
-      allParticipants.forEach(p => {
-        participantAssignments[p.id] = {
-          participantId: p.id,
-          participantName: p.name,
-          roomId: 'main',
-          roomName: mainRoom.name,
-          roomUrl: mainRoom.url,
-          roomType: 'community',
-          assignedAt: new Date().toISOString()
-        };
-      });
-
+      const latestSessionData = JSON.parse(localStorage.getItem(`session_${sessionData.sessionId}`) || 'null') || sessionData;
       const updatedSession = {
         ...latestSessionData,
-        roomAssignments: {
-          sessionId: sessionData.sessionId,
-          rooms: { main: mainRoom },
-          participants: participantAssignments
-        },
-        triadVisitUrl: '',
         status: 'main-room-active',
         currentPhase: 'main-room'
       };
-
-      localStorage.setItem(sessionKey, JSON.stringify(updatedSession));
+      localStorage.setItem(`session_${sessionData.sessionId}`, JSON.stringify(updatedSession));
       window.dispatchEvent(new CustomEvent('session-updated', {
         detail: { sessionCode: sessionData.sessionId, sessionData: updatedSession }
       }));
-      console.log('🏛️ Breakouts ended. MAIN restored:', mainRoom.url);
+      console.log('🏛️ Breakouts ended. Returning everyone to main room.');
     } catch (e) {
       console.error('❌ Failed to end breakouts:', e);
     }
@@ -1081,8 +947,11 @@ const GenerativeDialogueInner = ({
     const onHostCreate = (e) => {
       const rt = (e && e.detail && e.detail.roomType) ? String(e.detail.roomType) : 'dyad';
       console.log('[HostNav] create-breakouts event →', rt);
-      // Always route to breakout creator so rooms/assignments are created consistently
-      handleCreateBreakoutRooms(rt);
+      if (rt === 'dyad') {
+        handleNormalizeDyads();
+      } else {
+        handleCreateBreakoutRooms(rt);
+      }
     };
     const onHostEnd = () => {
       console.log('[HostNav] end-breakouts event');
@@ -1187,22 +1056,6 @@ const GenerativeDialogueInner = ({
             }}
           >
             🎯 Create Dyad Rooms (2 people)
-          </button>
-          <button
-            onClick={() => visitDyadAsTriad('dyad-1')}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '8px 12px',
-              margin: '5px 0',
-              backgroundColor: '#9C27B0',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            🧭 Visit Dyad-1 (as Triad)
           </button>
           <button
             onClick={() => handleCreateBreakoutRooms('triad')}
