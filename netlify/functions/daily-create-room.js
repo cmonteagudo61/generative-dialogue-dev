@@ -61,28 +61,35 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Sanitize name to avoid Daily invalid-request (must be lowercase, safe chars, not too long)
+    const safeName = `session-${String(sessionCode || 'demo')`
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 48)}`;
+
+    const payload = {
+      name: safeName,
+      properties: {
+        max_participants: Number(participantCount) || 6
+      }
+    };
+
     const response = await fetch('https://api.daily.co/v1/rooms', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${DAILY_API_KEY}`
       },
-      body: JSON.stringify({
-        name: `session-${sessionCode.toLowerCase()}`,
-        privacy: 'public',
-        properties: {
-          max_participants: participantCount || 6,
-          enable_chat: true,
-          enable_screenshare: true,
-          exp: Math.floor(Date.now() / 1000) + (90 * 60) // 90 minutes from now
-        }
-      })
+      body: JSON.stringify(payload)
     });
 
-    const roomData = await response.json();
-    
+    const text = await response.text();
+    let roomData = {};
+    try { roomData = JSON.parse(text); } catch (_) {}
     if (!response.ok) {
-      throw new Error(`Daily.co API error: ${roomData.error}`);
+      const errMsg = roomData?.error || text || `status ${response.status}`;
+      throw new Error(`Daily.co API error: ${errMsg}`);
     }
 
     console.log(`✅ Daily.co room created: ${roomData.url}`);
@@ -94,13 +101,13 @@ exports.handler = async (event, context) => {
     };
     
   } catch (error) {
-    console.error('❌ Daily.co room creation error:', error);
+    console.error('❌ Daily.co room creation error:', error?.message || error);
     
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
-        error: error.message, 
+        error: error?.message || 'unknown-error', 
         success: false 
       })
     };
