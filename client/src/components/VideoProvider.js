@@ -301,33 +301,6 @@ export const VideoProvider = ({ children }) => {
     joinRoom,
     leaveRoom
   }), [composedParticipants, callObject, error, isConnected, joinRoom, leaveRoom]);
-
-  // Auto-rejoin if our current roomUrl mismatches the assignment in localStorage
-  useEffect(() => {
-    const check = async () => {
-      try {
-        const state = callObjectRef.current?.meetingState?.();
-        if (state !== 'joined-meeting') return; // Only evaluate once fully joined
-        const meetingUrl = callObjectRef.current?.meetingState?.()?.roomUrl;
-        const urlParams = new URLSearchParams(window.location.search);
-        const sid = urlParams.get('session') || localStorage.getItem('gd_session_id');
-        if (!sid || !meetingUrl) return;
-        const raw = localStorage.getItem(`session_${sid}`);
-        if (!raw) return;
-        const s = JSON.parse(raw);
-        const name = sessionStorage.getItem('gd_current_participant_name') || '';
-        const id = name.toLowerCase().startsWith('ruth') ? 'ruth' : name.toLowerCase().startsWith('test1') ? 'test1' : name.toLowerCase().startsWith('carlos') ? 'host' : null;
-        const a = id ? s?.roomAssignments?.participants?.[id] : null;
-        const targetUrl = a?.roomUrl || s?.roomAssignments?.rooms?.main?.url;
-        if (targetUrl && meetingUrl !== targetUrl) {
-          console.log('🔄 Auto-rejoin: mismatch detected → switching rooms', { meetingUrl, targetUrl });
-          await joinRoom(targetUrl, sessionStorage.getItem('gd_current_participant_name'));
-        }
-      } catch (_) {}
-    };
-    const t = setInterval(check, 1500);
-    return () => clearInterval(t);
-  }, [joinRoom, leaveRoom]);
   
   return (
     <VideoContext.Provider value={contextValue}>

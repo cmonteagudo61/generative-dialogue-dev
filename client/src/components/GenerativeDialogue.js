@@ -110,7 +110,28 @@ const GenerativeDialogueInner = ({
   }, []);
   // Determine layout based on session phase and room assignment
   const layout = useMemo(() => {
-    // ZOOM-LIKE BEHAVIOR: Check session phase first
+    // If we have a breakout assignment, allow it to override main-room phase for the host tab
+    if (hasJoinedRoom && roomAssignment && roomAssignment.roomType && roomAssignment.roomType !== 'community') {
+      const rt = roomAssignment.roomType;
+      if (rt === 'dyad' || roomAssignment.roomName?.includes('dyad')) {
+        console.log('🎯 In dyad breakout room: Using dyad layout');
+        return 'dyad';
+      }
+      if (rt === 'triad' || roomAssignment.roomName?.includes('triad')) {
+        console.log('🎯 In triad breakout room: Using triad layout');
+        return 'triad';
+      }
+      if (rt === 'quad' || roomAssignment.roomName?.includes('quad')) {
+        console.log('🎯 In quad breakout room: Using quad layout');
+        return 'quad';
+      }
+      if (rt === 'kiva' || roomAssignment.roomName?.includes('kiva')) {
+        console.log('🎯 In kiva breakout room: Using kiva layout');
+        return 'kiva';
+      }
+    }
+
+    // ZOOM-LIKE BEHAVIOR: Check session phase next
     if (sessionData?.currentPhase === 'main-room' || sessionData?.status === 'main-room-active') {
       console.log('🏛️ Main room phase: Using community layout for everyone');
       return 'community';
@@ -379,6 +400,18 @@ const GenerativeDialogueInner = ({
     );
     const thisTabIsHost = isThisTabHost(sessionData) || !!currentParticipant?.isHost;
     
+    // OVERRIDE: If this participant (including host) has a breakout assignment, join it regardless of session status
+    if (currentParticipant?.id && sessionData?.roomAssignments?.participants?.[currentParticipant.id] && !hasJoinedRoom && !isJoining && !joinAttempted) {
+      const myAssign = sessionData.roomAssignments.participants[currentParticipant.id];
+      const isBreakout = myAssign && myAssign.roomId !== 'main' && myAssign.roomType !== 'community';
+      if (isBreakout) {
+        console.log('🧭 Assigned to breakout → joining regardless of status', myAssign);
+        setRoomAssignment(myAssign);
+        setJoinAttempted(true);
+        return;
+      }
+    }
+    
     // PHASE 1: Everyone joins main room when session starts
     if (sessionData?.status === 'main-room-active' && !hasJoinedRoom && !isJoining && !joinAttempted) {
       console.log('🏛️ Session started: Everyone joining main room together');
@@ -528,13 +561,8 @@ const GenerativeDialogueInner = ({
       return;
     }
     
-    // CRITICAL: Generate roomUrl from roomName if missing
+    // CRITICAL: Do not synthesize URLs; rely on server-provided assignment.roomUrl
     let roomUrl = assignment?.roomUrl;
-    if (!roomUrl && assignment?.roomName) {
-      // Generate Daily.co URL from room name
-      roomUrl = `https://generativedialogue.daily.co/${assignment.roomName}`;
-      console.log('🔧 GenerativeDialogue: Generated roomUrl from roomName:', roomUrl);
-    }
     
     if (!roomUrl) {
       console.log('🏠 GenerativeDialogue: No room assignment available yet');
