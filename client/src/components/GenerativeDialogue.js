@@ -88,6 +88,12 @@ const GenerativeDialogueInner = ({
   // Robust host detection for this tab
   const isThisTabHost = useCallback((sData) => {
     if (!sData) return false;
+    // URL override: role=host forces host controls for MVP/demo
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const roleParam = (urlParams.get('role') || '').toLowerCase();
+      if (roleParam === 'host') return true;
+    } catch (_) {}
     const storedName = (sessionStorage.getItem('gd_current_participant_name') || '').trim();
     const hostParticipant = sData.participants?.find(p => p.isHost);
     const hostName = (sData.hostName || hostParticipant?.name || '').trim();
@@ -1023,11 +1029,13 @@ const GenerativeDialogueInner = ({
             participantName,
             isHost,
             status,
-            shouldShow: sessionData && isHost && (status === 'main-room-active' || status === 'rooms-assigned')
+            shouldShow: sessionData && isHost && (status === 'main-room-active' || status === 'rooms-assigned' || (new URLSearchParams(window.location.search).get('role') || '').toLowerCase() === 'host')
           });
         }
         
-        return sessionData && isHost && (status === 'main-room-active' || status === 'rooms-assigned');
+        // Allow showing controls when role=host override is present, even if status missing
+        const roleHost = (new URLSearchParams(window.location.search).get('role') || '').toLowerCase() === 'host';
+        return sessionData && isHost && (status === 'main-room-active' || status === 'rooms-assigned' || roleHost);
       })() && (
         <div style={{
           position: 'fixed',
