@@ -61,17 +61,16 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Sanitize name to avoid Daily invalid-request (must be lowercase, safe chars, not too long)
-    const safeName = `session-${String(sessionCode || 'demo')`
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '-')
-      .replace(/-+/g, '-')
-      .slice(0, 48)}`;
+    // Sanitize name to avoid Daily invalid-request (lowercase, safe chars, short)
+    const raw = String(sessionCode || 'demo');
+    const safeName = `session-${raw.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').slice(0, 48)}`;
 
     const payload = {
       name: safeName,
+      privacy: 'public',
       properties: {
-        max_participants: Number(participantCount) || 6
+        max_participants: Number(participantCount) || 6,
+        exp: Math.floor(Date.now() / 1000) + (90 * 60)
       }
     };
 
