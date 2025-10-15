@@ -110,8 +110,8 @@ const GenerativeDialogueInner = ({
   }, []);
   // Determine layout based on session phase and room assignment
   const layout = useMemo(() => {
-    // If we have a breakout assignment, allow it to override main-room phase for the host tab
-    if (hasJoinedRoom && roomAssignment && roomAssignment.roomType && roomAssignment.roomType !== 'community') {
+    // If we have a breakout assignment, allow it to override main-room phase immediately
+    if (roomAssignment && roomAssignment.roomType && roomAssignment.roomType !== 'community') {
       const rt = roomAssignment.roomType;
       if (rt === 'dyad' || roomAssignment.roomName?.includes('dyad')) {
         console.log('🎯 In dyad breakout room: Using dyad layout');
@@ -178,7 +178,8 @@ const GenerativeDialogueInner = ({
   useEffect(() => {
     if (!sessionData) {
       const urlParams = new URLSearchParams(window.location.search);
-      const sessionId = urlParams.get('sessionId');
+      // Support both sessionId and session query params
+      const sessionId = urlParams.get('sessionId') || urlParams.get('session');
       
       if (sessionId) {
         console.log('🎯 GenerativeDialogue: Loading session data for:', sessionId);
@@ -437,7 +438,7 @@ const GenerativeDialogueInner = ({
         createMainRoomForSession();
       }
     }
-    // PHASE 2a (HOST): When breakouts are assigned, host stays in main and should join it
+    // PHASE 2a (HOST): When breakouts are assigned, host should join assigned breakout if any
     else if (sessionData?.status === 'rooms-assigned' && thisTabIsHost && !hasJoinedRoom && !isJoining && !joinAttempted) {
       // If host has been assigned to a breakout (e.g., visiting a dyad as triad), join that assignment
       const hostAssignment = sessionData?.roomAssignments?.participants?.[currentParticipant?.id];
@@ -447,24 +448,7 @@ const GenerativeDialogueInner = ({
         console.log('🧭 Host assigned to breakout during rooms-assigned → joining breakout instead of MAIN', hostAssignment);
         setRoomAssignment(hostAssignment);
         setJoinAttempted(true);
-      } else {
-        // Default behavior: host remains in main room during breakouts
-        const existingMainRoom = sessionData?.roomAssignments?.rooms?.['main'];
-        const mainAssignment = hostAssignment || (existingMainRoom ? {
-          participantId: currentParticipant?.id || 'host',
-          participantName: currentParticipant?.name || sessionStorage.getItem('gd_current_participant_name'),
-          roomId: 'main',
-          roomName: existingMainRoom.name,
-          roomUrl: existingMainRoom.url,
-          roomType: 'community',
-          assignedAt: new Date().toISOString()
-        } : null);
-        if (mainAssignment) {
-          console.log('🏛️ Host during breakouts: joining/staying in main room');
-          setRoomAssignment(mainAssignment);
-          setJoinAttempted(true);
-        }
-      }
+      } // if no breakout assignment, do nothing; do not force host back to MAIN
     }
     // PHASE 2: Join assigned breakout room (when host creates breakout rooms)
     else if (roomAssignment && !hasJoinedRoom && !isJoining && !joinAttempted && roomAssignment.roomName && sessionData?.status === 'rooms-assigned') {
@@ -836,6 +820,135 @@ const GenerativeDialogueInner = ({
     }
   }, [sessionData]);
 
+  // Host action: visit a dyad as a triad (host + 2 participants)
+  const handleVisitDyadAsTriad = useCallback(async () => {
+    if (!sessionData) return;
+    try {
+      const participantName = sessionStorage.getItem('gd_current_participant_name');
+      const currentParticipant = sessionData?.participants?.find(p => p.name === participantName);
+      const isHost = isThisTabHost(sessionData) || !!currentParticipant?.isHost;
+      if (!isHost) {
+        console.log('❌ Only hosts can visit dyads');
+        return;
+      }
+
+      // Load latest session snapshot to avoid stale writes
+      const latest = JSON.parse(localStorage.getItem(`session_${sessionData.sessionId}`) || 'null') || sessionData;
+      const rooms = latest?.roomAssignments?.rooms || {};
+      const participantsById = latest?.roomAssignments?.participants || {};
+
+      // Find the first dyad room
+      const dyadEntry = Object.entries(rooms).find(([, r]) => (r?.type === 'dyad') || (r?.name || '').toLowerCase().includes('dyad'));
+      if (!dyadEntry) {
+        alert('No dyad found. Create dyads first.');
+        return;
+      }
+      const [dyadRoomId, dyadRoom] = dyadEntry;
+
+      // Resolve the two non-host participant IDs in that dyad
+      const dyadMembers = (dyadRoom.participants || []).filter(pid => {
+        const p = (latest.participants || []).find(pp => pp.id === pid);
+        return p && !p.isHost;
+      }).slice(0, 2);
+      if (dyadMembers.length < 2) {
+        alert('Dyad is incomplete (need 2 participants).');
+        return;
+      }
+
+      // Create a triad room via Netlify function (capacity 3), name must not include "dyad"
+      const triadCode = `${latest.sessionId}-triad-visit-${Date.now().toString().slice(-6)}`;
+      const resp = await fetch('/.netlify/functions/daily-create-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionCode: triadCode, participantCount: 3 })
+      });
+      if (!resp.ok) {
+        const t = await resp.text().catch(() => '');
+        throw new Error(`triad create failed: ${resp.status} ${t}`);
+      }
+      const data = await resp.json().catch(() => ({}));
+      const triadUrl = data?.room?.url || data?.url;
+      const triadName = `${latest.sessionId}-triad-visit`;
+      if (!triadUrl) {
+        throw new Error('No triad URL returned');
+      }
+
+      // Identify host participant id/name
+      const hostParticipant = (latest.participants || []).find(p => p.isHost) || currentParticipant || { id: 'host', name: participantName || 'Host', isHost: true };
+
+      // Build updated assignments: repurpose the dyad room into a triad visit
+      const updatedRooms = { ...rooms };
+      updatedRooms[dyadRoomId] = {
+        ...dyadRoom,
+        name: triadName,
+        url: triadUrl,
+        type: 'triad',
+        participants: [dyadMembers[0], dyadMembers[1], hostParticipant.id],
+        sessionId: latest.sessionId,
+        assignedAt: new Date().toISOString()
+      };
+
+      const updatedParticipants = { ...participantsById };
+      const resolveName = (pid) => (latest.participants || []).find(p => p.id === pid)?.name || pid;
+      [dyadMembers[0], dyadMembers[1], hostParticipant.id].forEach((pid) => {
+        updatedParticipants[pid] = {
+          participantId: pid,
+          participantName: pid === hostParticipant.id ? hostParticipant.name : resolveName(pid),
+          roomId: dyadRoomId,
+          roomName: triadName,
+          roomUrl: triadUrl,
+          roomType: 'triad',
+          assignedAt: new Date().toISOString()
+        };
+      });
+
+      const updatedSession = {
+        ...latest,
+        roomAssignments: {
+          sessionId: latest.sessionId,
+          rooms: updatedRooms,
+          participants: updatedParticipants
+        },
+        status: 'rooms-assigned',
+        currentPhase: 'breakout-rooms',
+        triadVisitUrl: triadUrl
+      };
+
+      // Persist and broadcast
+      localStorage.setItem(`session_${latest.sessionId}`, JSON.stringify(updatedSession));
+      window.dispatchEvent(new CustomEvent('session-updated', {
+        detail: { sessionCode: latest.sessionId, sessionData: updatedSession }
+      }));
+
+      // Update local component state and force this host to join immediately
+      setSessionData(updatedSession);
+      setRoomAssignment(updatedParticipants[hostParticipant.id]);
+      setJoinAttempted(false); // allow join
+
+      // Immediately join the triad to avoid any main-room overrides
+      try {
+        if (joinRoom && typeof joinRoom === 'function') {
+          await joinRoom(triadUrl, hostParticipant.name || 'Carlos');
+          setHasJoinedRoom(true);
+          setCurrentRoom(updatedParticipants[hostParticipant.id]);
+        }
+      } catch (_) {
+        // join fallback will be handled by useEffect/auto-join
+      }
+
+      console.log('✅ Triad visit created and assigned:', {
+        triadUrl,
+        triadName,
+        dyadRoomId,
+        hostId: hostParticipant.id,
+        participants: updatedRooms[dyadRoomId].participants
+      });
+    } catch (e) {
+      console.error('❌ handleVisitDyadAsTriad failed:', e);
+      alert(`Visit Dyad failed: ${e.message || e}`);
+    }
+  }, [sessionData, isThisTabHost]);
+
   // Host action: end breakouts and return everyone to main room
   const handleEndBreakouts = useCallback(() => {
     if (!sessionData) return;
@@ -981,8 +1094,9 @@ const GenerativeDialogueInner = ({
     const onHostCreate = (e) => {
       const rt = (e && e.detail && e.detail.roomType) ? String(e.detail.roomType) : 'dyad';
       console.log('[HostNav] create-breakouts event →', rt);
+      // Normalize dyads using the existing breakout creator
       if (rt === 'dyad') {
-        handleNormalizeDyads();
+        handleCreateBreakoutRooms('dyad');
       } else {
         handleCreateBreakoutRooms(rt);
       }
@@ -997,7 +1111,7 @@ const GenerativeDialogueInner = ({
       window.removeEventListener('host-create-breakouts', onHostCreate);
       window.removeEventListener('host-end-breakouts', onHostEnd);
     };
-  }, [handleNormalizeDyads, handleCreateBreakoutRooms, handleEndBreakouts]);
+  }, [handleCreateBreakoutRooms, handleEndBreakouts]);
 
   return (
     <React.Fragment>
@@ -1049,6 +1163,7 @@ const GenerativeDialogueInner = ({
         // Robust host detection using helper
         const isHost = isThisTabHost(sessionData) || !!currentParticipant?.isHost;
         const status = sessionData?.status;
+        const hasAnyDyad = !!Object.values(sessionData?.roomAssignments?.rooms || {}).find(r => (r?.type === 'dyad') || (r?.name || '').toLowerCase().includes('dyad'));
         
         // Reduced logging frequency for host controls debug
         if (Math.random() < 0.01) { // Log only 1% of the time
@@ -1061,9 +1176,9 @@ const GenerativeDialogueInner = ({
           });
         }
         
-        // Allow showing controls when role=host override is present, even if status missing
+        // Allow showing controls when role=host override is present, even if sessionData missing
         const roleHost = (new URLSearchParams(window.location.search).get('role') || '').toLowerCase() === 'host';
-        return sessionData && isHost && (status === 'main-room-active' || status === 'rooms-assigned' || roleHost);
+        return roleHost || (sessionData && isHost && (status === 'main-room-active' || status === 'rooms-assigned'));
       })() && (
         <div style={{
           position: 'fixed',
@@ -1078,6 +1193,7 @@ const GenerativeDialogueInner = ({
         }}>
           <h4 style={{ margin: '0 0 10px 0', color: '#333' }}>🏠 Host Controls</h4>
           <button
+            disabled={!sessionData}
             onClick={() => handleCreateBreakoutRooms('dyad')}
             style={{
               display: 'block',
@@ -1093,7 +1209,30 @@ const GenerativeDialogueInner = ({
           >
             🎯 Create Dyad Rooms (2 people)
           </button>
+          {(() => {
+            const hasAnyDyad = !!Object.values(sessionData?.roomAssignments?.rooms || {}).find(r => (r?.type === 'dyad') || (r?.name || '').toLowerCase().includes('dyad'));
+            return hasAnyDyad ? (
+              <button
+                disabled={!sessionData}
+                onClick={handleVisitDyadAsTriad}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '8px 12px',
+                  margin: '5px 0',
+                  backgroundColor: '#6a1b9a',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                👣 Visit Dyad as Triad (Host joins)
+              </button>
+            ) : null;
+          })()}
           <button
+            disabled={!sessionData}
             onClick={() => handleCreateBreakoutRooms('triad')}
             style={{
               display: 'block',
@@ -1110,6 +1249,7 @@ const GenerativeDialogueInner = ({
             🎯 Create Triad Rooms (3 people)
           </button>
           <button
+            disabled={!sessionData}
             onClick={() => handleCreateBreakoutRooms('quad')}
             style={{
               display: 'block',
@@ -1126,6 +1266,7 @@ const GenerativeDialogueInner = ({
             🎯 Create Quad Rooms (4 people)
           </button>
           <button
+            disabled={!sessionData}
             onClick={handleEndBreakouts}
             style={{
               display: 'block',
@@ -1206,7 +1347,8 @@ const GenerativeDialogueInner = ({
         />
       )}
       
-      {error && !isConnected && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
+      {/* Suppress inline error banner to avoid red/white alert overlay; errors are still logged in console */}
+      {false && error && !isConnected && <div style={{ color: 'red', padding: 8 }}>{error}</div>}
     </React.Fragment>
   );
 };
