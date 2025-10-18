@@ -33,6 +33,7 @@ export const VideoProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const callObjectRef = useRef(null);
   const throttleTimeoutRef = useRef(null);
+  const videoTracksRef = useRef(new Map()); // sessionId -> MediaStreamTrack
 
   // --- Memoized Event Handlers ---
   const handleParticipantJoined = useCallback((event) => {
@@ -74,24 +75,47 @@ export const VideoProvider = ({ children }) => {
     });
   }, []);
 
+  const refreshParticipants = useCallback(() => {
+    if (!callObjectRef.current) return;
+    const raw = callObjectRef.current.participants();
+    // Merge any captured video tracks onto participant objects so UI can render streams
+    Object.keys(raw).forEach((sid) => {
+      const track = videoTracksRef.current.get(sid);
+      if (track) {
+        raw[sid] = {
+          ...raw[sid],
+          tracks: {
+            ...raw[sid].tracks,
+            video: {
+              ...(raw[sid].tracks?.video || {}),
+              persistentTrack: track,
+            },
+          },
+        };
+      }
+    });
+    setParticipants(raw);
+  }, []);
+
   const handleParticipantUpdated = useCallback(() => {
     if (!throttleTimeoutRef.current) {
       throttleTimeoutRef.current = setTimeout(() => {
-        if (callObjectRef.current) {
-            setParticipants(callObjectRef.current.participants());
-        }
+        refreshParticipants();
         throttleTimeoutRef.current = null;
       }, 250);
     }
-  }, []);
+  }, [refreshParticipants]);
 
   // --- Main useEffect for Daily.co setup ---
   useEffect(() => {
     if (!dailyLoaded || !window.DailyIframe) return;
     if (callObjectRef.current) return;
 
-    // Create call object without invalid properties for call object mode
-    const call = window.DailyIframe.createCallObject();
+    // Prefer adopting an existing global call object if one already exists
+    // This avoids duplicate instance errors in tabs where a call object was
+    // created outside the React lifecycle (e.g., via console helpers).
+    const existing = window.dailyCallObject;
+    const call = existing || window.DailyIframe.createCallObject();
     callObjectRef.current = call;
     setCallObject(call);
     window.dailyCallObject = call;
@@ -135,7 +159,8 @@ export const VideoProvider = ({ children }) => {
         };
       });
       
-      setParticipants(participantsWithCleanNames);
+      // Initialize state with any known tracks merged in
+      refreshParticipants();
     };
     
     const handleLeftMeeting = () => {
@@ -151,7 +176,25 @@ export const VideoProvider = ({ children }) => {
     call.on('participant-joined', handleParticipantJoined);
     call.on('participant-updated', handleParticipantUpdated);
     call.on('participant-left', handleParticipantLeft);
-    call.on('track-started', handleParticipantUpdated);
+    const handleTrackStarted = (ev) => {
+      try {
+        if (ev?.participant?.session_id && ev?.track?.kind === 'video') {
+          videoTracksRef.current.set(ev.participant.session_id, ev.track);
+        }
+      } catch (_) {}
+      handleParticipantUpdated();
+    };
+    const handleTrackStopped = (ev) => {
+      try {
+        if (ev?.participant?.session_id && ev?.track?.kind === 'video') {
+          videoTracksRef.current.delete(ev.participant.session_id);
+        }
+      } catch (_) {}
+      handleParticipantUpdated();
+    };
+
+    call.on('track-started', handleTrackStarted);
+    call.on('track-stopped', handleTrackStopped);
     call.on('error', handleError);
 
     return () => {
@@ -161,21 +204,62 @@ export const VideoProvider = ({ children }) => {
       call.off('participant-joined', handleParticipantJoined);
       call.off('participant-updated', handleParticipantUpdated);
       call.off('participant-left', handleParticipantLeft);
-      call.off('track-started', handleParticipantUpdated);
+      call.off('track-started', handleTrackStarted);
+      call.off('track-stopped', handleTrackStopped);
       call.off('error', handleError);
 
       if (call !== window.dailyCallObject) {
         call.destroy();
       }
       callObjectRef.current = null;
+      videoTracksRef.current.clear();
     };
-  }, [dailyLoaded, handleParticipantJoined, handleParticipantLeft, handleParticipantUpdated]);
+  }, [dailyLoaded, handleParticipantJoined, handleParticipantLeft, handleParticipantUpdated, refreshParticipants]);
 
   // --- Join Room Function ---
   const joinRoom = useCallback(async (roomUrl, userName = null) => {
+    // Ensure Daily.js is loaded before attempting to create/join
+    const ensureDailyLoaded = () => new Promise((resolve, reject) => {
+      if (window.DailyIframe) return resolve();
+      try {
+        const existing = document.querySelector(`script[src="${DAILY_JS_URL}"]`);
+        if (existing) {
+          existing.addEventListener('load', () => resolve());
+          existing.addEventListener('error', () => reject(new Error('Failed to load Daily.js')));
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = DAILY_JS_URL;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load Daily.js'));
+        document.head.appendChild(script);
+      } catch (e) {
+        reject(e);
+      }
+    });
+
+    try {
+      await ensureDailyLoaded();
+    } catch (e) {
+      throw new Error('Daily iframe not loaded');
+    }
+
     // Clear any stale errors before a fresh join attempt
     try { setError(null); } catch (_) {}
-    if (!callObjectRef.current) throw new Error('Call object not initialized');
+    // Adopt or (re)create call object if it is missing
+    if (!callObjectRef.current) {
+      try {
+        if (!window.DailyIframe) throw new Error('Daily iframe not loaded');
+        const existing = window.dailyCallObject;
+        const call = existing || window.DailyIframe.createCallObject();
+        callObjectRef.current = call;
+        setCallObject(call);
+        window.dailyCallObject = call;
+      } catch (e) {
+        throw new Error('Call object not initialized');
+      }
+    }
     
     // CRITICAL: Log exactly what room we're trying to join
     console.log('🚨 ATTEMPTING TO JOIN ROOM:', {
@@ -184,7 +268,7 @@ export const VideoProvider = ({ children }) => {
       timestamp: new Date().toISOString()
     });
     
-    const meetingState = callObjectRef.current.meetingState();
+    const meetingState = callObjectRef.current.meetingState && callObjectRef.current.meetingState();
     if (meetingState === 'joined-meeting') {
       console.log('Already joined meeting, leaving first...');
       try {
@@ -273,21 +357,11 @@ export const VideoProvider = ({ children }) => {
   const participantArray = useMemo(() => Object.values(participants), [participants]);
 
   const composedParticipants = useMemo(() => {
-    const count = 12; // Fixed count for fishbowl demo
+    // Show ONLY real Daily.co participants. Do not pad with mock participants.
     const realParticipants = participantArray;
     const local = realParticipants.find(p => p.local);
     const remotes = realParticipants.filter(p => !p.local);
-    
-    let providedParticipants = local ? [local, ...remotes] : remotes;
-
-    if (providedParticipants.length < count) {
-      providedParticipants = [
-        ...providedParticipants,
-        ...getMockParticipants(count - providedParticipants.length, providedParticipants.length + 1)
-      ];
-    } else if (providedParticipants.length > count) {
-      providedParticipants = providedParticipants.slice(0, count);
-    }
+    const providedParticipants = local ? [local, ...remotes] : remotes;
     return { providedParticipants, realParticipants, local };
   }, [participantArray]);
 

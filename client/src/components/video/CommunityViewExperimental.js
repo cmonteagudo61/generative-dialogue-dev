@@ -37,7 +37,7 @@ const CommunityViewTile = React.memo(({
   isCenterParticipant,
   onCenterChange
 }) => {
-  const hasVideo = participant.tracks?.video?.state === 'playable' && participant.tracks?.video?.persistentTrack;
+  const hasVideo = participant.tracks?.video?.state === 'playable' && (participant.tracks?.video?.persistentTrack || participant.tracks?.video?.track);
   // Enhanced helper to extract clean display name - prioritize actual session participant names
   const getCleanDisplayName = (participant) => {
     // PRIORITY 1: Use the actual session participant name stored in userData
@@ -249,7 +249,7 @@ const CommunityViewExperimental = React.memo(({
       if (!participant) return;
 
       // Enhanced Daily.co track handling
-      const track = participant.tracks?.video?.persistentTrack;
+      const track = participant.tracks?.video?.persistentTrack || participant.tracks?.video?.track;
       const currentTrackState = trackStates.current.get(sessionId);
       
       // More robust track comparison - check multiple properties

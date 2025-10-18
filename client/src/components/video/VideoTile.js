@@ -11,8 +11,11 @@ const VideoTileWithFit = ({ participant, getObjectFit, isMock }) => {
   }, []);
 
   useEffect(() => {
-    if (!isMock && ref.current && participant.tracks?.video?.persistentTrack) {
-      ref.current.srcObject = new MediaStream([participant.tracks.video.persistentTrack]);
+    if (!isMock && ref.current) {
+      const track = participant.tracks?.video?.persistentTrack || participant.tracks?.video?.track;
+      if (track) {
+        ref.current.srcObject = new MediaStream([track]);
+      }
     }
   }, [participant, isMock]);
 
